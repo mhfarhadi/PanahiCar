@@ -154,6 +154,13 @@ const conditionLabel = (value) => {
                                     {{ device.announcer_mobile }}
                                 </a>
                             </div>
+
+                            <Link
+                                :href="route('announced-devices.purchase.create', device.id)"
+                                class="mt-5 block rounded-2xl bg-violet-600 px-4 py-3 text-center text-sm font-black text-white transition hover:bg-violet-700"
+                            >
+                                خرید این گوشی و انتقال به موجودی
+                            </Link>
                         </div>
                     </article>
                 </div>
