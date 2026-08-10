@@ -10,12 +10,19 @@ const props = defineProps({
 });
 
 
-const today = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+const now = new Date();
+
+const weekday = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
     weekday: 'long',
-    year: 'numeric',
-    month: 'long',
+}).format(now);
+
+const date = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
     day: 'numeric',
-}).format(new Date());
+    month: 'long',
+    year: 'numeric',
+}).format(now);
+
+const today = `${weekday} | ${date}`;
 
 const actions = [
     {

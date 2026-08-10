@@ -50,12 +50,21 @@ const conditionLabel = (value) => {
                         </p>
                     </div>
 
-                    <Link
-                        :href="route('dashboard')"
-                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-                    >
-                        بازگشت
-                    </Link>
+                    <div class="flex gap-2">
+                        <Link
+                            :href="route('announced-devices.create')"
+                            class="rounded-2xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-violet-700"
+                        >
+                            + ثبت گوشی اعلامی
+                        </Link>
+
+                        <Link
+                            :href="route('dashboard')"
+                            class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                        >
+                            بازگشت
+                        </Link>
+                    </div>
                 </div>
 
                 <div
