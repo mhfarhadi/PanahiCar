@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Contact;
 use App\Models\Device;
 use App\Models\DeviceImage;
 use App\Models\Purchase;
@@ -83,15 +82,18 @@ class DeviceController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        $modelStorages = DB::table('device_model_storage_option')->get();
-        $modelColors = DB::table('device_model_color_option')->get();
-
         $partNumbers = DB::table('part_number_options')
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->get();
 
-        $modelPartNumbers = DB::table('device_model_part_number_option')->get();
+        $contacts = DB::table('contacts')
+            ->orderBy('name')
+            ->get([
+                'id',
+                'name',
+                'mobile',
+            ]);
 
         return Inertia::render('Devices/Create', [
             'catalog' => [
@@ -99,11 +101,13 @@ class DeviceController extends Controller
                 'models' => $models,
                 'storages' => $storages,
                 'colors' => $colors,
-                'modelStorages' => $modelStorages,
-                'modelColors' => $modelColors,
+                'modelStorages' => DB::table('device_model_storage_option')->get(),
+                'modelColors' => DB::table('device_model_color_option')->get(),
                 'partNumbers' => $partNumbers,
-                'modelPartNumbers' => $modelPartNumbers,
+                'modelPartNumbers' => DB::table('device_model_part_number_option')->get(),
             ],
+
+            'contacts' => $contacts,
         ]);
     }
 
@@ -122,8 +126,7 @@ class DeviceController extends Controller
             'registration_status' => ['nullable', 'string', 'max:50'],
             'description' => ['nullable', 'string'],
 
-            'seller_name' => ['required', 'string', 'max:150'],
-            'seller_mobile' => ['nullable', 'string', 'max:20'],
+            'seller_id' => ['required', 'integer', 'exists:contacts,id'],
 
             'purchase_price' => ['required', 'integer', 'min:0'],
             'purchase_date' => ['required', 'date'],
@@ -131,15 +134,6 @@ class DeviceController extends Controller
             'images' => ['nullable', 'array', 'max:10'],
             'images.*' => ['image', 'max:5120'],
         ]);
-
-        if (!empty($validated['seller_mobile'])) {
-            $validated['seller_mobile'] = strtr($validated['seller_mobile'], [
-                '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4',
-                '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
-                '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4',
-                '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
-            ]);
-        }
 
         DB::transaction(function () use ($request, $validated) {
             $device = new Device();
@@ -158,15 +152,9 @@ class DeviceController extends Controller
             $device->created_by = $request->user()->id;
             $device->save();
 
-            $seller = new Contact();
-            $seller->name = $validated['seller_name'];
-            $seller->mobile = $validated['seller_mobile'] ?? null;
-            $seller->created_by = $request->user()->id;
-            $seller->save();
-
             $purchase = new Purchase();
             $purchase->device_id = $device->id;
-            $purchase->seller_id = $seller->id;
+            $purchase->seller_id = $validated['seller_id'];
             $purchase->purchase_price = $validated['purchase_price'];
             $purchase->purchase_date = $validated['purchase_date'];
             $purchase->created_by = $request->user()->id;

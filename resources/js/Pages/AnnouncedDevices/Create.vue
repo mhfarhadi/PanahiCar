@@ -451,12 +451,12 @@ const submit = () => {
                                 </label>
                                 <div class="relative">
                                     <input
-                                        v-model="form.battery_health"
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        placeholder="مثلاً 89"
+                                        :value="form.battery_health"
+                                        type="text"
+                                        inputmode="numeric"
+                                        placeholder="مثلاً ۸۹ یا 89"
                                         class="w-full rounded-2xl border-slate-200 bg-slate-50 pl-12 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                        @input="form.battery_health = normalizeDigits($event.target.value).replace(/\D/g, '').slice(0, 3)"
                                     />
                                     <span
                                         class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400"

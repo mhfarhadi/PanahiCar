@@ -27,7 +27,9 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 
 Route::middleware('auth')->group(function () {
     Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');
-    Route::get('/devices/{device}', [DeviceShowController::class, 'show'])->name('devices.show');
+    Route::get('/devices/{device}', [DeviceShowController::class, 'show'])
+        ->whereNumber('device')
+        ->name('devices.show');
 
     Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
     Route::get('/contacts/create', [ContactController::class, 'create'])->name('contacts.create');
