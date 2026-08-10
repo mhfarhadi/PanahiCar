@@ -6,6 +6,30 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 
+const THEME_KEY = 'maya_theme';
+
+const applyTheme = (theme) => {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    const shouldUseDark =
+        theme === 'dark' ||
+        (theme === 'system' && prefersDark);
+
+    document.documentElement.classList.toggle('dark', shouldUseDark);
+};
+
+const savedTheme = localStorage.getItem(THEME_KEY) || 'system';
+
+applyTheme(savedTheme);
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    const currentTheme = localStorage.getItem(THEME_KEY) || 'system';
+
+    if (currentTheme === 'system') {
+        applyTheme('system');
+    }
+});
+
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
