@@ -2,12 +2,26 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
+const props = defineProps({
+    returnTo: {
+        type: String,
+        default: '',
+    },
+    defaultContactType: {
+        type: String,
+        default: 'individual',
+    },
+});
+
+const isAnnouncerContext = props.returnTo === 'announced-devices.create';
+
 const form = useForm({
     name: '',
     mobile: '',
     phone: '',
-    contact_type: 'individual',
+    contact_type: props.defaultContactType,
     description: '',
+    return_to: props.returnTo,
 });
 
 const normalizeDigits = (value) => {
@@ -50,7 +64,7 @@ const submit = () => {
                     </div>
 
                     <Link
-                        :href="route('contacts.index')"
+                        :href="props.returnTo ? route(props.returnTo) : route('contacts.index')"
                         class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
                     >
                         بازگشت
@@ -147,6 +161,7 @@ const submit = () => {
                                         type="radio"
                                         value="individual"
                                         class="ml-2"
+                                        :disabled="isAnnouncerContext"
                                     />
                                     <span class="font-black">شخص عادی</span>
                                     <p class="mt-1 text-xs text-slate-500">

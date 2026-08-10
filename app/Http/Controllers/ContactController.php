@@ -50,41 +50,67 @@ class ContactController extends Controller
         ]);
     }
 
-    public function create(): Response
-    {
-        return Inertia::render('Contacts/Create');
+    public function create(Request $request): Response
+{
+    $returnTo = $request->query('return_to');
+
+    if (! in_array($returnTo, ['devices.create', 'announced-devices.create'], true)) {
+        $returnTo = null;
     }
 
-    public function store(Request $request): RedirectResponse
-    {
+    return Inertia::render('Contacts/Create', [
+        'returnTo' => $returnTo,
+        'defaultContactType' => $returnTo === 'announced-devices.create'
+            ? 'colleague'
+            : 'individual',
+    ]);
+}
+
+public function store(Request $request): RedirectResponse
+{
+    $request->merge([
+        'mobile' => $this->normalizeDigits($request->mobile),
+        'phone' => $this->normalizeDigits($request->phone),
+    ]);
+
+    if ($request->input('return_to') === 'announced-devices.create') {
         $request->merge([
-            'mobile' => $this->normalizeDigits($request->mobile),
-            'phone' => $this->normalizeDigits($request->phone),
+            'contact_type' => 'colleague',
         ]);
+    }
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'mobile' => ['required', 'string', 'max:20', 'unique:contacts,mobile'],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'description' => ['nullable', 'string'],
-            'contact_type' => ['required', 'in:colleague,individual'],
-        ]);
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'mobile' => ['required', 'string', 'max:20', 'unique:contacts,mobile'],
+        'phone' => ['nullable', 'string', 'max:20'],
+        'description' => ['nullable', 'string'],
+        'contact_type' => ['required', 'in:colleague,individual'],
+        'return_to' => ['nullable', 'in:devices.create,announced-devices.create'],
+    ]);
 
-        $contact = new Contact();
-        $contact->name = $validated['name'];
-        $contact->mobile = $validated['mobile'];
-        $contact->phone = $validated['phone'] ?? null;
-        $contact->description = $validated['description'] ?? null;
-        $contact->contact_type = $validated['contact_type'];
-        $contact->created_by = $request->user()->id;
-        $contact->save();
+    $contact = new Contact();
+    $contact->name = $validated['name'];
+    $contact->mobile = $validated['mobile'];
+    $contact->phone = $validated['phone'] ?? null;
+    $contact->description = $validated['description'] ?? null;
+    $contact->contact_type = $validated['contact_type'];
+    $contact->created_by = $request->user()->id;
+    $contact->save();
 
+    if (! empty($validated['return_to'])) {
         return redirect()
-            ->route('contacts.index')
+            ->route($validated['return_to'], [
+                'created_contact' => $contact->id,
+            ])
             ->with('success', 'شخص جدید با موفقیت ثبت شد.');
     }
 
-    private function normalizeDigits(?string $value): ?string
+    return redirect()
+        ->route('contacts.index')
+        ->with('success', 'شخص جدید با موفقیت ثبت شد.');
+}
+
+private function normalizeDigits(?string $value): ?string
     {
         if ($value === null) {
             return null;

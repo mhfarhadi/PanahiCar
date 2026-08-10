@@ -1,8 +1,8 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
     catalog: {
@@ -12,6 +12,10 @@ const props = defineProps({
     contacts: {
         type: Array,
         default: () => [],
+    },
+    createdContactId: {
+        type: [Number, String],
+        default: null,
     },
 });
 
@@ -156,6 +160,65 @@ const selectedAnnouncer = computed(() =>
         (contact) => String(contact.id) === String(form.announcer_id)
     )
 );
+
+const DRAFT_KEY = 'maya_announced_device_create_draft';
+
+const restoreDraft = async () => {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+
+    if (raw) {
+        try {
+            const draft = JSON.parse(raw);
+
+            selectedBrandId.value = draft.selectedBrandId ?? '';
+            await nextTick();
+
+            selectedModelId.value = draft.selectedModelId ?? '';
+            await nextTick();
+
+            Object.entries(draft.form ?? {}).forEach(([key, value]) => {
+                if (key in form && key !== 'images') {
+                    form[key] = value;
+                }
+            });
+
+            announcerSearch.value = draft.announcerSearch ?? '';
+        } catch (error) {
+            console.error('Could not restore announced device draft.', error);
+        }
+
+        sessionStorage.removeItem(DRAFT_KEY);
+    }
+
+    if (props.createdContactId) {
+        form.announcer_id = props.createdContactId;
+    }
+};
+
+const openCreateContact = () => {
+    const data = form.data();
+
+    sessionStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({
+            form: {
+                ...data,
+                images: [],
+            },
+            selectedBrandId: selectedBrandId.value,
+            selectedModelId: selectedModelId.value,
+            announcerSearch: announcerSearch.value,
+        })
+    );
+
+    router.visit(
+        route('contacts.create', {
+            return_to: 'announced-devices.create',
+        })
+    );
+};
+
+restoreDraft();
 
 const normalizeDigits = (value) => {
     return String(value ?? '')
@@ -487,7 +550,8 @@ const submit = () => {
                                     IMEI
                                 </label>
                                 <input
-                                    v-model="form.imei"
+                                    :value="form.imei"
+                                    @input="form.imei = normalizeDigits($event.target.value).replace(/\D/g, '').slice(0, 15)"
                                     type="text"
                                     inputmode="numeric"
                                     maxlength="15"

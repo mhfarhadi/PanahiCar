@@ -26,12 +26,6 @@ const today = `${weekday} | ${date}`;
 
 const actions = [
     {
-        title: 'موجودی',
-        description: 'مشاهده گوشی‌های موجود و مشخصات کامل',
-        icon: '📱',
-        href: route('devices.index'),
-    },
-    {
         title: 'ثبت دستگاه',
         description: 'ثبت گوشی جدید در موجودی',
         icon: '＋',
@@ -59,15 +53,15 @@ const actions = [
         href: route('announced-devices.index'),
     },
     {
-        title: 'اشخاص',
-        description: 'مدیریت همکاران و اشخاص عادی',
-        icon: '👤',
-        href: route('contacts.index'),
+        title: 'تنظیمات',
+        description: 'اشخاص و تنظیمات ظاهری برنامه',
+        icon: '⚙',
+        href: route('settings.index'),
     },
 ];
 
 const stats = [
-    { label: 'موجودی فعلی', value: `${props.inventoryCount.toLocaleString('fa-IR')} دستگاه` },
+    { label: 'موجودی فعلی', value: `${props.inventoryCount.toLocaleString('fa-IR')} دستگاه`, href: route('devices.index') },
     { label: 'فروش این ماه', value: '۰ دستگاه' },
     { label: 'مطالبات اقساطی', value: '۰ تومان' },
 ];
@@ -180,9 +174,19 @@ const stats = [
                             {{ item.label }}
                         </p>
 
-                        <p class="mt-2 text-xl font-black">
-                            {{ item.value }}
-                        </p>
+                        <div class="mt-2 flex items-center justify-between gap-3">
+                            <p class="text-xl font-black">
+                                {{ item.value }}
+                            </p>
+
+                            <Link
+                                v-if="item.href"
+                                :href="item.href"
+                                class="rounded-xl bg-violet-600 px-3 py-2 text-xs font-black text-white transition hover:bg-violet-700"
+                            >
+                                نمایش
+                            </Link>
+                        </div>
                     </div>
                 </div>
 

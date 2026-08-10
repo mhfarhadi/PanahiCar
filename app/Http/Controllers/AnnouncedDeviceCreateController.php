@@ -12,7 +12,7 @@ use Inertia\Response;
 
 class AnnouncedDeviceCreateController extends Controller
 {
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $brands = DB::table('brands')
             ->where('is_active', true)
@@ -63,6 +63,7 @@ class AnnouncedDeviceCreateController extends Controller
             ],
 
             'contacts' => $contacts,
+            'createdContactId' => request()->integer('created_contact') ?: null,
         ]);
     }
 

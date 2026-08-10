@@ -58,7 +58,7 @@ class DeviceController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $brands = DB::table('brands')
             ->where('is_active', true)
@@ -108,6 +108,7 @@ class DeviceController extends Controller
             ],
 
             'contacts' => $contacts,
+            'createdContactId' => request()->integer('created_contact') ?: null,
         ]);
     }
 

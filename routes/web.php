@@ -43,6 +43,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/announced-devices/{device}/purchase', [AnnouncedDevicePurchaseController::class, 'store'])->name('announced-devices.purchase.store');
     Route::get('/devices/create', [DeviceController::class, 'create'])->name('devices.create');
     Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');
+    Route::get('/settings', fn () => Inertia::render('Settings/Index'))->name('settings.index');
+
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
