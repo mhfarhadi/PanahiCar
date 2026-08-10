@@ -15,22 +15,34 @@ const props = defineProps({
 });
 
 const search = ref(props.filters.search || '');
+const type = ref(props.filters.type || '');
 
 let timer = null;
 
-watch(search, (value) => {
+const loadContacts = () => {
+    router.get(
+        route('contacts.index'),
+        {
+            search: search.value,
+            type: type.value,
+        },
+        {
+            preserveState: true,
+            replace: true,
+        }
+    );
+};
+
+watch(search, () => {
     clearTimeout(timer);
 
     timer = setTimeout(() => {
-        router.get(
-            route('contacts.index'),
-            { search: value },
-            {
-                preserveState: true,
-                replace: true,
-            }
-        );
+        loadContacts();
     }, 300);
+});
+
+watch(type, () => {
+    loadContacts();
 });
 </script>
 
@@ -69,7 +81,48 @@ watch(search, (value) => {
                     </div>
                 </div>
 
-                <div class="mb-5">
+                <div class="mb-5 space-y-3">
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            type="button"
+                            class="rounded-xl px-4 py-2 text-sm font-bold transition"
+                            :class="
+                                type === ''
+                                    ? 'bg-violet-600 text-white'
+                                    : 'bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-300'
+                            "
+                            @click="type = ''"
+                        >
+                            همه
+                        </button>
+
+                        <button
+                            type="button"
+                            class="rounded-xl px-4 py-2 text-sm font-bold transition"
+                            :class="
+                                type === 'colleague'
+                                    ? 'bg-violet-600 text-white'
+                                    : 'bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-300'
+                            "
+                            @click="type = 'colleague'"
+                        >
+                            همکارها
+                        </button>
+
+                        <button
+                            type="button"
+                            class="rounded-xl px-4 py-2 text-sm font-bold transition"
+                            :class="
+                                type === 'individual'
+                                    ? 'bg-violet-600 text-white'
+                                    : 'bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-300'
+                            "
+                            @click="type = 'individual'"
+                        >
+                            اشخاص عادی
+                        </button>
+                    </div>
+
                     <input
                         v-model="search"
                         type="text"
@@ -132,10 +185,23 @@ watch(search, (value) => {
                             {{ contact.description }}
                         </p>
 
-                        <div class="mt-4 border-t border-slate-100 pt-4 text-xs text-slate-400 dark:border-slate-800">
-                            شناسه شخص:
+                        <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-400 dark:border-slate-800">
+                            <span
+                                class="rounded-lg px-2 py-1 font-bold"
+                                :class="
+                                    contact.contact_type === 'colleague'
+                                        ? 'bg-violet-50 text-violet-700 dark:bg-violet-950/30 dark:text-violet-300'
+                                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                                "
+                            >
+                                {{ contact.contact_type === 'colleague' ? 'همکار' : 'شخص عادی' }}
+                            </span>
+
+                            <span>
+                                شناسه شخص:
                             <span class="font-bold text-slate-600 dark:text-slate-300">
                                 #{{ contact.id }}
+                            </span>
                             </span>
                         </div>
                     </article>

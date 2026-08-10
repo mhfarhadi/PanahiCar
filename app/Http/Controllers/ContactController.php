@@ -13,8 +13,16 @@ class ContactController extends Controller
     public function index(Request $request): Response
     {
         $search = trim((string) $request->query('search'));
+        $type = trim((string) $request->query('type'));
+
+        if (!in_array($type, ['colleague', 'individual'], true)) {
+            $type = '';
+        }
 
         $contacts = Contact::query()
+            ->when($type !== '', function ($query) use ($type) {
+                $query->where('contact_type', $type);
+            })
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
@@ -29,6 +37,7 @@ class ContactController extends Controller
                 'mobile',
                 'phone',
                 'description',
+                'contact_type',
                 'created_at',
             ]);
 
@@ -36,6 +45,7 @@ class ContactController extends Controller
             'contacts' => $contacts,
             'filters' => [
                 'search' => $search,
+                'type' => $type,
             ],
         ]);
     }
@@ -57,6 +67,7 @@ class ContactController extends Controller
             'mobile' => ['required', 'string', 'max:20', 'unique:contacts,mobile'],
             'phone' => ['nullable', 'string', 'max:20'],
             'description' => ['nullable', 'string'],
+            'contact_type' => ['required', 'in:colleague,individual'],
         ]);
 
         $contact = new Contact();
@@ -64,6 +75,7 @@ class ContactController extends Controller
         $contact->mobile = $validated['mobile'];
         $contact->phone = $validated['phone'] ?? null;
         $contact->description = $validated['description'] ?? null;
+        $contact->contact_type = $validated['contact_type'];
         $contact->created_by = $request->user()->id;
         $contact->save();
 

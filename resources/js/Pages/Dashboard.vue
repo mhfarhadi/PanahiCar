@@ -58,6 +58,12 @@ const actions = [
         icon: '☎',
         href: route('announced-devices.index'),
     },
+    {
+        title: 'اشخاص',
+        description: 'مدیریت همکاران و اشخاص عادی',
+        icon: '👤',
+        href: route('contacts.index'),
+    },
 ];
 
 const stats = [

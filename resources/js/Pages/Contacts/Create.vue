@@ -6,6 +6,7 @@ const form = useForm({
     name: '',
     mobile: '',
     phone: '',
+    contact_type: 'individual',
     description: '',
 });
 
@@ -124,6 +125,61 @@ const submit = () => {
                                 class="mt-2 text-xs font-bold text-red-500"
                             >
                                 {{ form.errors.phone }}
+                            </p>
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label class="mb-2 block text-sm font-bold">
+                                نوع شخص *
+                            </label>
+
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <label
+                                    class="cursor-pointer rounded-2xl border p-4 transition"
+                                    :class="
+                                        form.contact_type === 'individual'
+                                            ? 'border-violet-500 bg-violet-50 dark:bg-violet-950/30'
+                                            : 'border-slate-200 dark:border-slate-800'
+                                    "
+                                >
+                                    <input
+                                        v-model="form.contact_type"
+                                        type="radio"
+                                        value="individual"
+                                        class="ml-2"
+                                    />
+                                    <span class="font-black">شخص عادی</span>
+                                    <p class="mt-1 text-xs text-slate-500">
+                                        مشتری یا فردی که مستقیم از او خرید یا به او فروش داریم
+                                    </p>
+                                </label>
+
+                                <label
+                                    class="cursor-pointer rounded-2xl border p-4 transition"
+                                    :class="
+                                        form.contact_type === 'colleague'
+                                            ? 'border-violet-500 bg-violet-50 dark:bg-violet-950/30'
+                                            : 'border-slate-200 dark:border-slate-800'
+                                    "
+                                >
+                                    <input
+                                        v-model="form.contact_type"
+                                        type="radio"
+                                        value="colleague"
+                                        class="ml-2"
+                                    />
+                                    <span class="font-black">همکار</span>
+                                    <p class="mt-1 text-xs text-slate-500">
+                                        همکار بازار که می‌تواند برای ما گوشی اعلام کند
+                                    </p>
+                                </label>
+                            </div>
+
+                            <p
+                                v-if="form.errors.contact_type"
+                                class="mt-2 text-xs font-bold text-red-500"
+                            >
+                                {{ form.errors.contact_type }}
                             </p>
                         </div>
 
