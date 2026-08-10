@@ -146,7 +146,8 @@ watch(type, () => {
                     <article
                         v-for="contact in contacts"
                         :key="contact.id"
-                        class="rounded-[26px] bg-white p-5 shadow-sm dark:bg-slate-900"
+                        class="cursor-pointer transition hover:-translate-y-1 hover:shadow-md rounded-[26px] bg-white p-5 shadow-sm dark:bg-slate-900"
+                        @click="router.visit(route('contacts.show', contact.id))"
                     >
                         <div class="flex items-start gap-4">
                             <div
@@ -163,6 +164,7 @@ watch(type, () => {
                                 <a
                                     :href="`tel:${contact.mobile}`"
                                     class="mt-1 inline-block text-sm font-bold text-violet-600"
+                                    @click.stop
                                     dir="ltr"
                                 >
                                     {{ contact.mobile }}
