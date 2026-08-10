@@ -79,11 +79,12 @@ const conditionLabel = (value) => {
                 </div>
 
                 <div v-else class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                    <article
-                        v-for="device in devices"
-                        :key="device.id"
-                        class="overflow-hidden rounded-[30px] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:bg-slate-900"
-                    >
+                    <Link
+                    v-for="device in devices"
+                    :key="device.id"
+                    :href="route('devices.show', device.id)"
+                    class="block cursor-pointer overflow-hidden rounded-[30px] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:bg-slate-900"
+                >
                         <div class="flex h-44 items-center justify-center bg-slate-100 dark:bg-slate-800">
                             <img
                                 v-if="device.cover_image"
@@ -159,7 +160,7 @@ const conditionLabel = (value) => {
                                 فروشنده: {{ device.seller_name || '—' }}
                             </div>
                         </div>
-                    </article>
+                    </Link>
                 </div>
             </div>
         </div>
