@@ -9,6 +9,7 @@ use App\Http\Controllers\ContactShowController;
 use App\Http\Controllers\AnnouncedDeviceController;
 use App\Http\Controllers\AnnouncedDeviceCreateController;
 use App\Http\Controllers\AnnouncedDevicePurchaseController;
+use App\Http\Controllers\SaleController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -43,6 +44,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/announced-devices/{device}/purchase', [AnnouncedDevicePurchaseController::class, 'store'])->name('announced-devices.purchase.store');
     Route::get('/devices/create', [DeviceController::class, 'create'])->name('devices.create');
     Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');
+
+    Route::get('/sales', [SaleController::class, 'index'])->name('sales.index');
+
+    Route::get('/devices/{device}/sell', [SaleController::class, 'create'])
+        ->whereNumber('device')
+        ->name('sales.create');
+
+    Route::post('/devices/{device}/sell', [SaleController::class, 'store'])
+        ->whereNumber('device')
+        ->name('sales.store');
     Route::get('/settings', fn () => Inertia::render('Settings/Index'))->name('settings.index');
 
 

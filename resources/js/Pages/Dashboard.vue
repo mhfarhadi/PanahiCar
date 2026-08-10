@@ -45,6 +45,7 @@ const actions = [
         title: 'گوشی‌های فروخته‌شده',
         description: 'مشاهده سوابق فروش و مشتریان',
         icon: '◫',
+        href: route('sales.index'),
     },
     {
         title: 'گوشی‌های اعلامی',

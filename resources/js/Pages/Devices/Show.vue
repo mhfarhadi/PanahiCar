@@ -270,12 +270,12 @@ const persianDate = (value) => {
                             </div>
                         </section>
 
-                        <button
-                            type="button"
-                            class="w-full rounded-2xl bg-violet-600 px-6 py-4 text-base font-black text-white shadow-lg shadow-violet-200 transition hover:bg-violet-700 dark:shadow-none"
+                        <Link
+                            :href="route('sales.create', device.id)"
+                            class="block w-full rounded-2xl bg-violet-600 px-6 py-4 text-center text-base font-black text-white shadow-lg shadow-violet-200 transition hover:bg-violet-700 dark:shadow-none"
                         >
-                            خرید اقساطی این محصول
-                        </button>
+                            ثبت فروش این گوشی
+                        </Link>
                     </div>
                 </div>
             </div>
