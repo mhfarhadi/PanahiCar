@@ -13,3 +13,51 @@
         font-family: 'Vazirmatn Variable', sans-serif;
     }
 }
+
+
+/* MayaHamrah Persian date picker dark mode */
+.dark .vpd-content,
+.dark .vpd-main,
+.dark .vpd-body,
+.dark .vpd-simple-body,
+.dark .vpd-simple-content {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+}
+
+.dark .vpd-controls,
+.dark .vpd-month,
+.dark .vpd-days,
+.dark .vpd-column,
+.dark .vpd-column-content,
+.dark .vpd-column-header,
+.dark .vpd-counter,
+.dark .vpd-counter-item {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+}
+
+.dark .vpd-day-text,
+.dark .vpd-weekday,
+.dark .vpd-month-label,
+.dark .vpd-year-label,
+.dark .vpd-addon-list-item {
+    color: #e2e8f0 !important;
+}
+
+.dark .vpd-day:not(.vpd-selected):not(.vpd-disabled):hover {
+    background-color: #1e293b !important;
+}
+
+.dark .vpd-disabled .vpd-day-text {
+    color: #475569 !important;
+}
+
+.dark .vpd-arrow {
+    border-color: #cbd5e1 !important;
+}
+
+.dark .vpd-icon-btn,
+.dark .vpd-actions button {
+    color: #e2e8f0 !important;
+}

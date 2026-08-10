@@ -24,8 +24,13 @@ const localDate = [
 
 const form = useForm({
     buyer_id: '',
+    sale_type: 'cash',
     sale_price: '',
-    sale_date: localDate,
+    down_payment: '',
+    monthly_profit_rate: '6.5',
+    installment_count: 12,
+    first_due_date: '',
+    sale_date: '',
     notes: '',
 });
 
@@ -65,6 +70,9 @@ const selectedBuyer = computed(() =>
     )
 );
 
+const toPersianDigits = (value) =>
+    String(value ?? '').replace(/\d/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]);
+
 const formatPrice = (value) => {
     const digits = normalizeDigits(value).replace(/\D/g, '');
 
@@ -76,6 +84,129 @@ const formatPrice = (value) => {
 const handleSalePrice = (event) => {
     form.sale_price = normalizeDigits(event.target.value).replace(/\D/g, '');
 };
+
+const handleDownPayment = (event) => {
+    form.down_payment = normalizeDigits(event.target.value).replace(/\D/g, '');
+};
+
+const handleMonthlyProfitRate = (event) => {
+    let normalized = normalizeDigits(event.target.value)
+        .replace(/٫/g, '.')
+        .replace(/,/g, '.')
+        .replace(/[^\d.]/g, '');
+
+    const parts = normalized.split('.');
+    const whole = parts.shift() ?? '';
+    const decimal = (parts.join('') || '').slice(0, 1);
+
+    normalized = decimal.length ? `${whole}.${decimal}` : whole;
+
+    form.monthly_profit_rate = normalized;
+};
+
+const normalizeMonthlyProfitRate = () => {
+    const value = Number(
+        normalizeDigits(form.monthly_profit_rate)
+            .replace(/٫/g, '.')
+            .replace(/,/g, '.')
+    );
+
+    form.monthly_profit_rate = Number.isFinite(value)
+        ? Math.min(100, Math.max(0, value)).toFixed(1)
+        : '0.0';
+};
+
+const adjustMonthlyProfitRate = (delta) => {
+    const current = Number(
+        normalizeDigits(form.monthly_profit_rate)
+            .replace(/٫/g, '.')
+            .replace(/,/g, '.')
+    ) || 0;
+
+    const next = Math.min(
+        100,
+        Math.max(0, Math.round((current + delta) * 10) / 10)
+    );
+
+    form.monthly_profit_rate = next.toFixed(1);
+};
+
+const syncPickerDate = (field, value) => {
+    if (!value) return;
+
+    if (typeof value.format === 'function') {
+        const date = value.clone ? value.clone() : value;
+
+        if (typeof date.locale === 'function') {
+            date.locale('en');
+        }
+
+        form[field] = normalizeDigits(date.format('YYYY-MM-DD'));
+        return;
+    }
+
+    form[field] = normalizeDigits(String(value));
+};
+
+const handleInstallmentCount = (event) => {
+    const normalized = normalizeDigits(event.target.value)
+        .replace(/\D/g, '')
+        .slice(0, 2);
+
+    form.installment_count =
+        normalized === '' ? '' : Number(normalized);
+};
+
+const installmentPrincipal = computed(() => {
+    if (form.sale_type !== 'installment') return 0;
+
+    const salePrice = Number(form.sale_price || 0);
+    const downPayment = Number(form.down_payment || 0);
+
+    return Math.max(0, salePrice - downPayment);
+});
+
+const monthlyProfitRate = computed(() => {
+    const normalized = normalizeDigits(form.monthly_profit_rate)
+        .replace(',', '.')
+        .replace(/[^\d.]/g, '');
+
+    return Number(normalized || 0);
+});
+
+const installmentProfit = computed(() => {
+    if (form.sale_type !== 'installment') return 0;
+
+    const count = Number(form.installment_count || 0);
+
+    if (!installmentPrincipal.value || !count) return 0;
+
+    return Math.round(
+        installmentPrincipal.value *
+        (monthlyProfitRate.value / 100) *
+        count
+    );
+});
+
+const installmentTotal = computed(() =>
+    installmentPrincipal.value + installmentProfit.value
+);
+
+const contractTotal = computed(() => {
+    if (form.sale_type !== 'installment') {
+        return Number(form.sale_price || 0);
+    }
+
+    return Number(form.down_payment || 0) + installmentTotal.value;
+});
+
+const installmentAmount = computed(() => {
+    const count = Number(form.installment_count || 0);
+
+    if (!count || !installmentTotal.value) return 0;
+
+    return Math.floor(installmentTotal.value / count);
+});
 
 const profit = computed(() => {
     const sale = Number(form.sale_price || 0);
@@ -110,7 +241,7 @@ const submit = () => {
                         </p>
 
                         <h1 class="mt-1 text-2xl font-black">
-                            ثبت فروش نقدی
+                            {{ form.sale_type === 'cash' ? 'ثبت فروش نقدی' : 'ثبت فروش اقساطی' }}
                         </h1>
 
                         <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
@@ -164,6 +295,40 @@ const submit = () => {
                     @submit.prevent="submit"
                 >
                     <div class="grid gap-5 sm:grid-cols-2">
+                        <div class="sm:col-span-2">
+                            <label class="mb-2 block text-sm font-bold">
+                                نوع فروش *
+                            </label>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    class="rounded-2xl border px-4 py-4 font-black transition"
+                                    :class="
+                                        form.sale_type === 'cash'
+                                            ? 'border-violet-600 bg-violet-600 text-white'
+                                            : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300'
+                                    "
+                                    @click="form.sale_type = 'cash'"
+                                >
+                                    فروش نقدی
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="rounded-2xl border px-4 py-4 font-black transition"
+                                    :class="
+                                        form.sale_type === 'installment'
+                                            ? 'border-violet-600 bg-violet-600 text-white'
+                                            : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300'
+                                    "
+                                    @click="form.sale_type = 'installment'"
+                                >
+                                    فروش اقساطی
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="sm:col-span-2">
                             <label class="mb-2 block text-sm font-bold">
                                 خریدار *
@@ -243,6 +408,193 @@ const submit = () => {
                             </p>
                         </div>
 
+                        <template v-if="form.sale_type === 'installment'">
+                            <div>
+                                <label class="mb-2 block text-sm font-bold">
+                                    پیش‌پرداخت *
+                                </label>
+
+                                <input
+                                    :value="formatPrice(form.down_payment)"
+                                    type="text"
+                                    inputmode="numeric"
+                                    placeholder="مثلاً ۳۰,۰۰۰,۰۰۰"
+                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    @input="handleDownPayment"
+                                />
+
+                                <p
+                                    v-if="form.errors.down_payment"
+                                    class="mt-2 text-xs font-bold text-red-500"
+                                >
+                                    {{ form.errors.down_payment }}
+                                </p>
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-bold">
+                                    درصد سود ماهانه *
+                                </label>
+
+                                <div class="flex items-stretch gap-2">
+                                    <button
+                                        type="button"
+                                        class="flex w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 text-xl font-black transition hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+                                        @click="adjustMonthlyProfitRate(-0.1)"
+                                    >
+                                        −
+                                    </button>
+
+                                    <div class="relative min-w-0 flex-1">
+                                        <input
+                                            :value="toPersianDigits(form.monthly_profit_rate)"
+                                            type="text"
+                                            inputmode="decimal"
+                                            placeholder="۶.۵"
+                                            class="w-full rounded-2xl border-slate-200 bg-slate-50 pl-12 text-center focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                            @input="handleMonthlyProfitRate"
+                                            @blur="normalizeMonthlyProfitRate"
+                                        />
+
+                                        <span
+                                            class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400"
+                                        >
+                                            ٪
+                                        </span>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        class="flex w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 text-xl font-black transition hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+                                        @click="adjustMonthlyProfitRate(0.1)"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+
+                                <p class="mt-2 text-xs text-slate-400">
+                                    پیش‌فرض ۶.۵٪ — برای هر فروش قابل تغییر
+                                </p>
+
+                                <p
+                                    v-if="form.errors.monthly_profit_rate"
+                                    class="mt-2 text-xs font-bold text-red-500"
+                                >
+                                    {{ form.errors.monthly_profit_rate }}
+                                </p>
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-bold">
+                                    تعداد اقساط *
+                                </label>
+
+                                <input
+                                    :value="toPersianDigits(form.installment_count)"
+                                    type="text"
+                                        inputmode="numeric"
+                                    @input="handleInstallmentCount"
+                                        class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                />
+
+                                <p
+                                    v-if="form.errors.installment_count"
+                                    class="mt-2 text-xs font-bold text-red-500"
+                                >
+                                    {{ form.errors.installment_count }}
+                                </p>
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <label class="mb-2 block text-sm font-bold">
+                                    اولین سررسید *
+                                </label>
+
+                                <Vue3PersianDatetimePicker
+                                    v-model="form.first_due_date"
+                                    format="YYYY-MM-DD"
+                                    display-format="jYYYY/jMM/jDD"
+                                    type="date"
+                                    convert-numbers
+                                    auto-submit
+                                    @change="value => syncPickerDate('first_due_date', value)"
+                                    custom-input=".first-due-date-input"
+                                />
+
+                                <input
+                                    type="text"
+                                    class="first-due-date-input w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    placeholder="تاریخ اولین قسط"
+                                    readonly
+                                />
+
+                                <p
+                                    v-if="form.errors.first_due_date"
+                                    class="mt-2 text-xs font-bold text-red-500"
+                                >
+                                    {{ form.errors.first_due_date }}
+                                </p>
+                            </div>
+
+                            <div
+                                class="sm:col-span-2 grid gap-3 rounded-2xl bg-violet-50 p-4 dark:bg-violet-950/30 sm:grid-cols-2 lg:grid-cols-6"
+                            >
+                                <div>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                                        مانده پس از پیش‌پرداخت
+                                    </p>
+                                    <p class="mt-1 font-black">
+                                        {{ formatMoney(installmentPrincipal) }} تومان
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                                        تعداد اقساط
+                                    </p>
+                                    <p class="mt-1 font-black">
+                                        {{ toPersianDigits(form.installment_count || 0) }} قسط
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                                        مبلغ تقریبی هر قسط
+                                    </p>
+                                    <p class="mt-1 font-black text-violet-700 dark:text-violet-300">
+                                        {{ formatMoney(installmentAmount) }} تومان
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                                        مجموع اقساط
+                                    </p>
+                                    <p class="mt-1 font-black text-violet-700 dark:text-violet-300">
+                                        {{ formatMoney(installmentTotal) }} تومان
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                                        سود کل اقساط
+                                    </p>
+                                    <p class="mt-1 font-black text-amber-600 dark:text-amber-400">
+                                        {{ formatMoney(installmentProfit) }} تومان
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                                        مبلغ نهایی قرارداد
+                                    </p>
+                                    <p class="mt-1 font-black text-emerald-600 dark:text-emerald-400">
+                                        {{ formatMoney(contractTotal) }} تومان
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+
                         <div>
                             <label class="mb-2 block text-sm font-bold">
                                 تاریخ فروش *
@@ -250,10 +602,13 @@ const submit = () => {
 
                             <Vue3PersianDatetimePicker
                                 v-model="form.sale_date"
+                                :initial-value="localDate"
                                 format="YYYY-MM-DD"
                                 display-format="jYYYY/jMM/jDD"
                                 type="date"
+                                    convert-numbers
                                 auto-submit
+                                    @change="value => syncPickerDate('sale_date', value)"
                                 custom-input=".sale-date-input"
                             />
 
@@ -285,16 +640,26 @@ const submit = () => {
                                 سود / زیان این فروش
                             </p>
 
-                            <p
-                                class="mt-1 text-xl font-black"
-                                :class="
-                                    profit >= 0
-                                        ? 'text-emerald-600'
-                                        : 'text-red-600'
-                                "
-                            >
-                                {{ profit >= 0 ? '+' : '' }}{{ formatMoney(profit) }} تومان
-                            </p>
+                            <div class="mt-1 flex items-center gap-3 whitespace-nowrap overflow-x-auto">
+                                <span
+                                    class="text-xl font-black"
+                                    :class="
+                                        profit >= 0
+                                            ? 'text-emerald-600'
+                                            : 'text-red-600'
+                                    "
+                                >
+                                    {{ profit >= 0 ? '+' : '' }}{{ formatMoney(profit) }} تومان
+                                </span>
+
+                                <template v-if="form.sale_type === 'installment'">
+                                    <span class="text-lg font-black text-slate-400">+</span>
+
+                                    <span class="font-black text-amber-600 dark:text-amber-400">
+                                        {{ formatMoney(installmentProfit) }} تومان سود فروش قسطی
+                                    </span>
+                                </template>
+                            </div>
                         </div>
 
                         <div class="sm:col-span-2">
@@ -317,7 +682,7 @@ const submit = () => {
                             :disabled="form.processing"
                             class="rounded-2xl bg-violet-600 px-6 py-3 text-sm font-black text-white transition hover:bg-violet-700 disabled:opacity-50"
                         >
-                            ثبت فروش نقدی
+                            {{ form.sale_type === 'cash' ? 'ثبت فروش نقدی' : 'ثبت فروش اقساطی' }}
                         </button>
                     </div>
                 </form>
