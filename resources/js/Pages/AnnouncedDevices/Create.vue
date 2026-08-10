@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
@@ -8,6 +8,10 @@ const props = defineProps({
     catalog: {
         type: Object,
         required: true,
+    },
+    contacts: {
+        type: Array,
+        default: () => [],
     },
 });
 
@@ -111,14 +115,47 @@ const form = useForm({
     registration_status: '',
     description: '',
 
-    announcer_name: '',
-    announcer_mobile: '',
+    announcer_id: '',
 
     announced_price: '',
     announced_at: localDate,
 
     images: [],
 });
+
+const announcerSearch = ref('');
+
+const filteredContacts = computed(() => {
+    const normalize = (value) =>
+        String(value ?? '')
+            .replace(/[۰-۹]/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit))
+            .replace(/[٠-٩]/g, (digit) => '٠١٢٣٤٥٦٧٨٩'.indexOf(digit))
+            .toLowerCase();
+
+    const query = normalize(announcerSearch.value).trim();
+
+    let results = !query
+        ? [...props.contacts]
+        : props.contacts.filter((contact) =>
+              normalize(`${contact.name} ${contact.mobile ?? ''}`).includes(query)
+          );
+
+    const selected = props.contacts.find(
+        (contact) => String(contact.id) === String(form.announcer_id)
+    );
+
+    if (selected && !results.some((contact) => contact.id === selected.id)) {
+        results.unshift(selected);
+    }
+
+    return results;
+});
+
+const selectedAnnouncer = computed(() =>
+    props.contacts.find(
+        (contact) => String(contact.id) === String(form.announcer_id)
+    )
+);
 
 const normalizeDigits = (value) => {
     return String(value ?? '')
@@ -504,38 +541,62 @@ const submit = () => {
                         </h2>
 
                         <div class="mt-6 grid gap-5 sm:grid-cols-2">
-                            <div>
-                                <label class="mb-2 block text-sm font-bold">
-                                    نام اعلام‌کننده *
-                                </label>
-                                <input
-                                    v-model="form.announcer_name"
-                                    type="text"
-                                    placeholder="نام همکار یا اعلام‌کننده"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
-                                />
-                                <p
-                                    v-if="form.errors.announcer_name"
-                                    class="mt-1 text-xs text-red-500"
+                        <div class="sm:col-span-2">
+                            <label class="mb-2 block text-sm font-bold">
+                                انتخاب اعلام‌کننده *
+                            </label>
+
+                            <input
+                                v-model="announcerSearch"
+                                type="text"
+                                placeholder="جستجو با نام یا شماره موبایل..."
+                                class="mb-3 w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                            />
+
+                            <select
+                                v-model="form.announcer_id"
+                                class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                            >
+                                <option value="">انتخاب شخص</option>
+
+                                <option
+                                    v-for="contact in filteredContacts"
+                                    :key="contact.id"
+                                    :value="contact.id"
                                 >
-                                    {{ form.errors.announcer_name }}
+                                    {{ contact.name }} — {{ contact.mobile }}
+                                </option>
+                            </select>
+
+                            <p
+                                v-if="form.errors.announcer_id"
+                                class="mt-2 text-xs text-red-500"
+                            >
+                                {{ form.errors.announcer_id }}
+                            </p>
+
+                            <div
+                                v-if="selectedAnnouncer"
+                                class="mt-3 rounded-2xl bg-violet-50 p-4 dark:bg-violet-950/30"
+                            >
+                                <p class="font-black">
+                                    {{ selectedAnnouncer.name }}
+                                </p>
+                                <p class="mt-1 text-sm text-slate-500" dir="ltr">
+                                    {{ selectedAnnouncer.mobile }}
                                 </p>
                             </div>
 
-                            <div>
-                                <label class="mb-2 block text-sm font-bold">
-                                    شماره تماس اعلام‌کننده
-                                </label>
-                                <input
-                                    v-model="form.announcer_mobile"
-                                    type="tel"
-                                    inputmode="tel"
-                                    placeholder="۰۹۱۲... یا 0912..."
-                                    dir="ltr"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 text-left focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
-                                />
+                            <div class="mt-3 text-sm">
+                                شخص موردنظر در لیست نیست؟
+                                <Link
+                                    :href="route('contacts.create')"
+                                    class="font-bold text-violet-600"
+                                >
+                                    افزودن شخص جدید
+                                </Link>
                             </div>
-
+                        </div>
                             <div>
                                 <label class="mb-2 block text-sm font-bold">
                                     قیمت اعلامی

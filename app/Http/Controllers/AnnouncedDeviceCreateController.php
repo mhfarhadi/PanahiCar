@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Contact;
 use App\Models\Device;
 use App\Models\DeviceImage;
 use Illuminate\Http\RedirectResponse;
@@ -42,6 +41,14 @@ class AnnouncedDeviceCreateController extends Controller
             ->orderBy('sort_order')
             ->get();
 
+        $contacts = DB::table('contacts')
+            ->orderBy('name')
+            ->get([
+                'id',
+                'name',
+                'mobile',
+            ]);
+
         return Inertia::render('AnnouncedDevices/Create', [
             'catalog' => [
                 'brands' => $brands,
@@ -53,6 +60,8 @@ class AnnouncedDeviceCreateController extends Controller
                 'partNumbers' => $partNumbers,
                 'modelPartNumbers' => DB::table('device_model_part_number_option')->get(),
             ],
+
+            'contacts' => $contacts,
         ]);
     }
 
@@ -71,8 +80,7 @@ class AnnouncedDeviceCreateController extends Controller
             'registration_status' => ['nullable', 'string', 'max:50'],
             'description' => ['nullable', 'string'],
 
-            'announcer_name' => ['required', 'string', 'max:150'],
-            'announcer_mobile' => ['nullable', 'string', 'max:20'],
+            'announcer_id' => ['required', 'integer', 'exists:contacts,id'],
             'announced_price' => ['nullable', 'integer', 'min:0'],
             'announced_at' => ['required', 'date'],
 
@@ -80,22 +88,7 @@ class AnnouncedDeviceCreateController extends Controller
             'images.*' => ['image', 'max:5120'],
         ]);
 
-        if (!empty($validated['announcer_mobile'])) {
-            $validated['announcer_mobile'] = strtr($validated['announcer_mobile'], [
-                '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4',
-                '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
-                '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4',
-                '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
-            ]);
-        }
-
         DB::transaction(function () use ($request, $validated) {
-            $announcer = new Contact();
-            $announcer->name = $validated['announcer_name'];
-            $announcer->mobile = $validated['announcer_mobile'] ?? null;
-            $announcer->created_by = $request->user()->id;
-            $announcer->save();
-
             $device = new Device();
             $device->brand = $validated['brand'];
             $device->model = $validated['model'];
@@ -110,7 +103,7 @@ class AnnouncedDeviceCreateController extends Controller
             $device->description = $validated['description'] ?? null;
 
             $device->status = 'announced';
-            $device->announced_by_id = $announcer->id;
+            $device->announced_by_id = $validated['announcer_id'];
             $device->announced_price = $validated['announced_price'] ?? null;
             $device->announced_at = $validated['announced_at'];
             $device->created_by = $request->user()->id;

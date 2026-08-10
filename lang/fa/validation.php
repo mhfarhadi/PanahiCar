@@ -39,6 +39,7 @@ return [
         'description' => 'توضیحات',
         'seller_name' => 'نام فروشنده',
         'seller_mobile' => 'شماره موبایل فروشنده',
+        'announcer_id' => 'اعلام‌کننده',
         'purchase_price' => 'قیمت خرید',
         'purchase_date' => 'تاریخ خرید',
         'images' => 'تصاویر دستگاه',

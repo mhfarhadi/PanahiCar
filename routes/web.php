@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\DeviceShowController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AnnouncedDeviceController;
 use App\Http\Controllers\AnnouncedDeviceCreateController;
 use App\Http\Controllers\AnnouncedDevicePurchaseController;
@@ -27,6 +28,10 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware('auth')->group(function () {
     Route::get('/devices', [DeviceController::class, 'index'])->name('devices.index');
     Route::get('/devices/{device}', [DeviceShowController::class, 'show'])->name('devices.show');
+
+    Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
+    Route::get('/contacts/create', [ContactController::class, 'create'])->name('contacts.create');
+    Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
     Route::get('/announced-devices', [AnnouncedDeviceController::class, 'index'])->name('announced-devices.index');
     Route::get('/announced-devices/create', [AnnouncedDeviceCreateController::class, 'create'])->name('announced-devices.create');
     Route::post('/announced-devices', [AnnouncedDeviceCreateController::class, 'store'])->name('announced-devices.store');
