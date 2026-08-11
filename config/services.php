@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'navasan' => [
+        'key' => env('NAVASAN_API_KEY'),
+        'cache_minutes' => (int) env('NAVASAN_CACHE_MINUTES', 360),
+    ],
+
 ];

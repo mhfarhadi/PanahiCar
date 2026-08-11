@@ -7,8 +7,34 @@ const props = defineProps({
         type: Number,
         default: 0,
     },
+    currencyRates: {
+        type: Object,
+        default: () => ({
+            usd: null,
+            aed: null,
+            stale: true,
+        }),
+    },
 });
 
+
+const formatCurrencyRate = (rate) => {
+    if (!rate?.value) return '—';
+
+    return `${Number(rate.value).toLocaleString('fa-IR')} تومان`;
+};
+
+const formatCurrencyChange = (rate) => {
+    if (!rate || rate.change === null || rate.change === undefined) return '';
+
+    const change = Number(rate.change);
+
+    if (!Number.isFinite(change) || change === 0) return 'بدون تغییر';
+
+    const sign = change > 0 ? '+' : '';
+
+    return `${sign}${change.toLocaleString('fa-IR')} تومان`;
+};
 
 const now = new Date();
 
@@ -122,7 +148,7 @@ const stats = [
                                     قیمت دلار
                                 </p>
                                 <p class="mt-2 text-2xl font-black">
-                                    —
+                                    {{ formatCurrencyRate(props.currencyRates.usd) }}
                                 </p>
                             </div>
 
@@ -133,9 +159,21 @@ const stats = [
                             </div>
                         </div>
 
-                        <p class="mt-3 text-xs text-slate-400">
-                            اتصال به منبع قیمت در مرحله بعد
-                        </p>
+                        <div class="mt-3 flex items-center justify-between gap-3 text-xs">
+                            <span
+                                :class="
+                                    Number(props.currencyRates.usd?.change || 0) >= 0
+                                        ? 'text-emerald-600'
+                                        : 'text-red-600'
+                                "
+                            >
+                                {{ formatCurrencyChange(props.currencyRates.usd) }}
+                            </span>
+
+                            <span class="text-slate-400">
+                                {{ props.currencyRates.stale ? 'آخرین نرخ ذخیره‌شده' : 'نرخ بازار' }}
+                            </span>
+                        </div>
                     </div>
 
                     <div
@@ -147,7 +185,7 @@ const stats = [
                                     قیمت درهم
                                 </p>
                                 <p class="mt-2 text-2xl font-black">
-                                    —
+                                    {{ formatCurrencyRate(props.currencyRates.aed) }}
                                 </p>
                             </div>
 
@@ -158,9 +196,21 @@ const stats = [
                             </div>
                         </div>
 
-                        <p class="mt-3 text-xs text-slate-400">
-                            اتصال به منبع قیمت در مرحله بعد
-                        </p>
+                        <div class="mt-3 flex items-center justify-between gap-3 text-xs">
+                            <span
+                                :class="
+                                    Number(props.currencyRates.aed?.change || 0) >= 0
+                                        ? 'text-emerald-600'
+                                        : 'text-red-600'
+                                "
+                            >
+                                {{ formatCurrencyChange(props.currencyRates.aed) }}
+                            </span>
+
+                            <span class="text-slate-400">
+                                {{ props.currencyRates.stale ? 'آخرین نرخ ذخیره‌شده' : 'نرخ بازار' }}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
