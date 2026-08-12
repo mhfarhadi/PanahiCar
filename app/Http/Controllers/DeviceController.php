@@ -113,6 +113,7 @@ class DeviceController extends Controller
             ->get();
 
         $contacts = DB::table('contacts')
+            ->whereNull('archived_at')
             ->orderBy('name')
             ->get([
                 'id',

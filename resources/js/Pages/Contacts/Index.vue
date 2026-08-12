@@ -16,6 +16,7 @@ const props = defineProps({
 
 const search = ref(props.filters.search || '');
 const type = ref(props.filters.type || '');
+const view = ref(props.filters.view || 'active');
 
 let timer = null;
 
@@ -25,6 +26,7 @@ const loadContacts = () => {
         {
             search: search.value,
             type: type.value,
+            view: view.value,
         },
         {
             preserveState: true,
@@ -42,6 +44,10 @@ watch(search, () => {
 });
 
 watch(type, () => {
+    loadContacts();
+});
+
+watch(view, () => {
     loadContacts();
 });
 </script>
@@ -79,6 +85,34 @@ watch(type, () => {
                             بازگشت
                         </Link>
                     </div>
+                </div>
+
+                <div class="mb-5 flex gap-2">
+                    <button
+                        type="button"
+                        class="rounded-xl px-4 py-2 text-sm font-bold transition"
+                        :class="
+                            view === 'active'
+                                ? 'bg-violet-600 text-white'
+                                : 'bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-300'
+                        "
+                        @click="view = 'active'"
+                    >
+                        فعال‌ها
+                    </button>
+
+                    <button
+                        type="button"
+                        class="rounded-xl px-4 py-2 text-sm font-bold transition"
+                        :class="
+                            view === 'archived'
+                                ? 'bg-violet-600 text-white'
+                                : 'bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-300'
+                        "
+                        @click="view = 'archived'"
+                    >
+                        آرشیوشده‌ها
+                    </button>
                 </div>
 
                 <div class="mb-5 space-y-3">

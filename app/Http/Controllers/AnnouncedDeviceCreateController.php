@@ -43,6 +43,7 @@ class AnnouncedDeviceCreateController extends Controller
             ->get();
 
         $contacts = DB::table('contacts')
+            ->whereNull('archived_at')
             ->where('contact_type', 'colleague')
             ->orderBy('name')
             ->get([

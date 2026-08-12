@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Services\ContactManagementService;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -101,6 +102,12 @@ class ContactShowController extends Controller
                 'description' => $contact->description,
                 'avatar_path' => $contact->avatar_path,
                 'contact_type' => $contact->contact_type,
+                'archived_at' => $contact->archived_at,
+                'can_manage' => ContactManagementService::canManage(
+                    request()->user(),
+                    $contact
+                ),
+                'has_history' => ContactManagementService::hasHistory($contact),
                 'created_at' => $contact->created_at,
 
                 'stats' => [

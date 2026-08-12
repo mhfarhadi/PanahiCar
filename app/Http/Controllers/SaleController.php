@@ -163,6 +163,7 @@ class SaleController extends Controller
         abort_unless($device->status === 'in_stock', 404);
 
         $contacts = DB::table('contacts')
+            ->whereNull('archived_at')
             ->orderBy('name')
             ->get([
                 'id',

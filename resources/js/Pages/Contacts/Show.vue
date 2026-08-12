@@ -1,9 +1,9 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import EntityNoteHistory from '@/Components/EntityNoteHistory.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
     contact: {
         type: Object,
         required: true,
@@ -25,6 +25,8 @@ defineProps({
         default: () => [],
     },
 });
+
+const contact = props.contact;
 
 const money = (value) => {
     if (value === null || value === undefined) return '—';
@@ -52,6 +54,34 @@ const statusLabel = (status) => {
 
 const saleTypeLabel = (type) =>
     type === 'installment' ? 'اقساطی' : 'نقدی';
+
+const archiveContact = () => {
+    if (!confirm('این شخص آرشیو شود؟ سوابق او کاملاً حفظ می‌شود.')) return;
+
+    router.post(
+        route('contacts.archive', contact.id),
+        {},
+        { preserveScroll: true }
+    );
+};
+
+const restoreContact = () => {
+    router.post(
+        route('contacts.restore', contact.id),
+        {},
+        { preserveScroll: true }
+    );
+};
+
+const deleteContact = () => {
+    const message = contact.has_history
+        ? 'این شخص سابقه دارد و حذف واقعی نمی‌شود؛ در صورت ادامه آرشیو خواهد شد. ادامه می‌دهید؟'
+        : 'این شخص هیچ سابقه‌ای ندارد و برای همیشه حذف خواهد شد. مطمئن هستید؟';
+
+    if (!confirm(message)) return;
+
+    router.delete(route('contacts.destroy', contact.id));
+};
 
 const paymentHistoryLabel = (stats) => {
     if (!stats?.cleared_count) return 'هنوز سابقه کافی برای ارزیابی وجود ندارد';
@@ -94,12 +124,57 @@ const paymentHistoryLabel = (stats) => {
                         </div>
                     </div>
 
+                    <div
+                        v-if="contact.can_manage"
+                        class="flex flex-wrap gap-2"
+                    >
+                        <Link
+                            :href="route('contacts.edit', contact.id)"
+                            class="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-center text-sm font-bold text-violet-700 dark:border-violet-900 dark:bg-violet-950/30 dark:text-violet-300"
+                        >
+                            ویرایش
+                        </Link>
+
+                        <button
+                            v-if="!contact.archived_at"
+                            type="button"
+                            class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300"
+                            @click="archiveContact"
+                        >
+                            آرشیو
+                        </button>
+
+                        <button
+                            v-else
+                            type="button"
+                            class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-bold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300"
+                            @click="restoreContact"
+                        >
+                            بازیابی
+                        </button>
+
+                        <button
+                            type="button"
+                            class="rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-600 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300"
+                            @click="deleteContact"
+                        >
+                            {{ contact.has_history ? 'حذف / آرشیو امن' : 'حذف' }}
+                        </button>
+                    </div>
+
                     <Link
                         :href="route('contacts.index')"
                         class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-center text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
                     >
                         بازگشت به اشخاص
                     </Link>
+                </div>
+
+                <div
+                    v-if="contact.archived_at"
+                    class="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300"
+                >
+                    این شخص آرشیو شده است و در تراکنش‌های جدید قابل انتخاب نیست.
                 </div>
 
                 <div class="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
