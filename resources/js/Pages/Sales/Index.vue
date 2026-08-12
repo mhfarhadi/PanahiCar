@@ -9,6 +9,13 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    summary: {
+        type: Object,
+        default: () => ({
+            count: 0,
+            total_sale_amount: 0,
+        }),
+    },
     filters: {
         type: Object,
         default: () => ({}),
@@ -16,16 +23,22 @@ const props = defineProps({
 });
 
 const search = ref(props.filters.search || '');
+const saleType = ref(props.filters.sale_type || 'all');
+const period = ref(props.filters.period || 'all');
 
 let searchTimer = null;
 
-watch(search, () => {
+watch([search, saleType, period], () => {
     clearTimeout(searchTimer);
 
     searchTimer = setTimeout(() => {
         router.get(
             route('sales.index'),
-            { search: search.value },
+            {
+                search: search.value || undefined,
+                sale_type: saleType.value !== 'all' ? saleType.value : undefined,
+                period: period.value !== 'all' ? period.value : undefined,
+            },
             {
                 preserveState: true,
                 preserveScroll: true,
@@ -92,6 +105,83 @@ const saleTypeLabel = (type) =>
                         autocomplete="off"
                         class="w-full rounded-2xl border-slate-200 bg-white px-4 py-3 text-sm shadow-sm focus:border-violet-500 focus:ring-violet-500 dark:border-slate-800 dark:bg-slate-900"
                     />
+                </div>
+
+                <div class="mb-5 grid gap-3 lg:grid-cols-2">
+                    <div
+                        class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                    >
+                        <p class="mb-3 text-xs font-black text-slate-400">
+                            نوع فروش
+                        </p>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <button
+                                v-for="option in [
+                                    { value: 'all', label: 'همه' },
+                                    { value: 'cash', label: 'نقدی' },
+                                    { value: 'installment', label: 'اقساطی' },
+                                ]"
+                                :key="option.value"
+                                type="button"
+                                class="rounded-xl px-3 py-2.5 text-sm font-black transition"
+                                :class="
+                                    saleType === option.value
+                                        ? 'bg-violet-600 text-white'
+                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                                "
+                                @click="saleType = option.value"
+                            >
+                                {{ option.label }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div
+                        class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                    >
+                        <p class="mb-3 text-xs font-black text-slate-400">
+                            بازه زمانی
+                        </p>
+
+                        <select
+                            v-model="period"
+                            class="w-full rounded-xl border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-800"
+                        >
+                            <option value="all">همه زمان‌ها</option>
+                            <option value="last_7_days">۷ روز گذشته</option>
+                            <option value="current_month">ماه جاری شمسی</option>
+                            <option value="previous_month">ماه گذشته شمسی</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-5 grid gap-3 sm:grid-cols-2">
+                    <div
+                        class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                    >
+                        <p class="text-xs font-bold text-slate-400">
+                            تعداد فروش در نتایج
+                        </p>
+
+                        <p class="mt-2 text-2xl font-black">
+                            {{ Number(summary.count || 0).toLocaleString('fa-IR') }}
+                            <span class="text-sm text-slate-400">دستگاه</span>
+                        </p>
+                    </div>
+
+                    <div
+                        class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                    >
+                        <p class="text-xs font-bold text-slate-400">
+                            مجموع مبلغ فروش
+                        </p>
+
+                        <p class="mt-2 text-2xl font-black text-violet-700 dark:text-violet-300">
+                            {{ formatMoney(summary.total_sale_amount) }}
+                            <span class="text-sm text-slate-400">تومان</span>
+                        </p>
+                    </div>
                 </div>
 
                 <div

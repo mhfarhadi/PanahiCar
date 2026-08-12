@@ -20,6 +20,8 @@ class SaleController extends Controller
     public function index(Request $request): Response
     {
         $search = trim((string) $request->query('search'));
+        $saleType = (string) $request->query('sale_type', 'all');
+        $period = (string) $request->query('period', 'all');
 
         $search = strtr($search, [
             '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4',
@@ -28,7 +30,15 @@ class SaleController extends Controller
             '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
         ]);
 
-        $sales = DB::table('sales as s')
+        if (! in_array($saleType, ['all', 'cash', 'installment'], true)) {
+            $saleType = 'all';
+        }
+
+        if (! in_array($period, ['all', 'last_7_days', 'current_month', 'previous_month'], true)) {
+            $period = 'all';
+        }
+
+        $query = DB::table('sales as s')
             ->join('devices as d', 'd.id', '=', 's.device_id')
             ->join('contacts as c', 'c.id', '=', 's.buyer_id')
             ->leftJoin('purchases as p', 'p.device_id', '=', 'd.id')
@@ -44,6 +54,56 @@ class SaleController extends Controller
                         ->orWhere('c.mobile', 'like', "%{$search}%");
                 });
             })
+            ->when($saleType !== 'all', function ($query) use ($saleType) {
+                $query->where('s.sale_type', $saleType);
+            });
+
+        $today = now()->toDateString();
+
+        if ($period === 'last_7_days') {
+            $query->whereBetween('s.sale_date', [
+                now()->subDays(6)->toDateString(),
+                $today,
+            ]);
+        }
+
+        if (in_array($period, ['current_month', 'previous_month'], true)) {
+            $jalali = Jalalian::now();
+
+            if ($period === 'previous_month') {
+                $jalali = $jalali->subMonths(1);
+            }
+
+            $month = $jalali->getMonth();
+            $year = $jalali->getYear();
+
+            $monthStart = Jalalian::fromFormat(
+                'Y/m/d',
+                sprintf('%04d/%02d/01', $year, $month)
+            )->toCarbon()->toDateString();
+
+            $monthEndDay = $month <= 6
+                ? 31
+                : ($month === 12
+                    ? ($jalali->isLeapYear() ? 30 : 29)
+                    : 30);
+
+            $monthEnd = Jalalian::fromFormat(
+                'Y/m/d',
+                sprintf('%04d/%02d/%02d', $year, $month, $monthEndDay)
+            )->toCarbon()->toDateString();
+
+            $query->whereBetween('s.sale_date', [$monthStart, $monthEnd]);
+        }
+
+        $summaryQuery = clone $query;
+
+        $summary = [
+            'count' => (clone $summaryQuery)->count('s.id'),
+            'total_sale_amount' => (int) ((clone $summaryQuery)->sum('s.sale_price') ?? 0),
+        ];
+
+        $sales = $query
             ->orderByDesc('s.sale_date')
             ->orderByDesc('s.id')
             ->get([
@@ -81,12 +141,14 @@ class SaleController extends Controller
 
         return Inertia::render('Sales/Index', [
             'sales' => $sales,
+            'summary' => $summary,
             'filters' => [
                 'search' => $search,
+                'sale_type' => $saleType,
+                'period' => $period,
             ],
         ]);
     }
-
 
 
     public function show(Sale $sale): Response
