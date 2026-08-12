@@ -6,7 +6,7 @@ Last updated: 2026-08-12
 
 Commit:
 
-`9cae59f — MayaHamrah: add dashboard receivables and global navigation`
+`8837137 — MayaHamrah: add sales filters and summary`
 
 در زمان ثبت این سند، آخرین checkpoint تست‌شده همین commit است.
 
@@ -432,4 +432,31 @@ Cache keys:
 5. Samsung manufacturing countries فعلاً generic هستند، نه model-specific.
 6. برگشت اشتباه یک چک از paid به pending هنوز ساخته نشده.
 7. metadata کامل چک هنوز اضافه نشده.
+
+
+## Sales filters
+
+صفحه `Sales/Index` اکنون فیلترهای زیر را دارد:
+
+نوع فروش:
+- همه
+- نقدی
+- اقساطی
+
+بازه زمانی:
+- همه زمان‌ها
+- ۷ روز گذشته
+- ماه جاری شمسی
+- ماه گذشته شمسی
+
+این فیلترها با جستجوی موجود ترکیب می‌شوند.
+
+آمار بالای صفحه نیز بر اساس نتایج فیلترشده تغییر می‌کند:
+- تعداد فروش
+- مجموع مبلغ فروش
+
+این قابلیت به‌صورت دستی تست شده است.
+
+Commit:
+`8837137 — MayaHamrah: add sales filters and summary`
 

@@ -2,30 +2,31 @@
 
 Date: 2026-08-12
 
-Stable commit:
+Current stable commit:
 
-`9cae59f — MayaHamrah: add dashboard receivables and global navigation`
+`8837137 — MayaHamrah: add sales filters and summary`
 
 Status:
 - app builds successfully
-- dashboard manually tested
-- desktop global navigation manually tested
-- mobile navigation manually tested
-- sell shortcut flow manually tested
+- sales filters manually tested
+- global navigation and dashboard remain operational
 
-Last completed:
-1. Real dashboard receivables/check metrics
-2. Jalali current-month sales calculation
-3. Global desktop navigation
-4. Mobile right-side drawer
-5. Dashboard sell shortcut
-6. Global navigation sell shortcut
-7. Inventory sell-selection mode
+Latest completed:
+1. Sales type filters: همه / نقدی / اقساطی
+2. Sales period filters:
+   - همه زمان‌ها
+   - ۷ روز گذشته
+   - ماه جاری شمسی
+   - ماه گذشته شمسی
+3. Filtered sales summary:
+   - تعداد فروش
+   - مجموع مبلغ فروش
+4. Search works together with filters
 
-Next likely task:
-Undo accidentally-cleared check.
+Next task:
+Add edit capability for inventory devices.
 
-Before starting new work:
+Before starting:
 - run `git status`
-- inspect relevant code
-- preserve this handoff documentation
+- inspect actual device routes/controller/form
+- preserve append-only notes and financial history
