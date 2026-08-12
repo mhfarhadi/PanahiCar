@@ -81,6 +81,7 @@ class DeviceController extends Controller
             'devices' => $devices,
             'filters' => [
                 'search' => $search,
+                'mode' => request()->query('mode'),
             ],
         ]);
     }

@@ -22,6 +22,7 @@ const props = defineProps({
 });
 
 const search = ref(props.filters.search || '');
+const sellMode = props.filters.mode === 'sell';
 
 let searchTimer = null;
 
@@ -31,7 +32,7 @@ watch(search, () => {
     searchTimer = setTimeout(() => {
         router.get(
             route('devices.index'),
-            { search: search.value },
+            { search: search.value, mode: sellMode ? 'sell' : undefined },
             {
                 preserveState: true,
                 preserveScroll: true,
@@ -60,9 +61,15 @@ const money = (value) => {
                 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <p class="text-sm font-bold text-violet-600">مایاهمراه</p>
-                        <h1 class="mt-1 text-2xl font-black">موجودی گوشی‌ها</h1>
+                        <h1 class="mt-1 text-2xl font-black">
+                            {{ sellMode ? 'انتخاب گوشی برای فروش' : 'موجودی گوشی‌ها' }}
+                        </h1>
                         <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                            {{ devices.length.toLocaleString('fa-IR') }} دستگاه در موجودی
+                            {{
+                                sellMode
+                                    ? 'برای ثبت فروش، گوشی موردنظر را انتخاب کنید'
+                                    : `${devices.length.toLocaleString('fa-IR')} دستگاه در موجودی`
+                            }}
                         </p>
                     </div>
 
@@ -108,7 +115,9 @@ const money = (value) => {
                     <Link
                     v-for="device in devices"
                     :key="device.id"
-                    :href="route('devices.show', device.id)"
+                    :href="sellMode
+                        ? route('sales.create', device.id)
+                        : route('devices.show', device.id)"
                     class="block cursor-pointer overflow-hidden rounded-[30px] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:bg-slate-900"
                 >
                         <div class="flex h-44 items-center justify-center bg-slate-100 dark:bg-slate-800">
@@ -133,8 +142,15 @@ const money = (value) => {
                                     </p>
                                 </div>
 
-                                <span class="rounded-xl bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-                                    موجود
+                                <span
+                                    class="rounded-xl px-3 py-1 text-xs font-bold"
+                                    :class="
+                                        sellMode
+                                            ? 'bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300'
+                                            : 'bg-emerald-50 text-emerald-700'
+                                    "
+                                >
+                                    {{ sellMode ? 'فروش این گوشی' : 'موجود' }}
                                 </span>
                             </div>
 

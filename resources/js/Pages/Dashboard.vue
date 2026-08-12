@@ -1,11 +1,31 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 const props = defineProps({
     inventoryCount: {
         type: Number,
         default: 0,
+    },
+    salesThisMonth: {
+        type: Number,
+        default: 0,
+    },
+    receivables: {
+        type: Object,
+        default: () => ({
+            total_count: 0,
+            total_amount: 0,
+            overdue_count: 0,
+            overdue_amount: 0,
+            due_soon_count: 0,
+            due_soon_amount: 0,
+        }),
+    },
+    upcomingInstallments: {
+        type: Array,
+        default: () => [],
     },
     currencyRates: {
         type: Object,
@@ -17,6 +37,21 @@ const props = defineProps({
     },
 });
 
+
+const money = (value) =>
+    `${Number(value || 0).toLocaleString('fa-IR')} تومان`;
+
+const persianDate = (value) => {
+    if (!value) return '—';
+
+    const date = new Date(`${value}T00:00:00`);
+
+    return new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+};
 
 const formatCurrencyRate = (rate) => {
     if (!rate?.value) return '—';
@@ -66,6 +101,7 @@ const actions = [
         title: 'فروش گوشی',
         description: 'ثبت فروش نقدی یا اقساطی',
         icon: '✓',
+        href: route('devices.index', { mode: 'sell' }),
     },
     {
         title: 'گوشی‌های فروخته‌شده',
@@ -87,11 +123,23 @@ const actions = [
     },
 ];
 
-const stats = [
-    { label: 'موجودی فعلی', value: `${props.inventoryCount.toLocaleString('fa-IR')} دستگاه`, href: route('devices.index') },
-    { label: 'فروش این ماه', value: '۰ دستگاه' },
-    { label: 'مطالبات اقساطی', value: '۰ تومان' },
-];
+const stats = computed(() => [
+    {
+        label: 'موجودی فعلی',
+        value: `${props.inventoryCount.toLocaleString('fa-IR')} دستگاه`,
+        href: route('devices.index'),
+    },
+    {
+        label: 'فروش این ماه',
+        value: `${props.salesThisMonth.toLocaleString('fa-IR')} دستگاه`,
+        href: route('sales.index'),
+    },
+    {
+        label: 'مطالبات اقساطی',
+        value: money(props.receivables.total_amount),
+        href: route('sales.index'),
+    },
+]);
 </script>
 
 <template>
@@ -241,6 +289,119 @@ const stats = [
                     </div>
                 </div>
 
+                <!-- Receivables -->
+                <section
+                    class="mb-6 rounded-[32px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-7"
+                >
+                    <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h2 class="text-lg font-black">وضعیت چک‌ها و مطالبات</h2>
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                                فقط چک‌های وصول‌نشده در این بخش محاسبه می‌شوند.
+                            </p>
+                        </div>
+
+                        <div class="text-xs font-bold text-slate-400">
+                            {{ receivables.total_count.toLocaleString('fa-IR') }} چک باز
+                        </div>
+                    </div>
+
+                    <div class="grid gap-3 sm:grid-cols-3">
+                        <div
+                            class="rounded-2xl border border-red-100 bg-red-50 p-4 dark:border-red-950 dark:bg-red-950/30"
+                        >
+                            <p class="text-xs font-bold text-red-600">معوق</p>
+                            <p class="mt-2 text-lg font-black">
+                                {{ money(receivables.overdue_amount) }}
+                            </p>
+                            <p class="mt-1 text-xs text-red-500">
+                                {{ receivables.overdue_count.toLocaleString('fa-IR') }} چک
+                            </p>
+                        </div>
+
+                        <div
+                            class="rounded-2xl border border-amber-100 bg-amber-50 p-4 dark:border-amber-950 dark:bg-amber-950/30"
+                        >
+                            <p class="text-xs font-bold text-amber-700">سررسید ۷ روز آینده</p>
+                            <p class="mt-2 text-lg font-black">
+                                {{ money(receivables.due_soon_amount) }}
+                            </p>
+                            <p class="mt-1 text-xs text-amber-600">
+                                {{ receivables.due_soon_count.toLocaleString('fa-IR') }} چک
+                            </p>
+                        </div>
+
+                        <div
+                            class="rounded-2xl border border-violet-100 bg-violet-50 p-4 dark:border-violet-950 dark:bg-violet-950/30"
+                        >
+                            <p class="text-xs font-bold text-violet-700">کل مطالبات باز</p>
+                            <p class="mt-2 text-lg font-black">
+                                {{ money(receivables.total_amount) }}
+                            </p>
+                            <p class="mt-1 text-xs text-violet-600">
+                                {{ receivables.total_count.toLocaleString('fa-IR') }} چک
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <div class="mb-3 flex items-center justify-between">
+                            <h3 class="font-black">نزدیک‌ترین سررسیدها</h3>
+
+                            <Link
+                                :href="route('sales.index')"
+                                class="text-xs font-black text-violet-600"
+                            >
+                                مشاهده فروش‌ها
+                            </Link>
+                        </div>
+
+                        <div
+                            v-if="upcomingInstallments.length"
+                            class="space-y-2"
+                        >
+                            <Link
+                                v-for="item in upcomingInstallments"
+                                :key="item.id"
+                                :href="route('sales.show', item.sale_id)"
+                                class="flex flex-col gap-3 rounded-2xl border border-slate-100 p-4 transition hover:border-violet-200 hover:bg-violet-50/50 dark:border-slate-800 dark:hover:border-violet-900 dark:hover:bg-violet-950/20 sm:flex-row sm:items-center sm:justify-between"
+                            >
+                                <div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span class="font-black">
+                                            {{ item.buyer_name }}
+                                        </span>
+
+                                        <span
+                                            v-if="item.is_overdue"
+                                            class="rounded-lg bg-red-100 px-2 py-1 text-[11px] font-black text-red-600 dark:bg-red-950"
+                                        >
+                                            معوق
+                                        </span>
+                                    </div>
+
+                                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                        {{ item.brand }} {{ item.model }}
+                                        · قسط {{ item.installment_number.toLocaleString('fa-IR') }}
+                                        · سررسید {{ persianDate(item.due_date) }}
+                                    </p>
+                                </div>
+
+                                <div class="font-black">
+                                    {{ money(item.remaining_amount) }}
+                                </div>
+                            </Link>
+                        </div>
+
+                        <div
+                            v-else
+                            class="rounded-2xl bg-slate-50 p-5 text-center text-sm text-slate-500 dark:bg-slate-950 dark:text-slate-400"
+                        >
+                            هیچ چک وصول‌نشده‌ای وجود ندارد.
+                        </div>
+                    </div>
+                </section>
+
                 <!-- Main actions -->
                 <div
                     class="rounded-[32px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-7"
@@ -298,7 +459,7 @@ const stats = [
                         مایاهمراه آماده شروع است.
                     </p>
                     <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                        در قدم بعد اطلاعات واقعی موجودی، خرید، فروش و اقساط به این داشبورد متصل می‌شود.
+                        موجودی، فروش و مطالبات اقساطی اکنون با داده‌های واقعی سیستم محاسبه می‌شوند.
                     </p>
                 </div>
 
