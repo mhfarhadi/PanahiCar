@@ -1,12 +1,37 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 
-defineProps({
+const props = defineProps({
     devices: {
         type: Array,
         default: () => [],
     },
+    filters: {
+        type: Object,
+        default: () => ({}),
+    },
+});
+
+const search = ref(props.filters.search || '');
+
+let searchTimer = null;
+
+watch(search, () => {
+    clearTimeout(searchTimer);
+
+    searchTimer = setTimeout(() => {
+        router.get(
+            route('devices.index'),
+            { search: search.value },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            }
+        );
+    }, 300);
 });
 
 const money = (value) => {
@@ -65,6 +90,16 @@ const conditionLabel = (value) => {
                             بازگشت
                         </Link>
                     </div>
+                </div>
+
+                <div class="mb-5">
+                    <input
+                        v-model="search"
+                        type="search"
+                        placeholder="جستجو با برند، مدل، حافظه، رنگ، IMEI یا فروشنده..."
+                        autocomplete="off"
+                        class="w-full rounded-2xl border-slate-200 bg-white px-4 py-3 text-sm shadow-sm focus:border-violet-500 focus:ring-violet-500 dark:border-slate-800 dark:bg-slate-900"
+                    />
                 </div>
 
                 <div

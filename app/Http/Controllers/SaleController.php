@@ -17,13 +17,33 @@ use Inertia\Response;
 class SaleController extends Controller
 {
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $search = trim((string) $request->query('search'));
+
+        $search = strtr($search, [
+            '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4',
+            '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
+            '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4',
+            '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
+        ]);
+
         $sales = DB::table('sales as s')
             ->join('devices as d', 'd.id', '=', 's.device_id')
             ->join('contacts as c', 'c.id', '=', 's.buyer_id')
             ->leftJoin('purchases as p', 'p.device_id', '=', 'd.id')
             ->where('d.status', 'sold')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('d.brand', 'like', "%{$search}%")
+                        ->orWhere('d.model', 'like', "%{$search}%")
+                        ->orWhere('d.storage', 'like', "%{$search}%")
+                        ->orWhere('d.color', 'like', "%{$search}%")
+                        ->orWhere('d.imei', 'like', "%{$search}%")
+                        ->orWhere('c.name', 'like', "%{$search}%")
+                        ->orWhere('c.mobile', 'like', "%{$search}%");
+                });
+            })
             ->orderByDesc('s.sale_date')
             ->orderByDesc('s.id')
             ->get([
@@ -61,6 +81,9 @@ class SaleController extends Controller
 
         return Inertia::render('Sales/Index', [
             'sales' => $sales,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 
