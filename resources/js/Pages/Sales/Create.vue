@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { computed, ref } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
+import { toJalaali, toGregorian, jalaaliMonthLength } from 'jalaali-js';
 
 const props = defineProps({
     device: {
@@ -157,6 +158,143 @@ const handleInstallmentCount = (event) => {
         normalized === '' ? '' : Number(normalized);
 };
 
+const parseGregorianDate = (value) => {
+    const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+    if (!match) return null;
+
+    return {
+        gy: Number(match[1]),
+        gm: Number(match[2]),
+        gd: Number(match[3]),
+    };
+};
+
+const toUtcDay = ({ gy, gm, gd }) =>
+    Date.UTC(gy, gm - 1, gd);
+
+const addJalaliMonths = ({ jy, jm, jd }, count) => {
+    const zeroBasedMonth = jm - 1 + count;
+    const jyNext = jy + Math.floor(zeroBasedMonth / 12);
+    const jmNext = ((zeroBasedMonth % 12) + 12) % 12 + 1;
+    const jdNext = Math.min(jd, jalaaliMonthLength(jyNext, jmNext));
+
+    return {
+        jy: jyNext,
+        jm: jmNext,
+        jd: jdNext,
+    };
+};
+
+const jalaliToGregorianParts = ({ jy, jm, jd }) =>
+    toGregorian(jy, jm, jd);
+
+const jalaliDateLabel = (date) => {
+    if (!date) return '—';
+
+    return toPersianDigits(
+        `${date.jy}/${String(date.jm).padStart(2, '0')}/${String(date.jd).padStart(2, '0')}`
+    );
+};
+
+const defermentBreakdown = computed(() => {
+    const saleGregorian = parseGregorianDate(form.sale_date);
+    const dueGregorian = parseGregorianDate(form.first_due_date);
+
+    if (!saleGregorian || !dueGregorian) {
+        return {
+            ready: false,
+            invalid: false,
+            standardJalali: null,
+            months: 0,
+            days: 0,
+            equivalentMonths: 0,
+        };
+    }
+
+    const saleJalali = toJalaali(
+        saleGregorian.gy,
+        saleGregorian.gm,
+        saleGregorian.gd
+    );
+
+    const standardJalali = addJalaliMonths(saleJalali, 1);
+    const standardGregorian = jalaliToGregorianParts(standardJalali);
+
+    const standardUtc = toUtcDay(standardGregorian);
+    const dueUtc = toUtcDay(dueGregorian);
+
+    if (dueUtc < standardUtc) {
+        return {
+            ready: true,
+            invalid: true,
+            standardJalali,
+            months: 0,
+            days: 0,
+            equivalentMonths: 0,
+        };
+    }
+
+    let months = 0;
+    let cursor = standardJalali;
+
+    while (true) {
+        const next = addJalaliMonths(cursor, 1);
+        const nextGregorian = jalaliToGregorianParts(next);
+
+        if (toUtcDay(nextGregorian) > dueUtc) {
+            break;
+        }
+
+        months++;
+        cursor = next;
+    }
+
+    const cursorGregorian = jalaliToGregorianParts(cursor);
+    const days = Math.floor(
+        (dueUtc - toUtcDay(cursorGregorian)) / 86400000
+    );
+
+    return {
+        ready: true,
+        invalid: false,
+        standardJalali,
+        months,
+        days,
+        equivalentMonths: months + days / 30,
+    };
+});
+
+const baseInstallmentProfit = computed(() => {
+    if (form.sale_type !== 'installment') return 0;
+
+    const count = Number(form.installment_count || 0);
+
+    if (!installmentPrincipal.value || !count) return 0;
+
+    return Math.round(
+        installmentPrincipal.value *
+        (monthlyProfitRate.value / 100) *
+        count
+    );
+});
+
+const defermentProfit = computed(() => {
+    if (
+        form.sale_type !== 'installment' ||
+        !installmentPrincipal.value ||
+        defermentBreakdown.value.invalid
+    ) {
+        return 0;
+    }
+
+    return Math.round(
+        installmentPrincipal.value *
+        (monthlyProfitRate.value / 100) *
+        defermentBreakdown.value.equivalentMonths
+    );
+});
+
 const installmentPrincipal = computed(() => {
     if (form.sale_type !== 'installment') return 0;
 
@@ -174,19 +312,9 @@ const monthlyProfitRate = computed(() => {
     return Number(normalized || 0);
 });
 
-const installmentProfit = computed(() => {
-    if (form.sale_type !== 'installment') return 0;
-
-    const count = Number(form.installment_count || 0);
-
-    if (!installmentPrincipal.value || !count) return 0;
-
-    return Math.round(
-        installmentPrincipal.value *
-        (monthlyProfitRate.value / 100) *
-        count
-    );
-});
+const installmentProfit = computed(() =>
+    baseInstallmentProfit.value + defermentProfit.value
+);
 
 const installmentTotal = computed(() =>
     installmentPrincipal.value + installmentProfit.value
@@ -534,6 +662,63 @@ const submit = () => {
                                 >
                                     {{ form.errors.first_due_date }}
                                 </p>
+
+                                <div
+                                    v-if="defermentBreakdown.ready"
+                                    class="mt-3 rounded-2xl border p-4"
+                                    :class="
+                                        defermentBreakdown.invalid
+                                            ? 'border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/20'
+                                            : defermentBreakdown.months || defermentBreakdown.days
+                                                ? 'border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/20'
+                                                : 'border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/20'
+                                    "
+                                >
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                                        شروع استاندارد اقساط:
+                                        <strong class="text-slate-700 dark:text-slate-200">
+                                            {{ jalaliDateLabel(defermentBreakdown.standardJalali) }}
+                                        </strong>
+                                    </p>
+
+                                    <p
+                                        v-if="defermentBreakdown.invalid"
+                                        class="mt-2 text-sm font-black text-red-600 dark:text-red-400"
+                                    >
+                                        اولین چک باید حداقل یک ماه شمسی بعد از تاریخ فروش باشد.
+                                    </p>
+
+                                    <template
+                                        v-else-if="defermentBreakdown.months || defermentBreakdown.days"
+                                    >
+                                        <p class="mt-2 text-sm font-black text-amber-700 dark:text-amber-300">
+                                            تنفس اضافه:
+                                            <span v-if="defermentBreakdown.months">
+                                                {{ toPersianDigits(defermentBreakdown.months) }} ماه
+                                            </span>
+                                            <span
+                                                v-if="defermentBreakdown.months && defermentBreakdown.days"
+                                            >
+                                                و
+                                            </span>
+                                            <span v-if="defermentBreakdown.days">
+                                                {{ toPersianDigits(defermentBreakdown.days) }} روز
+                                            </span>
+                                        </p>
+
+                                        <p class="mt-1 text-sm font-bold text-amber-600 dark:text-amber-400">
+                                            سود زمان اضافه:
+                                            {{ formatMoney(defermentProfit) }} تومان
+                                        </p>
+                                    </template>
+
+                                    <p
+                                        v-else
+                                        class="mt-2 text-sm font-black text-emerald-700 dark:text-emerald-300"
+                                    >
+                                        بدون تنفس اضافه
+                                    </p>
+                                </div>
                             </div>
 
                             <div
@@ -578,6 +763,13 @@ const submit = () => {
                                 <div>
                                     <p class="text-xs text-slate-500 dark:text-slate-400">
                                         سود کل اقساط
+                                    </p>
+                                    <p class="mt-1 text-[11px] text-slate-400">
+                                        سود پایه:
+                                        {{ formatMoney(baseInstallmentProfit) }}
+                                        <span v-if="defermentProfit">
+                                            + تنفس: {{ formatMoney(defermentProfit) }}
+                                        </span>
                                     </p>
                                     <p class="mt-1 font-black text-amber-600 dark:text-amber-400">
                                         {{ formatMoney(installmentProfit) }} تومان

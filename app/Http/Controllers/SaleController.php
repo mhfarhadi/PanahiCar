@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
+use Carbon\Carbon;
+use Illuminate\Validation\ValidationException;
+use Morilog\Jalali\Jalalian;
 
 use App\Models\Device;
 use App\Models\Sale;
@@ -207,7 +210,22 @@ class SaleController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
-        DB::transaction(function () use ($request, $device, $validated) {
+        $deferment = null;
+
+        if (($validated['sale_type'] ?? null) === 'installment') {
+            $deferment = $this->calculateInstallmentDeferment(
+                $validated['sale_date'],
+                $validated['first_due_date']
+            );
+
+            if ($deferment['is_before_standard']) {
+                throw ValidationException::withMessages([
+                    'first_due_date' => 'اولین سررسید نمی‌تواند قبل از یک ماه شمسی پس از تاریخ فروش باشد.',
+                ]);
+            }
+        }
+
+        DB::transaction(function () use ($request, $device, $validated, $deferment) {
             $lockedDevice = Device::query()
                 ->whereKey($device->id)
                 ->lockForUpdate()
@@ -222,15 +240,37 @@ class SaleController extends Controller
             $installmentTotal = 0;
             $monthlyProfitRate = null;
             $contractTotal = $validated['sale_price'];
+            $defermentProfit = 0;
+            $defermentMonths = 0;
+            $defermentDays = 0;
+            $standardFirstDueDate = null;
+            $firstDueDate = null;
 
             if ($isInstallment) {
                 $principal = $validated['sale_price'] - $validated['down_payment'];
                 $monthlyProfitRate = (float) $validated['monthly_profit_rate'];
                 $count = $validated['installment_count'];
 
-                $installmentProfit = (int) round(
+                $baseInstallmentProfit = (int) round(
                     $principal * ($monthlyProfitRate / 100) * $count
                 );
+
+                $defermentMonths = $deferment['months'];
+                $defermentDays = $deferment['days'];
+                $standardFirstDueDate = $deferment['standard_first_due_date'];
+                $firstDueDate = $validated['first_due_date'];
+
+                $defermentEquivalentMonths =
+                    $defermentMonths + ($defermentDays / 30);
+
+                $defermentProfit = (int) round(
+                    $principal
+                    * ($monthlyProfitRate / 100)
+                    * $defermentEquivalentMonths
+                );
+
+                $installmentProfit =
+                    $baseInstallmentProfit + $defermentProfit;
 
                 $installmentTotal = $principal + $installmentProfit;
                 $contractTotal = $validated['down_payment'] + $installmentTotal;
@@ -247,6 +287,11 @@ class SaleController extends Controller
             $sale->monthly_profit_rate = $monthlyProfitRate;
             $sale->installment_profit = $installmentProfit;
             $sale->contract_total = $contractTotal;
+            $sale->standard_first_due_date = $standardFirstDueDate;
+            $sale->first_due_date = $firstDueDate;
+            $sale->deferment_months = $defermentMonths;
+            $sale->deferment_days = $defermentDays;
+            $sale->deferment_profit = $defermentProfit;
             $sale->sale_date = $validated['sale_date'];
             $sale->notes = $validated['notes'] ?? null;
             $sale->created_by = $request->user()->id;
@@ -258,7 +303,9 @@ class SaleController extends Controller
                 $baseAmount = intdiv($installmentTotal, $count);
                 $remainder = $installmentTotal % $count;
 
-                $firstDueDate = \Carbon\Carbon::parse($validated['first_due_date']);
+                $firstDueJalali = Jalalian::fromCarbon(
+                    Carbon::parse($validated['first_due_date'])
+                );
                 $timestamp = now();
 
                 $rows = [];
@@ -267,9 +314,9 @@ class SaleController extends Controller
                     $rows[] = [
                         'sale_id' => $sale->id,
                         'installment_number' => $i + 1,
-                        'due_date' => $firstDueDate
-                            ->copy()
-                            ->addMonthsNoOverflow($i)
+                        'due_date' => $firstDueJalali
+                            ->addMonths($i)
+                            ->toCarbon()
                             ->toDateString(),
                         'amount' => $baseAmount + ($i < $remainder ? 1 : 0),
                         'paid_amount' => 0,
@@ -291,5 +338,52 @@ class SaleController extends Controller
         return redirect()
             ->route('sales.index')
             ->with('success', 'فروش گوشی با موفقیت ثبت شد.');
+    }
+
+    private function calculateInstallmentDeferment(
+        string $saleDate,
+        string $firstDueDate
+    ): array {
+        $saleJalali = Jalalian::fromCarbon(
+            Carbon::parse($saleDate)->startOfDay()
+        );
+
+        $standardJalali = $saleJalali->addMonths(1);
+        $standardCarbon = $standardJalali->toCarbon()->startOfDay();
+        $chosenCarbon = Carbon::parse($firstDueDate)->startOfDay();
+
+        if ($chosenCarbon->lt($standardCarbon)) {
+            return [
+                'is_before_standard' => true,
+                'standard_first_due_date' => $standardCarbon->toDateString(),
+                'months' => 0,
+                'days' => 0,
+            ];
+        }
+
+        $months = 0;
+        $cursorJalali = $standardJalali;
+
+        while (true) {
+            $nextJalali = $cursorJalali->addMonths(1);
+            $nextCarbon = $nextJalali->toCarbon()->startOfDay();
+
+            if ($nextCarbon->gt($chosenCarbon)) {
+                break;
+            }
+
+            $months++;
+            $cursorJalali = $nextJalali;
+        }
+
+        $cursorCarbon = $cursorJalali->toCarbon()->startOfDay();
+        $days = (int) floor($cursorCarbon->diffInDays($chosenCarbon));
+
+        return [
+            'is_before_standard' => false,
+            'standard_first_due_date' => $standardCarbon->toDateString(),
+            'months' => $months,
+            'days' => $days,
+        ];
     }
 }
