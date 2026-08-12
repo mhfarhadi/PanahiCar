@@ -62,6 +62,75 @@ class SaleController extends Controller
 
 
 
+    public function show(Sale $sale): Response
+    {
+        $saleData = DB::table('sales as s')
+            ->join('devices as d', 'd.id', '=', 's.device_id')
+            ->join('contacts as c', 'c.id', '=', 's.buyer_id')
+            ->leftJoin('purchases as p', 'p.device_id', '=', 'd.id')
+            ->where('s.id', $sale->id)
+            ->select([
+                's.id',
+                's.device_id',
+                's.buyer_id',
+                's.sale_type',
+                's.sale_price',
+                's.down_payment',
+                's.monthly_profit_rate',
+                's.installment_profit',
+                's.contract_total',
+                's.sale_date',
+                's.notes',
+                'd.brand',
+                'd.model',
+                'd.storage',
+                'd.color',
+                'd.imei',
+                'd.status',
+                'c.name as buyer_name',
+                'c.mobile as buyer_mobile',
+                'c.contact_type as buyer_contact_type',
+                'p.purchase_price',
+            ])
+            ->first();
+
+        abort_unless($saleData, 404);
+
+        $saleData->trading_profit = $saleData->purchase_price !== null
+            ? $saleData->sale_price - $saleData->purchase_price
+            : null;
+
+        $saleData->total_profit = $saleData->purchase_price !== null
+            ? ($saleData->contract_total ?? $saleData->sale_price) - $saleData->purchase_price
+            : null;
+
+        $saleData->cover_image = DB::table('device_images')
+            ->where('device_id', $saleData->device_id)
+            ->orderByDesc('is_cover')
+            ->orderBy('sort_order')
+            ->value('image_path');
+
+        $installments = DB::table('installments')
+            ->where('sale_id', $sale->id)
+            ->orderBy('installment_number')
+            ->get([
+                'id',
+                'installment_number',
+                'due_date',
+                'amount',
+                'paid_amount',
+                'status',
+                'paid_at',
+                'notes',
+            ]);
+
+        return Inertia::render('Sales/Show', [
+            'sale' => $saleData,
+            'installments' => $installments,
+        ]);
+    }
+
+
     public function create(Device $device): Response
     {
         abort_unless($device->status === 'in_stock', 404);
