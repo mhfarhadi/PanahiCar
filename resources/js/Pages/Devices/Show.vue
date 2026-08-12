@@ -3,6 +3,14 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import EntityNoteHistory from '@/Components/EntityNoteHistory.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import {
+    batteryConditionLabel,
+    colorLabel,
+    manufacturingCountryLabel,
+    conditionLabel,
+    registrationStatusLabel,
+    simTypeLabel,
+} from '@/Utils/deviceLabels';
 
 const props = defineProps({
     device: {
@@ -30,22 +38,6 @@ const money = (value) => {
     return Number(value).toLocaleString('fa-IR') + ' تومان';
 };
 
-const simType = (value) => {
-    if (value === 'single') return 'تک‌سیم';
-    if (value === 'dual') return 'دو‌سیم';
-    return '—';
-};
-
-const conditionLabel = (value) => {
-    const labels = {
-        'A+': 'در حد نو',
-        A: 'بسیار تمیز',
-        B: 'تمیز',
-        C: 'خط و خش‌دار',
-    };
-
-    return labels[value] ?? value ?? '—';
-};
 
 const persianDate = (value) => {
     if (!value) return '—';
@@ -172,23 +164,37 @@ const persianDate = (value) => {
 
                                 <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
                                     <p class="text-xs text-slate-400">رنگ</p>
-                                    <p class="mt-1 font-bold">{{ device.color || '—' }}</p>
+                                    <p class="mt-1 font-bold">{{ colorLabel(device.color) }}</p>
                                 </div>
 
                                 <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
-                                    <p class="text-xs text-slate-400">پارت نامبر</p>
-                                    <p class="mt-1 font-bold">{{ device.part_number || '—' }}</p>
+                                    <p class="text-xs text-slate-400">
+                                        {{ device.brand === 'Samsung' ? 'کشور سازنده' : 'پارت نامبر' }}
+                                    </p>
+                                    <p class="mt-1 font-bold">{{
+                                            device.brand === 'Samsung'
+                                                ? manufacturingCountryLabel(device.manufacturing_country)
+                                                : (device.part_number || '—')
+                                        }}</p>
                                 </div>
 
                                 <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
                                     <p class="text-xs text-slate-400">نوع سیم‌کارت</p>
-                                    <p class="mt-1 font-bold">{{ simType(device.sim_type) }}</p>
+                                    <p class="mt-1 font-bold">{{ simTypeLabel(device.sim_type) }}</p>
                                 </div>
 
                                 <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
-                                    <p class="text-xs text-slate-400">سلامت باتری</p>
+                                    <p class="text-xs text-slate-400">
+                                        {{ device.brand === 'Samsung' ? 'وضعیت باتری' : 'سلامت باتری' }}
+                                    </p>
                                     <p class="mt-1 font-bold">
-                                        {{ device.battery_health !== null ? `${device.battery_health}%` : '—' }}
+                                        {{
+                                            device.brand === 'Samsung'
+                                                ? batteryConditionLabel(device.battery_condition)
+                                                : (device.battery_health !== null
+                                                    ? `${device.battery_health}%`
+                                                    : '—')
+                                        }}
                                     </p>
                                 </div>
 
@@ -202,7 +208,7 @@ const persianDate = (value) => {
                                 <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
                                     <p class="text-xs text-slate-400">رجیستری</p>
                                     <p class="mt-1 font-bold">
-                                        {{ device.registration_status || '—' }}
+                                        {{ registrationStatusLabel(device.registration_status) }}
                                     </p>
                                 </div>
 

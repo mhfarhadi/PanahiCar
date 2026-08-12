@@ -2,6 +2,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import {
+    batteryConditionLabel,
+    colorLabel,
+    manufacturingCountryLabel,
+    conditionLabel,
+    simTypeLabel,
+} from '@/Utils/deviceLabels';
 
 const props = defineProps({
     devices: {
@@ -39,22 +46,6 @@ const money = (value) => {
     return Number(value).toLocaleString('fa-IR') + ' تومان';
 };
 
-const simType = (value) => {
-    if (value === 'single') return 'تک‌سیم';
-    if (value === 'dual') return 'دو‌سیم';
-    return '—';
-};
-
-const conditionLabel = (value) => {
-    const labels = {
-        'A+': 'در حد نو',
-        A: 'بسیار تمیز',
-        B: 'تمیز',
-        C: 'خط و خش‌دار',
-    };
-
-    return labels[value] ?? value ?? '—';
-};
 </script>
 
 <template>
@@ -133,7 +124,7 @@ const conditionLabel = (value) => {
                                         {{ device.brand }} {{ device.model }}
                                     </h2>
                                     <p class="mt-1 text-sm text-slate-500">
-                                        {{ device.storage || '—' }} · {{ device.color || '—' }}
+                                        {{ device.storage || '—' }} · {{ colorLabel(device.color) }}
                                     </p>
                                 </div>
 
@@ -144,9 +135,17 @@ const conditionLabel = (value) => {
 
                             <div class="mt-5 grid grid-cols-2 gap-3 text-sm">
                                 <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
-                                    <p class="text-xs text-slate-400">سلامت باتری</p>
+                                    <p class="text-xs text-slate-400">
+                                        {{ device.brand === 'Samsung' ? 'وضعیت باتری' : 'سلامت باتری' }}
+                                    </p>
                                     <p class="mt-1 font-bold">
-                                        {{ device.battery_health !== null ? `${device.battery_health}%` : '—' }}
+                                        {{
+                                            device.brand === 'Samsung'
+                                                ? batteryConditionLabel(device.battery_condition)
+                                                : (device.battery_health !== null
+                                                    ? `${device.battery_health}%`
+                                                    : '—')
+                                        }}
                                     </p>
                                 </div>
 
@@ -158,13 +157,19 @@ const conditionLabel = (value) => {
                                 </div>
 
                                 <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
-                                    <p class="text-xs text-slate-400">پارت نامبر</p>
-                                    <p class="mt-1 font-bold">{{ device.part_number || '—' }}</p>
+                                    <p class="text-xs text-slate-400">
+                                        {{ device.brand === 'Samsung' ? 'کشور سازنده' : 'پارت نامبر' }}
+                                    </p>
+                                    <p class="mt-1 font-bold">{{
+                                            device.brand === 'Samsung'
+                                                ? manufacturingCountryLabel(device.manufacturing_country)
+                                                : (device.part_number || '—')
+                                        }}</p>
                                 </div>
 
                                 <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
                                     <p class="text-xs text-slate-400">سیم‌کارت</p>
-                                    <p class="mt-1 font-bold">{{ simType(device.sim_type) }}</p>
+                                    <p class="mt-1 font-bold">{{ simTypeLabel(device.sim_type) }}</p>
                                 </div>
                             </div>
 

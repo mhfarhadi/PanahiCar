@@ -3,6 +3,12 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import {
+    colorLabel,
+    registrationStatusLabel,
+    samsungBatteryConditionOptions,
+    manufacturingCountryOptions,
+} from '@/Utils/deviceLabels';
 
 const props = defineProps({
     catalog: {
@@ -26,6 +32,16 @@ const selectedBrandId = defineModel('selectedBrandId', {
 const selectedModelId = defineModel('selectedModelId', {
     default: '',
 });
+
+const selectedBrand = computed(() =>
+    props.catalog.brands.find(
+        (item) => String(item.id) === String(selectedBrandId.value)
+    )
+);
+
+const isSamsung = computed(
+    () => selectedBrand.value?.name === 'Samsung'
+);
 
 const filteredModels = computed(() =>
     props.catalog.models.filter(
@@ -85,6 +101,9 @@ watch(selectedBrandId, () => {
     form.storage = '';
     form.color = '';
     form.part_number = '';
+    form.manufacturing_country = '';
+    form.battery_health = '';
+    form.battery_condition = '';
 });
 
 watch(selectedModelId, (value) => {
@@ -112,8 +131,10 @@ const form = useForm({
     storage: '',
     color: '',
     part_number: '',
+    manufacturing_country: '',
     sim_type: '',
     battery_health: '',
+    battery_condition: '',
     condition_grade: '',
     imei: '',
     registration_status: '',
@@ -467,12 +488,32 @@ const submit = () => {
                                         :key="color.id"
                                         :value="color.name"
                                     >
-                                        {{ color.name }}
+                                        {{ colorLabel(color.name) }}
                                     </option>
                                 </select>
                             </div>
 
-                            <div>
+                            <div v-if="isSamsung">
+                                <label class="mb-2 block text-sm font-bold">
+                                    کشور سازنده
+                                </label>
+                                <select
+                                    v-model="form.manufacturing_country"
+                                    :disabled="!selectedModelId"
+                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                >
+                                    <option value="">انتخاب کشور سازنده</option>
+                                    <option
+                                        v-for="country in manufacturingCountryOptions"
+                                        :key="country.value"
+                                        :value="country.value"
+                                    >
+                                        {{ country.label }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div v-else>
                                 <label class="mb-2 block text-sm font-bold">
                                     پارت نامبر
                                 </label>
@@ -508,7 +549,26 @@ const submit = () => {
                                 </select>
                             </div>
 
-                            <div>
+                            <div v-if="isSamsung">
+                                <label class="mb-2 block text-sm font-bold">
+                                    وضعیت باتری
+                                </label>
+                                <select
+                                    v-model="form.battery_condition"
+                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                >
+                                    <option value="">انتخاب وضعیت باتری</option>
+                                    <option
+                                        v-for="option in samsungBatteryConditionOptions"
+                                        :key="option.value"
+                                        :value="option.value"
+                                    >
+                                        {{ option.label }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div v-else>
                                 <label class="mb-2 block text-sm font-bold">
                                     سلامت باتری
                                 </label>
@@ -576,8 +636,8 @@ const submit = () => {
                                     class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
                                 >
                                     <option value="">انتخاب کنید</option>
-                                    <option value="registered">رجیستر شده</option>
-                                    <option value="unregistered">رجیستر نشده</option>
+                                    <option value="registered">{{ registrationStatusLabel('registered') }}</option>
+                                    <option value="unregistered">{{ registrationStatusLabel('unregistered') }}</option>
                                     <option value="unknown">نامشخص</option>
                                 </select>
                             </div>

@@ -2,6 +2,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import EntityNoteHistory from '@/Components/EntityNoteHistory.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import {
+    colorLabel,
+    deviceStatusLabel,
+} from '@/Utils/deviceLabels';
 
 const props = defineProps({
     contact: {
@@ -45,12 +49,6 @@ const persianDate = (value) => {
     }).format(date);
 };
 
-const statusLabel = (status) => {
-    if (status === 'announced') return 'اعلامی';
-    if (status === 'in_stock') return 'موجود';
-    if (status === 'sold') return 'فروخته‌شده';
-    return status || '—';
-};
 
 const saleTypeLabel = (type) =>
     type === 'installment' ? 'اقساطی' : 'نقدی';
@@ -254,7 +252,7 @@ const paymentHistoryLabel = (stats) => {
                                                 {{ item.brand }} {{ item.model }}
                                             </p>
                                             <p class="mt-1 text-sm text-slate-500">
-                                                {{ item.storage || '—' }} · {{ item.color || '—' }}
+                                                {{ item.storage || '—' }} · {{ colorLabel(item.color) }}
                                             </p>
                                         </div>
 
@@ -361,12 +359,12 @@ const paymentHistoryLabel = (stats) => {
                                                 {{ device.brand }} {{ device.model }}
                                             </p>
                                             <p class="mt-1 text-sm text-slate-500">
-                                                {{ device.storage || '—' }} · {{ device.color || '—' }}
+                                                {{ device.storage || '—' }} · {{ colorLabel(device.color) }}
                                             </p>
                                         </div>
 
                                         <span class="rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold dark:bg-slate-800">
-                                            {{ statusLabel(device.status) }}
+                                            {{ deviceStatusLabel(device.status) }}
                                         </span>
                                     </div>
 
@@ -408,12 +406,12 @@ const paymentHistoryLabel = (stats) => {
                                                 {{ item.brand }} {{ item.model }}
                                             </p>
                                             <p class="mt-1 text-sm text-slate-500">
-                                                {{ item.storage || '—' }} · {{ item.color || '—' }}
+                                                {{ item.storage || '—' }} · {{ colorLabel(item.color) }}
                                             </p>
                                         </div>
 
                                         <span class="rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold dark:bg-slate-800">
-                                            {{ statusLabel(item.status) }}
+                                            {{ deviceStatusLabel(item.status) }}
                                         </span>
                                     </div>
 

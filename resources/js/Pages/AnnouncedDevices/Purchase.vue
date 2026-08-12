@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { colorLabel } from '@/Utils/deviceLabels';
 
 const props = defineProps({
     device: {
@@ -161,7 +162,7 @@ const submit = () => {
                             <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
                                 <p class="text-xs text-slate-400">حافظه / رنگ</p>
                                 <p class="mt-1 font-bold">
-                                    {{ device.storage || '—' }} · {{ device.color || '—' }}
+                                    {{ device.storage || '—' }} · {{ colorLabel(device.color) }}
                                 </p>
                             </div>
 

@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import { colorLabel } from '@/Utils/deviceLabels';
 
 const props = defineProps({
     sales: {
@@ -151,7 +152,7 @@ const saleTypeLabel = (type) =>
                                         {{ sale.storage }}
                                     </span>
                                     <span v-if="sale.color">
-                                        · {{ sale.color }}
+                                        · {{ colorLabel(sale.color) }}
                                     </span>
                                 </p>
                             </div>

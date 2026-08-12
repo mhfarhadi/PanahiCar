@@ -77,8 +77,10 @@ class AnnouncedDeviceCreateController extends Controller
             'storage' => ['nullable', 'string', 'max:50'],
             'color' => ['nullable', 'string', 'max:100'],
             'part_number' => ['nullable', 'string', 'max:100'],
+            'manufacturing_country' => ['nullable', 'in:vietnam,india,china,south_korea,indonesia'],
             'sim_type' => ['nullable', 'in:single,dual'],
             'battery_health' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'battery_condition' => ['nullable', 'in:excellent,good,poor,replace'],
             'condition_grade' => ['nullable', 'string', 'max:50'],
             'imei' => ['nullable', 'digits:15', 'unique:devices,imei'],
             'registration_status' => ['nullable', 'string', 'max:50'],
@@ -92,6 +94,14 @@ class AnnouncedDeviceCreateController extends Controller
             'images.*' => ['image', 'max:5120'],
         ]);
 
+        if (($validated['brand'] ?? null) === 'Samsung') {
+            $validated['part_number'] = null;
+            $validated['battery_health'] = null;
+        } else {
+            $validated['manufacturing_country'] = null;
+            $validated['battery_condition'] = null;
+        }
+
         DB::transaction(function () use ($request, $validated) {
             $device = new Device();
             $device->brand = $validated['brand'];
@@ -99,8 +109,10 @@ class AnnouncedDeviceCreateController extends Controller
             $device->storage = $validated['storage'] ?? null;
             $device->color = $validated['color'] ?? null;
             $device->part_number = $validated['part_number'] ?? null;
+            $device->manufacturing_country = $validated['manufacturing_country'] ?? null;
             $device->sim_type = $validated['sim_type'] ?? null;
             $device->battery_health = $validated['battery_health'] ?? null;
+            $device->battery_condition = $validated['battery_condition'] ?? null;
             $device->condition_grade = $validated['condition_grade'] ?? null;
             $device->imei = $validated['imei'] ?? null;
             $device->registration_status = $validated['registration_status'] ?? null;

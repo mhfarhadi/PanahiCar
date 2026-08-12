@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
 import { computed, ref } from 'vue';
+import { colorLabel } from '@/Utils/deviceLabels';
 
 const props = defineProps({
     sale: {
@@ -261,7 +262,7 @@ const clearanceDelayDays = (installment) => {
                                         </span>
 
                                         <span v-if="sale.color">
-                                            · {{ sale.color }}
+                                            · {{ colorLabel(sale.color) }}
                                         </span>
                                     </p>
                                 </div>

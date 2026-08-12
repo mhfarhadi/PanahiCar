@@ -4,6 +4,7 @@ import { computed, ref } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
 import { toJalaali, toGregorian, jalaaliMonthLength } from 'jalaali-js';
+import { colorLabel } from '@/Utils/deviceLabels';
 
 const props = defineProps({
     device: {
@@ -398,7 +399,7 @@ const submit = () => {
                         <div>
                             <p class="text-xs text-slate-400">رنگ</p>
                             <p class="mt-1 font-bold">
-                                {{ device.color || '—' }}
+                                {{ colorLabel(device.color) }}
                             </p>
                         </div>
 
