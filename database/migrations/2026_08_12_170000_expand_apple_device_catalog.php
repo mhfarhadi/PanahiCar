@@ -7,13 +7,17 @@ return new class extends Migration
 {
     public function up(): void
     {
+        DB::table('brands')->insertOrIgnore([
+            'name' => 'Apple',
+            'is_active' => true,
+            'sort_order' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         $appleId = DB::table('brands')
             ->where('name', 'Apple')
             ->value('id');
-
-        if (! $appleId) {
-            throw new \RuntimeException('Apple brand not found.');
-        }
 
         $storages = [
             '128GB' => 2,

@@ -1,19 +1,23 @@
 <?php
 
-test('registration screen can be rendered', function () {
-    $response = $this->get('/register');
-
-    $response->assertStatus(200);
+test('public registration screen is disabled', function () {
+    $this->get('/register')
+        ->assertNotFound();
 });
 
-test('new users can register', function () {
+test('public registration is disabled', function () {
     $response = $this->post('/register', [
         'name' => 'Test User',
-        'email' => 'test@example.com',
+        'email' => 'register-test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertNotFound();
+
+    $this->assertGuest();
+
+    $this->assertDatabaseMissing('users', [
+        'email' => 'register-test@example.com',
+    ]);
 });
