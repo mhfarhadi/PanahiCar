@@ -18,6 +18,7 @@ class DeviceShowController extends Controller
             ->where('p.device_id', $device->id)
             ->orderByDesc('p.id')
             ->select([
+                'p.id as purchase_id',
                 'p.purchase_price',
                 'p.purchase_date',
                 'p.notes',
@@ -25,6 +26,36 @@ class DeviceShowController extends Controller
                 'c.mobile as seller_mobile',
             ])
             ->first();
+
+        $deviceNotes = DB::table('entity_notes as n')
+            ->leftJoin('users as u', 'u.id', '=', 'n.created_by')
+            ->where('n.entity_type', 'device')
+            ->where('n.entity_id', $device->id)
+            ->orderByDesc('n.created_at')
+            ->orderByDesc('n.id')
+            ->get([
+                'n.id',
+                'n.body',
+                'n.created_at',
+                'u.name as author_name',
+            ]);
+
+        $purchaseNotes = collect();
+
+        if ($purchase?->purchase_id) {
+            $purchaseNotes = DB::table('entity_notes as n')
+                ->leftJoin('users as u', 'u.id', '=', 'n.created_by')
+                ->where('n.entity_type', 'purchase')
+                ->where('n.entity_id', $purchase->purchase_id)
+                ->orderByDesc('n.created_at')
+                ->orderByDesc('n.id')
+                ->get([
+                    'n.id',
+                    'n.body',
+                    'n.created_at',
+                    'u.name as author_name',
+                ]);
+        }
 
         $images = DB::table('device_images')
             ->where('device_id', $device->id)
@@ -52,6 +83,7 @@ class DeviceShowController extends Controller
                 'registration_status' => $device->registration_status,
                 'description' => $device->description,
 
+                'purchase_id' => $purchase?->purchase_id,
                 'purchase_price' => $purchase?->purchase_price,
                 'purchase_date' => $purchase?->purchase_date,
                 'purchase_notes' => $purchase?->notes,
@@ -64,6 +96,8 @@ class DeviceShowController extends Controller
 
                 'images' => $images,
             ],
+            'deviceNotes' => $deviceNotes,
+            'purchaseNotes' => $purchaseNotes,
         ]);
     }
 }

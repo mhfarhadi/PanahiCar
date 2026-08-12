@@ -7,6 +7,7 @@ use Morilog\Jalali\Jalalian;
 
 use App\Models\Device;
 use App\Models\Sale;
+use App\Services\EntityNoteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -296,6 +297,13 @@ class SaleController extends Controller
             $sale->notes = $validated['notes'] ?? null;
             $sale->created_by = $request->user()->id;
             $sale->save();
+
+            EntityNoteService::add(
+                'sale',
+                $sale->id,
+                $validated['notes'] ?? null,
+                $request->user()->id
+            );
 
             if ($isInstallment) {
                 $count = $validated['installment_count'];

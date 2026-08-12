@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Services\EntityNoteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -102,6 +103,13 @@ public function store(Request $request): RedirectResponse
         $contact->avatar_path = $request->file('avatar')->store('contacts', 'public');
     }
     $contact->save();
+
+    EntityNoteService::add(
+        'contact',
+        $contact->id,
+        $validated['description'] ?? null,
+        $request->user()->id
+    );
 
     if (! empty($validated['return_to'])) {
         return redirect()

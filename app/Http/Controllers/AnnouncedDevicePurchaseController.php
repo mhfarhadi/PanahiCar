@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Device;
 use App\Models\Purchase;
+use App\Services\EntityNoteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -54,6 +55,13 @@ class AnnouncedDevicePurchaseController extends Controller
             $purchase->notes = $validated['notes'] ?? null;
             $purchase->created_by = $request->user()->id;
             $purchase->save();
+
+            EntityNoteService::add(
+                'purchase',
+                $purchase->id,
+                $validated['notes'] ?? null,
+                $request->user()->id
+            );
 
             $device->status = 'in_stock';
             $device->save();

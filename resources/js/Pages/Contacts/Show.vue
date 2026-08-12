@@ -1,5 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import EntityNoteHistory from '@/Components/EntityNoteHistory.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 defineProps({
@@ -16,6 +17,10 @@ defineProps({
         default: () => [],
     },
     purchasedFromShop: {
+        type: Array,
+        default: () => [],
+    },
+    notes: {
         type: Array,
         default: () => [],
     },
@@ -140,14 +145,16 @@ const paymentHistoryLabel = (stats) => {
                                     </p>
                                 </div>
 
-                                <div v-if="contact.description" class="sm:col-span-2">
-                                    <p class="text-xs text-slate-400">توضیحات</p>
-                                    <p class="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
-                                        {{ contact.description }}
-                                    </p>
-                                </div>
                             </div>
                         </section>
+
+                        <EntityNoteHistory
+                            entity-type="contact"
+                            :entity-id="contact.id"
+                            :notes="notes"
+                            title="یادداشت‌های این شخص"
+                            empty-text="هنوز یادداشتی برای این شخص ثبت نشده است."
+                        />
 
                         <section class="rounded-[30px] bg-white p-6 shadow-sm dark:bg-slate-900">
                             <h2 class="text-lg font-black">گوشی‌های خریداری‌شده از ما</h2>

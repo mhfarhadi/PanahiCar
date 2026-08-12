@@ -1,5 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import EntityNoteHistory from '@/Components/EntityNoteHistory.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
@@ -7,6 +8,14 @@ const props = defineProps({
     device: {
         type: Object,
         required: true,
+    },
+    deviceNotes: {
+        type: Array,
+        default: () => [],
+    },
+    purchaseNotes: {
+        type: Array,
+        default: () => [],
     },
 });
 
@@ -205,16 +214,15 @@ const persianDate = (value) => {
                                 </div>
                             </div>
 
-                            <div
-                                v-if="device.description"
-                                class="mt-4 rounded-2xl bg-slate-50 p-4 dark:bg-slate-950"
-                            >
-                                <p class="text-xs text-slate-400">توضیحات دستگاه</p>
-                                <p class="mt-2 text-sm leading-7">
-                                    {{ device.description }}
-                                </p>
-                            </div>
                         </section>
+
+                        <EntityNoteHistory
+                            entity-type="device"
+                            :entity-id="device.id"
+                            :notes="deviceNotes"
+                            title="یادداشت‌های دستگاه"
+                            empty-text="هنوز یادداشتی برای این دستگاه ثبت نشده است."
+                        />
 
                         <section
                             class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-7"
@@ -259,16 +267,16 @@ const persianDate = (value) => {
                                 </div>
                             </div>
 
-                            <div
-                                v-if="device.purchase_notes"
-                                class="mt-4 rounded-2xl bg-slate-50 p-4 dark:bg-slate-950"
-                            >
-                                <p class="text-xs text-slate-400">توضیحات خرید</p>
-                                <p class="mt-2 text-sm leading-7">
-                                    {{ device.purchase_notes }}
-                                </p>
-                            </div>
                         </section>
+
+                        <EntityNoteHistory
+                            v-if="device.purchase_id"
+                            entity-type="purchase"
+                            :entity-id="device.purchase_id"
+                            :notes="purchaseNotes"
+                            title="یادداشت‌های خرید"
+                            empty-text="هنوز یادداشتی برای این خرید ثبت نشده است."
+                        />
 
                         <Link
                             :href="route('sales.create', device.id)"

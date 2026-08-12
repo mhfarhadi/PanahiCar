@@ -11,6 +11,7 @@ use App\Http\Controllers\AnnouncedDeviceCreateController;
 use App\Http\Controllers\AnnouncedDevicePurchaseController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\InstallmentController;
+use App\Http\Controllers\EntityNoteController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -63,6 +64,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/installments/{installment}/mark-paid', [InstallmentController::class, 'markPaid'])
         ->whereNumber('installment')
         ->name('installments.mark-paid');
+
+    Route::post('/entity-notes', [EntityNoteController::class, 'store'])
+        ->name('entity-notes.store');
+
     Route::get('/settings', fn () => Inertia::render('Settings/Index'))->name('settings.index');
 
 

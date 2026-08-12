@@ -70,6 +70,19 @@ class ContactShowController extends Controller
                 'd.status',
             ]);
 
+        $notes = DB::table('entity_notes as n')
+            ->leftJoin('users as u', 'u.id', '=', 'n.created_by')
+            ->where('n.entity_type', 'contact')
+            ->where('n.entity_id', $contact->id)
+            ->orderByDesc('n.created_at')
+            ->orderByDesc('n.id')
+            ->get([
+                'n.id',
+                'n.body',
+                'n.created_at',
+                'u.name as author_name',
+            ]);
+
         $paymentStats = DB::table('installments as i')
             ->join('sales as s', 's.id', '=', 'i.sale_id')
             ->where('s.buyer_id', $contact->id)
@@ -106,6 +119,7 @@ class ContactShowController extends Controller
             'announcedDevices' => $announcedDevices,
             'soldToShop' => $soldToShop,
             'purchasedFromShop' => $purchasedFromShop,
+            'notes' => $notes,
         ]);
     }
 }

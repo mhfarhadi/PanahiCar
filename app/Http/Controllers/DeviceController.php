@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Device;
 use App\Models\DeviceImage;
 use App\Models\Purchase;
+use App\Services\EntityNoteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -152,6 +153,13 @@ class DeviceController extends Controller
             $device->status = 'in_stock';
             $device->created_by = $request->user()->id;
             $device->save();
+
+            EntityNoteService::add(
+                'device',
+                $device->id,
+                $validated['description'] ?? null,
+                $request->user()->id
+            );
 
             $purchase = new Purchase();
             $purchase->device_id = $device->id;
