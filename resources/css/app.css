@@ -61,3 +61,103 @@
 .dark .vpd-actions button {
     color: #e2e8f0 !important;
 }
+
+
+/* MayaHamrah Persian date picker enhanced dark mode */
+.dark .vpd-container,
+.dark .vpd-wrapper {
+    color: #f8fafc !important;
+}
+
+.dark .vpd-header,
+.dark .vpd-calendar {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+}
+
+.dark .vpd-day {
+    color: #e2e8f0 !important;
+}
+
+.dark .vpd-day.vpd-selected,
+.dark .vpd-selected {
+    background-color: #7c3aed !important;
+    color: #ffffff !important;
+}
+
+.dark .vpd-day.vpd-selected .vpd-day-text,
+.dark .vpd-selected .vpd-day-text {
+    color: #ffffff !important;
+}
+
+.dark .vpd-day.vpd-today:not(.vpd-selected) {
+    background-color: #1e293b !important;
+    box-shadow: inset 0 0 0 1px #8b5cf6 !important;
+}
+
+.dark .vpd-day.vpd-today:not(.vpd-selected) .vpd-day-text {
+    color: #c4b5fd !important;
+    font-weight: 800 !important;
+}
+
+.dark .vpd-input-group input,
+.dark .vpd-input-group label {
+    color: #f8fafc !important;
+}
+
+.dark .vpd-actions {
+    background-color: #0f172a !important;
+    border-top-color: #334155 !important;
+}
+
+/* Dark mode: Persian date picker month/year selector */
+.dark .vpd-addon-list,
+.dark .vpd-month-list,
+.dark .vpd-addon-list-content {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+    border-color: #334155 !important;
+}
+
+.dark .vpd-addon-list-item {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+    border-color: #0f172a !important;
+}
+
+.dark .vpd-addon-list-item:hover {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    border-color: #1e293b !important;
+}
+
+.dark .vpd-addon-list-item.vpd-selected {
+    background-color: #7c3aed !important;
+    color: #ffffff !important;
+    border-color: #7c3aed !important;
+}
+
+.dark .vpd-close-addon {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+}
+
+.dark .vpd-close-addon:hover {
+    background-color: #334155 !important;
+    color: #ffffff !important;
+}
+
+
+/* MayaHamrah Persian date picker rounded UI */
+.vpd-content {
+    border-radius: 20px !important;
+    overflow: hidden !important;
+}
+
+.vpd-header {
+    border-radius: 20px 20px 0 0 !important;
+}
+
+.vpd-actions {
+    border-radius: 0 0 20px 20px !important;
+}

@@ -3,13 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class InstallmentController extends Controller
 {
-    public function markPaid(int $installment): RedirectResponse
+    public function markPaid(Request $request, int $installment): RedirectResponse
     {
-        DB::transaction(function () use ($installment) {
+        $validated = $request->validate([
+            'paid_at' => ['required', 'date'],
+        ]);
+
+        DB::transaction(function () use ($installment, $validated) {
             $row = DB::table('installments')
                 ->where('id', $installment)
                 ->lockForUpdate()
@@ -26,7 +31,7 @@ class InstallmentController extends Controller
                 ->update([
                     'paid_amount' => $row->amount,
                     'status' => 'paid',
-                    'paid_at' => now()->toDateString(),
+                    'paid_at' => $validated['paid_at'],
                     'updated_at' => now(),
                 ]);
         });

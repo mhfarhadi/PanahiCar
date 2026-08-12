@@ -698,6 +698,7 @@ const submit = () => {
                                     v-model="form.purchase_date"
                                     format="YYYY-MM-DD"
                                     display-format="jYYYY/jMM/jDD"
+                                    convert-numbers
                                     :editable="false"
                                     :auto-submit="true"
                                     color="#7c3aed"
