@@ -1,14 +1,18 @@
 # MayaHamrah — Current Project State
 
-Last updated: 2026-08-12
+Last updated: 2026-08-13
 
 ## Current stable checkpoint
 
 Commit:
 
-`0e9fc8b — MayaHamrah: add inventory device editing`
+`0017b9c — make fresh database migrations test-safe`
 
-در زمان ثبت این سند، آخرین checkpoint تست‌شده همین commit است.
+Main feature commit:
+
+`5359570 — archive exchange rates and snapshot USD on sales`
+
+در زمان ثبت این سند، این وضعیت با `npm run build`، تست دستی ثبت فروش و `php artisan test` با نتیجه 25 تست پاس و 61 assertion بررسی شده است.
 
 ## وضعیت کلی
 
@@ -481,3 +485,46 @@ The feature passed `npm run build` and was manually tested successfully.
 
 Commit:
 `0e9fc8b — MayaHamrah: add inventory device editing`
+
+## Exchange-rate archive and sale USD snapshots
+
+Currency-rate handling is centralized in `App\Services\CurrencyRateService`.
+
+Current behavior:
+
+- Navasan remains the live source for USD/AED dashboard rates.
+- fetched USD/AED values are archived in the `exchange_rates` table
+- archive rows are keyed by currency + Gregorian rate date
+- new sales can store:
+  - `usd_rate`
+  - `usd_rate_date`
+  - `usd_rate_source`
+- a sale dated today resolves the current USD rate automatically
+- a historical sale date uses an archived exact-date USD rate when available
+- if no historical archive exists, the sale form allows a manual USD rate
+- manual per-sale rates are stored on the sale snapshot and are not automatically promoted to the global archive
+- sale detail pages show the sale-day USD rate together with today's USD rate
+- the USD comparison is visually secondary to the main financial contract values
+
+This historical snapshot is intended to support future price estimation based primarily on actual MayaHamrah sales rather than public listing prices.
+
+Commit:
+`5359570 — archive exchange rates and snapshot USD on sales`
+
+
+## Fresh-database and test safety
+
+The Apple catalog expansion migration previously assumed the `Apple` brand had already been inserted by `DeviceCatalogSeeder`.
+
+That assumption broke `migrate:fresh` / test databases because normal migrations run independently of that seeder.
+
+Current behavior:
+
+- the Apple catalog migration safely ensures the Apple brand exists before attaching catalog data
+- rollback does not delete the Apple brand
+- public registration remains intentionally disabled
+- registration feature tests now assert that `/register` is unavailable instead of expecting public sign-up
+- full test suite passes: 25 tests / 61 assertions
+
+Commit:
+`0017b9c — make fresh database migrations test-safe`
