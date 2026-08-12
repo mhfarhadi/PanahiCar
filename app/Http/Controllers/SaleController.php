@@ -8,6 +8,7 @@ use Morilog\Jalali\Jalalian;
 use App\Models\Device;
 use App\Models\Sale;
 use App\Services\EntityNoteService;
+use App\Services\CurrencyRateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -151,7 +152,7 @@ class SaleController extends Controller
     }
 
 
-    public function show(Sale $sale): Response
+    public function show(Sale $sale, CurrencyRateService $currencyRateService): Response
     {
         $saleData = DB::table('sales as s')
             ->join('devices as d', 'd.id', '=', 's.device_id')
@@ -169,6 +170,9 @@ class SaleController extends Controller
                 's.installment_profit',
                 's.contract_total',
                 's.sale_date',
+            's.usd_rate',
+            's.usd_rate_date',
+            's.usd_rate_source',
                 's.notes',
                 'd.brand',
                 'd.model',
@@ -213,9 +217,12 @@ class SaleController extends Controller
                 'notes',
             ]);
 
-        return Inertia::render('Sales/Show', [
+        $currentRates = $currencyRateService->latest();
+
+    return Inertia::render('Sales/Show', [
             'sale' => $saleData,
             'installments' => $installments,
+        'currentUsdRate' => (int) ($currentRates['usd']['value'] ?? 0),
         ]);
     }
 
@@ -253,7 +260,36 @@ class SaleController extends Controller
         ]);
     }
 
-    public function store(Request $request, Device $device): RedirectResponse
+    public function currencyRate(Request $request, CurrencyRateService $currencyRateService)
+    {
+        $validated = $request->validate([
+            'date' => ['required', 'date'],
+        ]);
+
+        $snapshot = $currencyRateService->snapshotForDate(
+            'USD',
+            $validated['date']
+        );
+
+        if (! $snapshot) {
+            return response()->json([
+                'found' => false,
+                'rate' => null,
+                'rate_date' => $validated['date'],
+                'source' => null,
+            ]);
+        }
+
+        return response()->json([
+            'found' => true,
+            'rate' => $snapshot['rate'],
+            'rate_date' => $snapshot['rate_date'],
+            'source' => $snapshot['source'],
+        ]);
+    }
+
+
+    public function store(Request $request, Device $device, CurrencyRateService $currencyRateService): RedirectResponse
     {
         abort_unless($device->status === 'in_stock', 404);
 
@@ -294,10 +330,24 @@ class SaleController extends Controller
             ],
 
             'sale_date' => ['required', 'date'],
+            'usd_rate' => ['nullable', 'integer', 'min:1'],
             'notes' => ['nullable', 'string'],
         ]);
 
-        $deferment = null;
+        $currencySnapshot = $currencyRateService->snapshotForDate(
+            'USD',
+            $validated['sale_date']
+        );
+
+        if (! $currencySnapshot && ! empty($validated['usd_rate'])) {
+            $currencySnapshot = [
+                'rate' => (int) $validated['usd_rate'],
+                'rate_date' => $validated['sale_date'],
+                'source' => 'manual',
+            ];
+        }
+
+    $deferment = null;
 
         if (($validated['sale_type'] ?? null) === 'installment') {
             $deferment = $this->calculateInstallmentDeferment(
@@ -312,7 +362,7 @@ class SaleController extends Controller
             }
         }
 
-        DB::transaction(function () use ($request, $device, $validated, $deferment) {
+        DB::transaction(function () use ($request, $device, $validated, $deferment, $currencySnapshot) {
             $lockedDevice = Device::query()
                 ->whereKey($device->id)
                 ->lockForUpdate()
@@ -380,6 +430,9 @@ class SaleController extends Controller
             $sale->deferment_days = $defermentDays;
             $sale->deferment_profit = $defermentProfit;
             $sale->sale_date = $validated['sale_date'];
+        $sale->usd_rate = $currencySnapshot['rate'] ?? null;
+        $sale->usd_rate_date = $currencySnapshot['rate_date'] ?? null;
+        $sale->usd_rate_source = $currencySnapshot['source'] ?? null;
             $sale->notes = $validated['notes'] ?? null;
             $sale->created_by = $request->user()->id;
             $sale->save();
@@ -408,10 +461,12 @@ class SaleController extends Controller
                     $rows[] = [
                         'sale_id' => $sale->id,
                         'installment_number' => $i + 1,
-                        'due_date' => $firstDueJalali
-                            ->addMonths($i)
-                            ->toCarbon()
-                            ->toDateString(),
+                        'due_date' => $i === 0
+                            ? $firstDueJalali->toCarbon()->toDateString()
+                            : $firstDueJalali
+                                ->addMonths($i)
+                                ->toCarbon()
+                                ->toDateString(),
                         'amount' => $baseAmount + ($i < $remainder ? 1 : 0),
                         'paid_amount' => 0,
                         'status' => 'pending',

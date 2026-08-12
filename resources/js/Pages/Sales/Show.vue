@@ -14,6 +14,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    currentUsdRate: {
+        type: Number,
+        default: 0,
+    },
 });
 
 const formatMoney = (value) => {
@@ -346,47 +350,68 @@ const clearanceDelayDays = (installment) => {
                         <section
                             class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-6"
                         >
-                            <div class="mb-5">
-                                <h2 class="text-lg font-black">
-                                    خلاصه مالی قرارداد
-                                </h2>
+                            <div class="mb-6 flex items-start justify-between gap-4">
+                                <div>
+                                    <h2 class="text-lg font-black">
+                                        خلاصه مالی قرارداد
+                                    </h2>
 
-                                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                                    مبالغ بر اساس اطلاعات ثبت‌شده هنگام فروش
-                                </p>
+                                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                                        خرید، فروش و نتیجه مالی این معامله
+                                    </p>
+                                </div>
+
+                                <span
+                                    class="shrink-0 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                                >
+                                    {{ saleTypeLabel(sale.sale_type) }}
+                                </span>
                             </div>
 
-                            <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                            <!-- معامله اصلی -->
+                            <div class="grid gap-3 sm:grid-cols-3">
                                 <div
-                                    class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950"
+                                    class="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950"
                                 >
                                     <p class="text-xs font-bold text-slate-400">
-                                        قیمت خرید دستگاه
+                                        قیمت خرید
                                     </p>
 
                                     <p class="mt-2 text-lg font-black">
                                         {{ formatMoney(sale.purchase_price) }}
-                                        <span class="text-xs font-bold">تومان</span>
+                                        <span class="text-xs font-bold text-slate-400">تومان</span>
                                     </p>
                                 </div>
 
                                 <div
-                                    class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950"
+                                    class="rounded-2xl border border-sky-100 bg-sky-50/60 p-4 dark:border-sky-950 dark:bg-sky-950/20"
                                 >
-                                    <p class="text-xs font-bold text-slate-400">
-                                        قیمت فروش پایه
+                                    <p class="text-xs font-bold text-sky-600 dark:text-sky-400">
+                                        قیمت فروش
                                     </p>
 
                                     <p class="mt-2 text-lg font-black">
                                         {{ formatMoney(sale.sale_price) }}
-                                        <span class="text-xs font-bold">تومان</span>
+                                        <span class="text-xs font-bold text-slate-400">تومان</span>
                                     </p>
                                 </div>
 
                                 <div
-                                    class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950"
+                                    class="rounded-2xl border p-4"
+                                    :class="
+                                        Number(sale.trading_profit || 0) >= 0
+                                            ? 'border-emerald-100 bg-emerald-50/70 dark:border-emerald-950 dark:bg-emerald-950/20'
+                                            : 'border-red-100 bg-red-50/70 dark:border-red-950 dark:bg-red-950/20'
+                                    "
                                 >
-                                    <p class="text-xs font-bold text-slate-400">
+                                    <p
+                                        class="text-xs font-bold"
+                                        :class="
+                                            Number(sale.trading_profit || 0) >= 0
+                                                ? 'text-emerald-600'
+                                                : 'text-red-600'
+                                        "
+                                    >
                                         سود معامله
                                     </p>
 
@@ -394,8 +419,8 @@ const clearanceDelayDays = (installment) => {
                                         class="mt-2 text-lg font-black"
                                         :class="
                                             Number(sale.trading_profit || 0) >= 0
-                                                ? 'text-emerald-600'
-                                                : 'text-red-600'
+                                                ? 'text-emerald-700 dark:text-emerald-300'
+                                                : 'text-red-700 dark:text-red-300'
                                         "
                                     >
                                         <template v-if="sale.trading_profit !== null">
@@ -403,81 +428,133 @@ const clearanceDelayDays = (installment) => {
                                             <span class="text-xs font-bold">تومان</span>
                                         </template>
 
-                                        <template v-else>
-                                            —
-                                        </template>
+                                        <template v-else>—</template>
                                     </p>
                                 </div>
+                            </div>
 
-                                <template v-if="isInstallment">
-                                    <div
-                                        class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950"
-                                    >
-                                        <p class="text-xs font-bold text-slate-400">
-                                            پیش‌پرداخت
+                            <!-- جزئیات اقساط -->
+                            <template v-if="isInstallment">
+                                <div
+                                    class="mt-5 rounded-3xl border border-slate-100 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-950/50"
+                                >
+                                    <div class="mb-4 flex items-center justify-between gap-3">
+                                        <p class="text-sm font-black">
+                                            جزئیات فروش اقساطی
                                         </p>
 
-                                        <p class="mt-2 text-lg font-black">
-                                            {{ formatMoney(sale.down_payment) }}
-                                            <span class="text-xs font-bold">تومان</span>
-                                        </p>
-                                    </div>
-
-                                    <div
-                                        class="rounded-2xl bg-violet-50 p-4 dark:bg-violet-950/20"
-                                    >
-                                        <p class="text-xs font-bold text-violet-500">
-                                            سود اقساط
-                                        </p>
-
-                                        <p class="mt-2 text-lg font-black text-violet-700 dark:text-violet-300">
-                                            +{{ formatMoney(sale.installment_profit) }}
-                                            <span class="text-xs font-bold">تومان</span>
-                                        </p>
-
-                                        <p class="mt-1 text-xs text-violet-500">
+                                        <span class="text-xs text-slate-400">
                                             نرخ ماهانه
                                             {{ Number(sale.monthly_profit_rate || 0).toLocaleString('fa-IR', {
                                                 minimumFractionDigits: 1,
                                                 maximumFractionDigits: 1,
                                             }) }}
-                                            درصد
-                                        </p>
+                                            ٪
+                                        </span>
                                     </div>
 
-                                    <div
-                                        class="rounded-2xl bg-slate-900 p-4 text-white dark:bg-white dark:text-slate-900"
-                                    >
-                                        <p class="text-xs font-bold opacity-60">
-                                            مبلغ کل قرارداد
-                                        </p>
+                                    <div class="grid gap-3 sm:grid-cols-3">
+                                        <div class="rounded-2xl bg-white p-4 dark:bg-slate-900">
+                                            <p class="text-xs font-bold text-slate-400">
+                                                پیش‌پرداخت
+                                            </p>
 
-                                        <p class="mt-2 text-lg font-black">
-                                            {{ formatMoney(sale.contract_total) }}
-                                            <span class="text-xs font-bold">تومان</span>
-                                        </p>
+                                            <p class="mt-2 font-black">
+                                                {{ formatMoney(sale.down_payment) }}
+                                                <span class="text-xs text-slate-400">تومان</span>
+                                            </p>
+                                        </div>
+
+                                        <div class="rounded-2xl bg-violet-50 p-4 dark:bg-violet-950/20">
+                                            <p class="text-xs font-bold text-violet-500">
+                                                سود اقساط
+                                            </p>
+
+                                            <p class="mt-2 font-black text-violet-700 dark:text-violet-300">
+                                                +{{ formatMoney(sale.installment_profit) }}
+                                                <span class="text-xs">تومان</span>
+                                            </p>
+                                        </div>
+
+                                        <div class="rounded-2xl bg-slate-900 p-4 text-white dark:bg-white dark:text-slate-900">
+                                            <p class="text-xs font-bold opacity-60">
+                                                مبلغ کل قرارداد
+                                            </p>
+
+                                            <p class="mt-2 text-lg font-black">
+                                                {{ formatMoney(sale.contract_total) }}
+                                                <span class="text-xs opacity-60">تومان</span>
+                                            </p>
+                                        </div>
                                     </div>
-                                </template>
-                            </div>
-
-                            <div
-                                v-if="isInstallment && sale.total_profit !== null"
-                                class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 dark:border-emerald-950 dark:bg-emerald-950/20"
-                            >
-                                <div>
-                                    <p class="text-xs font-bold text-emerald-600">
-                                        سود کل قرارداد
-                                    </p>
-
-                                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                                        سود معامله + سود تأمین مالی
-                                    </p>
                                 </div>
 
-                                <p class="text-xl font-black text-emerald-700 dark:text-emerald-300">
-                                    {{ Number(sale.total_profit) >= 0 ? '+' : '' }}{{ formatMoney(sale.total_profit) }}
-                                    <span class="text-xs">تومان</span>
-                                </p>
+                                <div
+                                    v-if="sale.total_profit !== null"
+                                    class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 dark:border-emerald-950 dark:bg-emerald-950/20"
+                                >
+                                    <div>
+                                        <p class="text-xs font-bold text-emerald-600">
+                                            سود کل قرارداد
+                                        </p>
+
+                                        <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                                            سود معامله + سود اقساط
+                                        </p>
+                                    </div>
+
+                                    <p class="text-xl font-black text-emerald-700 dark:text-emerald-300">
+                                        {{ Number(sale.total_profit) >= 0 ? '+' : '' }}{{ formatMoney(sale.total_profit) }}
+                                        <span class="text-xs">تومان</span>
+                                    </p>
+                                </div>
+                            </template>
+
+                            <!-- نرخ ارز؛ اطلاعات کمکی -->
+                            <div
+                                v-if="sale.usd_rate"
+                                class="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800"
+                            >
+                                <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-950">
+                                    <div class="mb-3 flex items-center justify-between gap-3">
+                                        <p class="text-xs font-bold text-slate-400">
+                                            نرخ دلار
+                                        </p>
+
+                                        <span class="text-[11px] text-slate-400">
+                                            {{ formatDate(sale.usd_rate_date || sale.sale_date) }}
+                                            <span v-if="sale.usd_rate_source === 'manual'"> · ثبت دستی</span>
+                                            <span v-else-if="sale.usd_rate_source === 'navasan'"> · نوسان</span>
+                                        </span>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <div class="flex items-center justify-between gap-3">
+                                            <span class="text-sm text-slate-500 dark:text-slate-400">
+                                                روز فروش
+                                            </span>
+
+                                            <span class="font-bold">
+                                                {{ formatMoney(sale.usd_rate) }}
+                                                <span class="text-xs text-slate-400">تومان</span>
+                                            </span>
+                                        </div>
+
+                                        <div
+                                            v-if="currentUsdRate"
+                                            class="flex items-center justify-between gap-3"
+                                        >
+                                            <span class="text-sm text-slate-500 dark:text-slate-400">
+                                                امروز
+                                            </span>
+
+                                            <span class="font-bold">
+                                                {{ formatMoney(currentUsdRate) }}
+                                                <span class="text-xs text-slate-400">تومان</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </section>
 

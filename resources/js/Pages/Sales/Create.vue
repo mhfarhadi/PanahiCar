@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
 import { toJalaali, toGregorian, jalaaliMonthLength } from 'jalaali-js';
@@ -32,11 +32,69 @@ const form = useForm({
     monthly_profit_rate: '6.5',
     installment_count: 12,
     first_due_date: '',
-    sale_date: '',
+    sale_date: localDate,
+    usd_rate: '',
     notes: '',
 });
 
 const buyerSearch = ref('');
+
+const currencyRateLoading = ref(false);
+const currencyRateFound = ref(false);
+const currencyRateSource = ref(null);
+const currencyRateError = ref('');
+
+const loadCurrencyRate = async (date) => {
+    if (!date) {
+        form.usd_rate = '';
+        currencyRateFound.value = false;
+        currencyRateSource.value = null;
+        currencyRateError.value = '';
+        return;
+    }
+
+    currencyRateLoading.value = true;
+    currencyRateError.value = '';
+
+    try {
+        const response = await fetch(
+            route('sales.currency-rate', { date }),
+            {
+                headers: {
+                    Accept: 'application/json',
+                },
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error('Currency rate request failed');
+        }
+
+        const data = await response.json();
+
+        currencyRateFound.value = Boolean(data.found);
+        currencyRateSource.value = data.source ?? null;
+
+        form.usd_rate = data.found && data.rate
+            ? String(data.rate)
+            : '';
+    } catch (error) {
+        currencyRateFound.value = false;
+        currencyRateSource.value = null;
+        form.usd_rate = '';
+        currencyRateError.value = 'دریافت نرخ دلار انجام نشد؛ نرخ را دستی وارد کنید.';
+    } finally {
+        currencyRateLoading.value = false;
+    }
+};
+
+watch(
+    () => form.sale_date,
+    (date) => {
+        loadCurrencyRate(date);
+    },
+    { immediate: true }
+);
 
 const normalizeDigits = (value) =>
     String(value ?? '')
@@ -85,6 +143,12 @@ const formatPrice = (value) => {
 
 const handleSalePrice = (event) => {
     form.sale_price = normalizeDigits(event.target.value).replace(/\D/g, '');
+};
+
+const handleUsdRate = (event) => {
+    form.usd_rate = normalizeDigits(event.target.value)
+        .replace(/\D/g, '')
+        .slice(0, 9);
 };
 
 const handleDownPayment = (event) => {
@@ -817,6 +881,74 @@ const submit = () => {
                                 class="mt-2 text-xs font-bold text-red-500"
                             >
                                 {{ form.errors.sale_date }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="mb-2 block text-sm font-bold">
+                                نرخ دلار روز فروش
+                            </label>
+
+                            <div class="relative">
+                                <input
+                                    :value="formatPrice(form.usd_rate)"
+                                    type="text"
+                                    inputmode="numeric"
+                                    :readonly="currencyRateFound || currencyRateLoading"
+                                    :placeholder="
+                                        currencyRateLoading
+                                            ? 'در حال دریافت نرخ...'
+                                            : currencyRateFound
+                                                ? ''
+                                                : 'نرخ دلار را دستی وارد کنید'
+                                    "
+                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 pl-16 focus:border-violet-500 focus:ring-violet-500 read-only:cursor-default read-only:text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:read-only:text-slate-400"
+                                    @input="handleUsdRate"
+                                />
+
+                                <span
+                                    class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400"
+                                >
+                                    تومان
+                                </span>
+                            </div>
+
+                            <p
+                                v-if="currencyRateLoading"
+                                class="mt-2 text-xs font-bold text-slate-400"
+                            >
+                                در حال بررسی آرشیو نرخ دلار...
+                            </p>
+
+                            <p
+                                v-else-if="currencyRateFound"
+                                class="mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400"
+                            >
+                                نرخ ثبت‌شده مایاهمراه
+                                <span v-if="currencyRateSource === 'navasan'">
+                                    · منبع: نوسان
+                                </span>
+                            </p>
+
+                            <p
+                                v-else
+                                class="mt-2 text-xs font-bold text-amber-600 dark:text-amber-400"
+                            >
+                                برای این تاریخ نرخ آرشیوی نداریم؛ نرخ دلار همان روز را دستی وارد کنید.
+                            </p>
+
+                            <p
+                                v-if="currencyRateError"
+                                class="mt-2 text-xs font-bold text-red-500"
+                            >
+                                {{ currencyRateError }}
+                            </p>
+
+                            <p
+                                v-if="form.errors.usd_rate"
+                                class="mt-2 text-xs font-bold text-red-500"
+                            >
+                                {{ form.errors.usd_rate }}
                             </p>
                         </div>
 

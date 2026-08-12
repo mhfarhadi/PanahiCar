@@ -79,6 +79,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/sales', [SaleController::class, 'index'])->name('sales.index');
 
+Route::get('/sales/currency-rate', [SaleController::class, 'currencyRate'])
+    ->name('sales.currency-rate');
+
     Route::get('/sales/{sale}', [SaleController::class, 'show'])
         ->whereNumber('sale')
         ->name('sales.show');
