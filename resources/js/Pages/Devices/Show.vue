@@ -74,12 +74,21 @@ const persianDate = (value) => {
                         </p>
                     </div>
 
-                    <Link
-                        :href="route('devices.index')"
-                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-center text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-                    >
-                        بازگشت به موجودی
-                    </Link>
+                    <div class="flex flex-wrap gap-2">
+                        <Link
+                            :href="route('devices.edit', device.id)"
+                            class="rounded-2xl bg-violet-600 px-4 py-2.5 text-center text-sm font-black text-white transition hover:bg-violet-700"
+                        >
+                            ویرایش مشخصات
+                        </Link>
+
+                        <Link
+                            :href="route('devices.index')"
+                            class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-center text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                        >
+                            بازگشت به موجودی
+                        </Link>
+                    </div>
                 </div>
 
                 <div class="grid gap-6 lg:grid-cols-[1fr_1.25fr]">

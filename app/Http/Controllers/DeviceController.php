@@ -141,6 +141,109 @@ class DeviceController extends Controller
         ]);
     }
 
+    public function edit(Device $device): Response
+    {
+        abort_unless($device->status === 'in_stock', 404);
+
+        return Inertia::render('Devices/Edit', [
+            'device' => [
+                'id' => $device->id,
+                'brand' => $device->brand,
+                'model' => $device->model,
+                'storage' => $device->storage,
+                'color' => $device->color,
+                'part_number' => $device->part_number,
+                'manufacturing_country' => $device->manufacturing_country,
+                'sim_type' => $device->sim_type,
+                'battery_health' => $device->battery_health,
+                'battery_condition' => $device->battery_condition,
+                'condition_grade' => $device->condition_grade,
+                'imei' => $device->imei,
+                'registration_status' => $device->registration_status,
+            ],
+            'catalog' => [
+                'brands' => DB::table('brands')
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->orderBy('name')
+                    ->get(),
+
+                'models' => DB::table('device_models')
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->orderBy('name')
+                    ->get(),
+
+                'storages' => DB::table('storage_options')
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->get(),
+
+                'colors' => DB::table('color_options')
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->get(),
+
+                'partNumbers' => DB::table('part_number_options')
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->get(),
+
+                'modelStorages' => DB::table('device_model_storage_option')->get(),
+                'modelColors' => DB::table('device_model_color_option')->get(),
+                'modelPartNumbers' => DB::table('device_model_part_number_option')->get(),
+            ],
+        ]);
+    }
+
+    public function update(Request $request, Device $device): RedirectResponse
+    {
+        abort_unless($device->status === 'in_stock', 404);
+
+        $validated = $request->validate([
+            'brand' => ['required', 'string', 'max:100'],
+            'model' => ['required', 'string', 'max:150'],
+            'storage' => ['nullable', 'string', 'max:50'],
+            'color' => ['nullable', 'string', 'max:100'],
+            'part_number' => ['nullable', 'string', 'max:100'],
+            'manufacturing_country' => ['nullable', 'in:vietnam,india,china,south_korea,indonesia'],
+            'sim_type' => ['nullable', 'in:single,dual'],
+            'battery_health' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'battery_condition' => ['nullable', 'in:excellent,good,poor,replace'],
+            'condition_grade' => ['nullable', 'string', 'max:50'],
+            'imei' => ['nullable', 'digits:15', 'unique:devices,imei,' . $device->id],
+            'registration_status' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        if (($validated['brand'] ?? null) === 'Samsung') {
+            $validated['part_number'] = null;
+            $validated['battery_health'] = null;
+        } else {
+            $validated['manufacturing_country'] = null;
+            $validated['battery_condition'] = null;
+        }
+
+        $device->brand = $validated['brand'];
+        $device->model = $validated['model'];
+        $device->storage = $validated['storage'] ?? null;
+        $device->color = $validated['color'] ?? null;
+        $device->part_number = $validated['part_number'] ?? null;
+        $device->manufacturing_country = $validated['manufacturing_country'] ?? null;
+        $device->sim_type = $validated['sim_type'] ?? null;
+        $device->battery_health = $validated['battery_health'] ?? null;
+        $device->battery_condition = $validated['battery_condition'] ?? null;
+        $device->condition_grade = $validated['condition_grade'] ?? null;
+        $device->imei = $validated['imei'] ?? null;
+        $device->registration_status = $validated['registration_status'] ?? null;
+
+        $device->save();
+
+        return redirect()
+            ->route('devices.show', $device)
+            ->with('success', 'مشخصات دستگاه با موفقیت ویرایش شد.');
+    }
+
+
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([

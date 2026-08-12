@@ -35,6 +35,14 @@ Route::middleware('auth')->group(function () {
         ->whereNumber('device')
         ->name('devices.show');
 
+    Route::get('/devices/{device}/edit', [DeviceController::class, 'edit'])
+        ->whereNumber('device')
+        ->name('devices.edit');
+
+    Route::patch('/devices/{device}', [DeviceController::class, 'update'])
+        ->whereNumber('device')
+        ->name('devices.update');
+
     Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
     Route::get('/contacts/create', [ContactController::class, 'create'])->name('contacts.create');
     Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
