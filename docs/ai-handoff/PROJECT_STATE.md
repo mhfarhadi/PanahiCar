@@ -6,7 +6,7 @@ Last updated: 2026-08-12
 
 Commit:
 
-`8837137 — MayaHamrah: add sales filters and summary`
+`0e9fc8b — MayaHamrah: add inventory device editing`
 
 در زمان ثبت این سند، آخرین checkpoint تست‌شده همین commit است.
 
@@ -460,3 +460,24 @@ Cache keys:
 Commit:
 `8837137 — MayaHamrah: add sales filters and summary`
 
+
+
+## Inventory device editing
+
+Inventory device detail pages now include a `ویرایش مشخصات` action.
+
+The edit workflow:
+
+- is available only for `in_stock` devices
+- preloads the current device specification values
+- supports brand/model/catalog-dependent fields
+- preserves Samsung-specific conditional fields
+- updates device specification data only
+- does not modify purchase seller, purchase price or purchase date
+- does not overwrite append-only device or purchase note history
+- redirects back to the device detail page after a successful save
+
+The feature passed `npm run build` and was manually tested successfully.
+
+Commit:
+`0e9fc8b — MayaHamrah: add inventory device editing`

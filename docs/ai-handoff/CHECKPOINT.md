@@ -4,29 +4,30 @@ Date: 2026-08-12
 
 Current stable commit:
 
-`8837137 — MayaHamrah: add sales filters and summary`
+`0e9fc8b — MayaHamrah: add inventory device editing`
 
 Status:
+
 - app builds successfully
-- sales filters manually tested
-- global navigation and dashboard remain operational
+- inventory device editing manually tested
+- purchase/financial history remains protected from device edits
+- sales filters, global navigation and dashboard remain operational
 
 Latest completed:
-1. Sales type filters: همه / نقدی / اقساطی
-2. Sales period filters:
-   - همه زمان‌ها
-   - ۷ روز گذشته
-   - ماه جاری شمسی
-   - ماه گذشته شمسی
-3. Filtered sales summary:
-   - تعداد فروش
-   - مجموع مبلغ فروش
-4. Search works together with filters
+
+1. Inventory devices now have an edit action from the device detail page.
+2. Editable fields are limited to device/specification data.
+3. Purchase seller, purchase price, purchase date and financial history are not editable here.
+4. Append-only note history is preserved.
+5. Samsung-specific battery/manufacturing fields and other-brand fields remain conditional.
+6. Existing device data is prefilled and updates return to the device detail page.
+7. Feature passed production build and manual UI testing.
 
 Next task:
-Add edit capability for inventory devices.
+Continue product/system planning and prioritize the next requested workflow improvement.
 
 Before starting:
+
 - run `git status`
-- inspect actual device routes/controller/form
 - preserve append-only notes and financial history
+- keep current tested sales/device flows stable
