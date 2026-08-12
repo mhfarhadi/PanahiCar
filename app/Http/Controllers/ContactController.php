@@ -37,6 +37,7 @@ class ContactController extends Controller
                 'mobile',
                 'phone',
                 'description',
+                'avatar_path',
                 'contact_type',
                 'created_at',
             ]);
@@ -75,6 +76,7 @@ public function store(Request $request): RedirectResponse
 
     if ($request->input('return_to') === 'announced-devices.create') {
         $request->merge([
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'contact_type' => 'colleague',
         ]);
     }
@@ -95,6 +97,10 @@ public function store(Request $request): RedirectResponse
     $contact->description = $validated['description'] ?? null;
     $contact->contact_type = $validated['contact_type'];
     $contact->created_by = $request->user()->id;
+
+    if ($request->hasFile('avatar')) {
+        $contact->avatar_path = $request->file('avatar')->store('contacts', 'public');
+    }
     $contact->save();
 
     if (! empty($validated['return_to'])) {

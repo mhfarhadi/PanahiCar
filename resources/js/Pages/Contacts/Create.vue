@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps({
     returnTo: {
@@ -21,6 +22,7 @@ const form = useForm({
     phone: '',
     contact_type: props.defaultContactType,
     description: '',
+    avatar: null,
     return_to: props.returnTo,
 });
 
@@ -38,6 +40,21 @@ const handleMobile = (event) => {
 
 const handlePhone = (event) => {
     form.phone = normalizeDigits(event.target.value);
+};
+
+
+const avatarPreview = ref('');
+
+const handleAvatar = (event) => {
+    const file = event.target.files?.[0] ?? null;
+
+    form.avatar = file;
+
+    if (avatarPreview.value) {
+        URL.revokeObjectURL(avatarPreview.value);
+    }
+
+    avatarPreview.value = file ? URL.createObjectURL(file) : '';
 };
 
 const submit = () => {
@@ -76,6 +93,46 @@ const submit = () => {
                     @submit.prevent="submit"
                 >
                     <div class="grid gap-5 sm:grid-cols-2">
+                        <div class="sm:col-span-2">
+                            <label class="mb-2 block text-sm font-bold">
+                                عکس پروفایل
+                                <span class="font-normal text-slate-400">(اختیاری)</span>
+                            </label>
+
+                            <div class="flex flex-col gap-4 rounded-2xl border border-dashed border-slate-200 p-4 dark:border-slate-700 sm:flex-row sm:items-center">
+                                <div class="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-violet-50 text-4xl dark:bg-violet-950/40">
+                                    <img
+                                        v-if="avatarPreview"
+                                        :src="avatarPreview"
+                                        alt="پیش‌نمایش عکس شخص"
+                                        class="h-full w-full object-cover"
+                                    />
+
+                                    <span v-else>👤</span>
+                                </div>
+
+                                <div class="min-w-0 flex-1">
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        class="block w-full text-sm text-slate-500 file:ml-4 file:rounded-xl file:border-0 file:bg-violet-50 file:px-4 file:py-2 file:font-bold file:text-violet-700 dark:text-slate-400 dark:file:bg-violet-950/40 dark:file:text-violet-300"
+                                        @change="handleAvatar"
+                                    />
+
+                                    <p class="mt-2 text-xs leading-6 text-slate-400">
+                                        فقط برای شناسایی سریع شخص؛ JPG، PNG یا WEBP تا ۵ مگابایت.
+                                    </p>
+
+                                    <p
+                                        v-if="form.errors.avatar"
+                                        class="mt-2 text-xs font-bold text-red-500"
+                                    >
+                                        {{ form.errors.avatar }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="sm:col-span-2">
                             <label class="mb-2 block text-sm font-bold">
                                 نام و نام خانوادگی

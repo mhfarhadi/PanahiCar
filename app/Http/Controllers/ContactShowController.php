@@ -46,6 +46,39 @@ class ContactShowController extends Controller
                 'd.status',
             ]);
 
+        $purchasedFromShop = DB::table('sales as s')
+            ->join('devices as d', 'd.id', '=', 's.device_id')
+            ->where('s.buyer_id', $contact->id)
+            ->orderByDesc('s.sale_date')
+            ->orderByDesc('s.id')
+            ->get([
+                's.id as sale_id',
+                's.device_id',
+                's.sale_type',
+                's.sale_price',
+                's.down_payment',
+                's.monthly_profit_rate',
+                's.installment_profit',
+                's.contract_total',
+                's.sale_date',
+                's.notes',
+                'd.brand',
+                'd.model',
+                'd.storage',
+                'd.color',
+                'd.imei',
+                'd.status',
+            ]);
+
+        $paymentStats = DB::table('installments as i')
+            ->join('sales as s', 's.id', '=', 'i.sale_id')
+            ->where('s.buyer_id', $contact->id)
+            ->where('i.status', 'paid')
+            ->selectRaw('COUNT(*) as cleared_count')
+            ->selectRaw('SUM(CASE WHEN i.paid_at > i.due_date THEN 1 ELSE 0 END) as delayed_count')
+            ->selectRaw('COALESCE(ROUND(AVG(CASE WHEN i.paid_at > i.due_date THEN DATEDIFF(i.paid_at, i.due_date) END)), 0) as average_delay_days')
+            ->first();
+
         return Inertia::render('Contacts/Show', [
             'contact' => [
                 'id' => $contact->id,
@@ -53,17 +86,26 @@ class ContactShowController extends Controller
                 'mobile' => $contact->mobile,
                 'phone' => $contact->phone,
                 'description' => $contact->description,
+                'avatar_path' => $contact->avatar_path,
                 'contact_type' => $contact->contact_type,
                 'created_at' => $contact->created_at,
 
                 'stats' => [
                     'announced_count' => $announcedDevices->count(),
                     'sold_to_shop_count' => $soldToShop->count(),
+                    'purchased_from_shop_count' => $purchasedFromShop->count(),
+                ],
+
+                'payment_stats' => [
+                    'cleared_count' => (int) ($paymentStats->cleared_count ?? 0),
+                    'delayed_count' => (int) ($paymentStats->delayed_count ?? 0),
+                    'average_delay_days' => (int) ($paymentStats->average_delay_days ?? 0),
                 ],
             ],
 
             'announcedDevices' => $announcedDevices,
             'soldToShop' => $soldToShop,
+            'purchasedFromShop' => $purchasedFromShop,
         ]);
     }
 }

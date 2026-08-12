@@ -151,9 +151,16 @@ watch(type, () => {
                     >
                         <div class="flex items-start gap-4">
                             <div
-                                class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-xl dark:bg-violet-950/40"
+                                class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-violet-50 text-xl dark:bg-violet-950/40"
                             >
-                                👤
+                                <img
+                                    v-if="contact.avatar_path"
+                                    :src="`/storage/${contact.avatar_path}`"
+                                    :alt="contact.name"
+                                    class="h-full w-full object-cover"
+                                />
+
+                                <span v-else>👤</span>
                             </div>
 
                             <div class="min-w-0 flex-1">
