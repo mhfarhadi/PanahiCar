@@ -250,3 +250,37 @@ Important:
 - this was a visual-only pass; established business and financial logic must remain unchanged
 - continue to preserve the existing estimator and finance backlog after visual work
 
+## Account menu and receivables — 2026-08-13
+
+Completed:
+
+- `0cb28f9` — fixed account/profile menu positioning
+  - desktop profile dropdown opens upward from the bottom navigation rail
+  - default Dropdown behavior remains downward for other usages
+  - mobile drawer is constrained to `100dvh`
+  - mobile navigation body scrolls independently
+  - mobile account footer remains visible inside the viewport
+
+- `f10e729` — added dedicated installment checks and receivables page
+  - new authenticated route: `installments.index`
+  - Dashboard "مطالبات اقساطی" now opens the checks/receivables page instead of Sales
+  - Dashboard "همه چک‌ها" links to the same page
+  - filters:
+    - all
+    - open
+    - overdue
+    - due within 7 days
+    - paid
+  - search supports customer name/mobile and device brand/model/storage/IMEI
+  - page shows open, overdue, due-soon and paid summaries
+  - each check links back to its sale contract
+  - overdue is derived from `due_date` versus today; it is not written as a new historical status
+  - existing installment financial data and schema were not modified
+  - existing `mark-paid` behavior remains unchanged
+
+Validation after these changes:
+
+- `php artisan test` passed: 34 tests / 106 assertions
+- `npm run build` passed
+- `git diff --check` passed
+
