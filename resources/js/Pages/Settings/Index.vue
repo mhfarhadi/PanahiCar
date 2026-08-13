@@ -1,27 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
 
-const THEME_KEY = 'maya_theme';
-
-const theme = ref(localStorage.getItem(THEME_KEY) || 'system');
-
-const applyTheme = (value) => {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    const shouldUseDark =
-        value === 'dark' ||
-        (value === 'system' && prefersDark);
-
-    document.documentElement.classList.toggle('dark', shouldUseDark);
-};
-
-const setTheme = (value) => {
-    theme.value = value;
-    localStorage.setItem(THEME_KEY, value);
-    applyTheme(value);
-};
 </script>
 
 <template>
@@ -43,7 +23,7 @@ const setTheme = (value) => {
                     </h1>
 
                     <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                        مدیریت اشخاص و تنظیمات ظاهری برنامه
+                        مدیریت اشخاص و تنظیمات برنامه
                     </p>
                 </div>
 
@@ -66,65 +46,6 @@ const setTheme = (value) => {
                             مدیریت همکاران، مشتریان و اشخاص عادی
                         </p>
                     </Link>
-
-                    <div
-                        class="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-900"
-                    >
-                        <div
-                            class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-xl dark:bg-slate-800"
-                        >
-                            ◐
-                        </div>
-
-                        <h2 class="font-black">
-                            حالت نمایش
-                        </h2>
-
-                        <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                            حالت ظاهری برنامه را انتخاب کنید
-                        </p>
-
-                        <div class="mt-5 grid grid-cols-3 gap-2">
-                            <button
-                                type="button"
-                                class="rounded-2xl border px-3 py-3 text-sm font-bold transition"
-                                :class="
-                                    theme === 'light'
-                                        ? 'border-violet-600 bg-violet-600 text-white'
-                                        : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300'
-                                "
-                                @click="setTheme('light')"
-                            >
-                                روشن
-                            </button>
-
-                            <button
-                                type="button"
-                                class="rounded-2xl border px-3 py-3 text-sm font-bold transition"
-                                :class="
-                                    theme === 'dark'
-                                        ? 'border-violet-600 bg-violet-600 text-white'
-                                        : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300'
-                                "
-                                @click="setTheme('dark')"
-                            >
-                                تاریک
-                            </button>
-
-                            <button
-                                type="button"
-                                class="rounded-2xl border px-3 py-3 text-sm font-bold transition"
-                                :class="
-                                    theme === 'system'
-                                        ? 'border-violet-600 bg-violet-600 text-white'
-                                        : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300'
-                                "
-                                @click="setTheme('system')"
-                            >
-                                سیستم
-                            </button>
-                        </div>
-                    </div>
 
                     <div
                         class="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-900"
