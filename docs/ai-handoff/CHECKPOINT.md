@@ -370,3 +370,28 @@ Next logical installment/check work:
 - add safe reversal/undo for mistakenly marked-paid checks
 - add controlled image removal/replacement while preserving financial history
 
+## Device details layout refinement — 2026-08-13
+
+Completed:
+
+- `ff92152` — redesigned the inventory device detail page layout.
+- Visual/hierarchy-only change; backend and financial logic were not modified.
+- New structure:
+  - compact page header and inventory/status context
+  - prominent device gallery
+  - commercial summary beside gallery
+  - purchase price and suggested sale price surfaced near the top
+  - primary sale CTA moved into the main decision area
+  - seller and purchase-day USD information grouped with commercial summary
+  - IMEI/registration/SIM information given a compact quick panel
+  - technical specifications reorganized into structured groups instead of many equal-weight cards
+  - device and purchase notes moved to the natural lower section of the page
+- Desktop hierarchy and mobile responsiveness preserved.
+- User reviewed `/devices/6` and approved the new layout.
+
+Validation:
+
+- `php artisan test` passed: 36 tests / 128 assertions
+- `npm run build` passed
+- `git diff --check` passed
+
