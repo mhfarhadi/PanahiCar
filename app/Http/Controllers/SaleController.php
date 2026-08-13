@@ -406,11 +406,25 @@ class SaleController extends Controller
                     * $defermentEquivalentMonths
                 );
 
-                $installmentProfit =
+                $calculatedInstallmentProfit =
                     $baseInstallmentProfit + $defermentProfit;
 
-                $installmentTotal = $principal + $installmentProfit;
-                $contractTotal = $validated['down_payment'] + $installmentTotal;
+                $calculatedInstallmentTotal =
+                    $principal + $calculatedInstallmentProfit;
+
+                $installmentAmount = (int) (
+                    round(
+                        ($calculatedInstallmentTotal / $count) / 10_000
+                    ) * 10_000
+                );
+
+                $installmentTotal = $installmentAmount * $count;
+                $installmentProfit = max(
+                    0,
+                    $installmentTotal - $principal
+                );
+                $contractTotal =
+                    $validated['down_payment'] + $installmentTotal;
             }
 
             $sale = new Sale();
@@ -447,9 +461,6 @@ class SaleController extends Controller
             if ($isInstallment) {
                 $count = $validated['installment_count'];
 
-                $baseAmount = intdiv($installmentTotal, $count);
-                $remainder = $installmentTotal % $count;
-
                 $firstDueJalali = Jalalian::fromCarbon(
                     Carbon::parse($validated['first_due_date'])
                 );
@@ -467,7 +478,7 @@ class SaleController extends Controller
                                 ->addMonths($i)
                                 ->toCarbon()
                                 ->toDateString(),
-                        'amount' => $baseAmount + ($i < $remainder ? 1 : 0),
+                        'amount' => $installmentAmount,
                         'paid_amount' => 0,
                         'status' => 'pending',
                         'paid_at' => null,

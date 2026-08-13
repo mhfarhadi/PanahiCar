@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Device;
 use App\Models\Purchase;
+use App\Services\CurrencyRateService;
 use App\Services\EntityNoteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,7 +37,7 @@ class AnnouncedDevicePurchaseController extends Controller
         ]);
     }
 
-    public function store(Request $request, Device $device): RedirectResponse
+    public function store(Request $request, Device $device, CurrencyRateService $currencyRateService): RedirectResponse
     {
         abort_unless($device->status === 'announced', 404);
 
@@ -46,12 +47,20 @@ class AnnouncedDevicePurchaseController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
-        DB::transaction(function () use ($request, $device, $validated) {
+        $currencySnapshot = $currencyRateService->snapshotForDate(
+            'USD',
+            $validated['purchase_date']
+        );
+
+        DB::transaction(function () use ($request, $device, $validated, $currencySnapshot) {
             $purchase = new Purchase();
             $purchase->device_id = $device->id;
             $purchase->seller_id = $device->announced_by_id;
             $purchase->purchase_price = $validated['purchase_price'];
             $purchase->purchase_date = $validated['purchase_date'];
+            $purchase->usd_rate = $currencySnapshot['rate'] ?? null;
+            $purchase->usd_rate_date = $currencySnapshot['rate_date'] ?? null;
+            $purchase->usd_rate_source = $currencySnapshot['source'] ?? null;
             $purchase->notes = $validated['notes'] ?? null;
             $purchase->created_by = $request->user()->id;
             $purchase->save();

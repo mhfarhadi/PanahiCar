@@ -274,6 +274,24 @@ const persianDate = (value) => {
                                     </p>
                                 </div>
 
+                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                    <p class="text-xs text-slate-400">نرخ دلار روز خرید</p>
+                                    <p class="mt-1 font-black">
+                                        <template v-if="device.purchase_usd_rate">
+                                            {{ money(device.purchase_usd_rate) }}
+                                        </template>
+                                        <template v-else>
+                                            —
+                                        </template>
+                                    </p>
+                                    <p
+                                        v-if="device.purchase_usd_rate_date"
+                                        class="mt-1 text-xs text-slate-400"
+                                    >
+                                        {{ persianDate(device.purchase_usd_rate_date) }}
+                                    </p>
+                                </div>
+
                                 <div class="rounded-2xl bg-violet-50 p-4 dark:bg-violet-950/30">
                                     <p class="text-xs text-slate-500">قیمت پیشنهادی فروش +۱۰٪</p>
                                     <p class="mt-1 text-lg font-black text-violet-700 dark:text-violet-300">

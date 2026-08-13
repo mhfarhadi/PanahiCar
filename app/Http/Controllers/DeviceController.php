@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Device;
 use App\Models\DeviceImage;
 use App\Models\Purchase;
+use App\Services\CurrencyRateService;
 use App\Services\EntityNoteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -215,6 +216,11 @@ class DeviceController extends Controller
             'registration_status' => ['nullable', 'string', 'max:50'],
         ]);
 
+        $currencySnapshot = $currencyRateService->snapshotForDate(
+            'USD',
+            $validated['purchase_date']
+        );
+
         if (($validated['brand'] ?? null) === 'Samsung') {
             $validated['part_number'] = null;
             $validated['battery_health'] = null;
@@ -244,7 +250,7 @@ class DeviceController extends Controller
     }
 
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, CurrencyRateService $currencyRateService): RedirectResponse
     {
         $validated = $request->validate([
             'brand' => ['required', 'string', 'max:100'],
@@ -278,7 +284,7 @@ class DeviceController extends Controller
             $validated['battery_condition'] = null;
         }
 
-        DB::transaction(function () use ($request, $validated) {
+        DB::transaction(function () use ($request, $validated, $currencySnapshot) {
             $device = new Device();
             $device->brand = $validated['brand'];
             $device->model = $validated['model'];
@@ -309,6 +315,9 @@ class DeviceController extends Controller
             $purchase->seller_id = $validated['seller_id'];
             $purchase->purchase_price = $validated['purchase_price'];
             $purchase->purchase_date = $validated['purchase_date'];
+            $purchase->usd_rate = $currencySnapshot['rate'] ?? null;
+            $purchase->usd_rate_date = $currencySnapshot['rate_date'] ?? null;
+            $purchase->usd_rate_source = $currencySnapshot['source'] ?? null;
             $purchase->created_by = $request->user()->id;
             $purchase->save();
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -65,6 +66,14 @@ class PriceEstimationService
                     $registrationStatus
                 );
 
+                $sale->recency_score = $this->recencyScore(
+                    $sale->sale_date
+                );
+
+                $sale->combined_weight = (int) round(
+                    ($sale->similarity_score * $sale->recency_score) / 100
+                );
+
                 return $sale;
             })
             ->sortByDesc('similarity_score')
@@ -85,11 +94,21 @@ class PriceEstimationService
             || $batteryCondition !== null
             || $registrationStatus !== null;
 
-        $estimate = $hasSpecificationInputs
-            ? $this->weightedMedian($comparables)
-            : $this->median($prices);
-
         $count = $comparables->count();
+
+        if ($count >= 3) {
+            $estimate = $this->weightedMedian(
+                $comparables,
+                'combined_weight'
+            );
+        } elseif ($hasSpecificationInputs) {
+            $estimate = $this->weightedMedian(
+                $comparables,
+                'similarity_score'
+            );
+        } else {
+            $estimate = $this->median($prices);
+        }
 
         $confidence = match (true) {
             $count >= 6 => 'high',
@@ -178,12 +197,39 @@ class PriceEstimationService
         );
     }
 
-    private function weightedMedian(Collection $comparables): int
+    private function recencyScore(string $saleDate): int
     {
+        $daysOld = max(
+            0,
+            Carbon::parse($saleDate)->startOfDay()->diffInDays(
+                now()->startOfDay(),
+                false
+            )
+        );
+
+        if ($daysOld <= 30) {
+            return 100;
+        }
+
+        if ($daysOld >= 365) {
+            return 70;
+        }
+
+        $progress = ($daysOld - 30) / (365 - 30);
+
+        return (int) round(
+            100 - ($progress * 30)
+        );
+    }
+
+    private function weightedMedian(
+        Collection $comparables,
+        string $weightField
+    ): int {
         $rows = $comparables
             ->map(fn ($sale) => [
                 'price' => (int) $sale->normalized_price,
-                'weight' => max(0, (int) $sale->similarity_score),
+                'weight' => max(0, (int) ($sale->{$weightField} ?? 0)),
             ])
             ->sortBy('price')
             ->values();

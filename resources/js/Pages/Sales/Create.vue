@@ -377,12 +377,34 @@ const monthlyProfitRate = computed(() => {
     return Number(normalized || 0);
 });
 
-const installmentProfit = computed(() =>
+const calculatedInstallmentProfit = computed(() =>
     baseInstallmentProfit.value + defermentProfit.value
 );
 
-const installmentTotal = computed(() =>
-    installmentPrincipal.value + installmentProfit.value
+const calculatedInstallmentTotal = computed(() =>
+    installmentPrincipal.value + calculatedInstallmentProfit.value
+);
+
+const installmentAmount = computed(() => {
+    const count = Number(form.installment_count || 0);
+
+    if (!count || !calculatedInstallmentTotal.value) return 0;
+
+    const rawAmount = calculatedInstallmentTotal.value / count;
+
+    return Math.round(rawAmount / 10_000) * 10_000;
+});
+
+const installmentTotal = computed(() => {
+    const count = Number(form.installment_count || 0);
+
+    if (!count || !installmentAmount.value) return 0;
+
+    return installmentAmount.value * count;
+});
+
+const installmentProfit = computed(() =>
+    Math.max(0, installmentTotal.value - installmentPrincipal.value)
 );
 
 const contractTotal = computed(() => {
@@ -391,14 +413,6 @@ const contractTotal = computed(() => {
     }
 
     return Number(form.down_payment || 0) + installmentTotal.value;
-});
-
-const installmentAmount = computed(() => {
-    const count = Number(form.installment_count || 0);
-
-    if (!count || !installmentTotal.value) return 0;
-
-    return Math.floor(installmentTotal.value / count);
 });
 
 const profit = computed(() => {
@@ -809,7 +823,7 @@ const submit = () => {
 
                                 <div>
                                     <p class="text-xs text-slate-500 dark:text-slate-400">
-                                        مبلغ تقریبی هر قسط
+                                        مبلغ هر چک
                                     </p>
                                     <p class="mt-1 font-black text-violet-700 dark:text-violet-300">
                                         {{ formatMoney(installmentAmount) }} تومان

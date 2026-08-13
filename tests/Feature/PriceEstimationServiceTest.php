@@ -161,3 +161,140 @@ test('it reports unavailable when there are no exact comparables', function () {
         ->and($result['reason'])->toBe('no_exact_comparables')
         ->and($result['comparable_count'])->toBe(0);
 });
+
+test('it exposes conservative recency metadata without changing the base median yet', function () {
+    \Carbon\Carbon::setTestNow('2026-08-13 12:00:00');
+
+    try {
+        createEstimatorSale(
+            [],
+            [
+                'sale_price' => 100_000_000,
+                'usd_rate' => 100_000,
+                'sale_date' => '2026-08-01',
+                'usd_rate_date' => '2026-08-01',
+            ]
+        );
+
+        createEstimatorSale(
+            [],
+            [
+                'sale_price' => 200_000_000,
+                'usd_rate' => 100_000,
+                'sale_date' => '2025-01-01',
+                'usd_rate_date' => '2025-01-01',
+            ]
+        );
+
+        $result = app(PriceEstimationService::class)->estimate(
+            'Apple',
+            'iPhone 15 Pro',
+            '256GB',
+            100_000
+        );
+
+        expect($result['estimate'])->toBe(150_000_000)
+            ->and($result['comparables'][0]->recency_score)->toBe(100)
+            ->and($result['comparables'][0]->combined_weight)->toBe(100)
+            ->and($result['comparables'][1]->recency_score)->toBe(70)
+            ->and($result['comparables'][1]->combined_weight)->toBe(70);
+    } finally {
+        \Carbon\Carbon::setTestNow();
+    }
+});
+
+test('it keeps sparse estimates conservative before applying recency weighting', function () {
+    \Carbon\Carbon::setTestNow('2026-08-13 12:00:00');
+
+    try {
+        createEstimatorSale(
+            [],
+            [
+                'sale_price' => 100_000_000,
+                'usd_rate' => 100_000,
+                'sale_date' => '2026-08-10',
+                'usd_rate_date' => '2026-08-10',
+            ]
+        );
+
+        createEstimatorSale(
+            [],
+            [
+                'sale_price' => 200_000_000,
+                'usd_rate' => 100_000,
+                'sale_date' => '2025-01-01',
+                'usd_rate_date' => '2025-01-01',
+            ]
+        );
+
+        $result = app(PriceEstimationService::class)->estimate(
+            'Apple',
+            'iPhone 15 Pro',
+            '256GB',
+            100_000
+        );
+
+        expect($result['comparable_count'])->toBe(2)
+            ->and($result['estimate'])->toBe(150_000_000);
+    } finally {
+        \Carbon\Carbon::setTestNow();
+    }
+});
+
+test('it applies recency weighting when enough comparables are available', function () {
+    \Carbon\Carbon::setTestNow('2026-08-13 12:00:00');
+
+    try {
+        createEstimatorSale(
+            [],
+            [
+                'sale_price' => 100_000_000,
+                'usd_rate' => 100_000,
+                'sale_date' => '2025-01-01',
+                'usd_rate_date' => '2025-01-01',
+            ]
+        );
+
+        createEstimatorSale(
+            [],
+            [
+                'sale_price' => 200_000_000,
+                'usd_rate' => 100_000,
+                'sale_date' => '2025-01-02',
+                'usd_rate_date' => '2025-01-02',
+            ]
+        );
+
+        createEstimatorSale(
+            [],
+            [
+                'sale_price' => 300_000_000,
+                'usd_rate' => 100_000,
+                'sale_date' => '2026-08-10',
+                'usd_rate_date' => '2026-08-10',
+            ]
+        );
+
+        createEstimatorSale(
+            [],
+            [
+                'sale_price' => 400_000_000,
+                'usd_rate' => 100_000,
+                'sale_date' => '2026-08-11',
+                'usd_rate_date' => '2026-08-11',
+            ]
+        );
+
+        $result = app(PriceEstimationService::class)->estimate(
+            'Apple',
+            'iPhone 15 Pro',
+            '256GB',
+            100_000
+        );
+
+        expect($result['comparable_count'])->toBe(4)
+            ->and($result['estimate'])->toBe(300_000_000);
+    } finally {
+        \Carbon\Carbon::setTestNow();
+    }
+});

@@ -51,6 +51,12 @@ const navigation = [
         icon: '◉',
     },
     {
+        label: 'برآورد قیمت',
+        href: route('price-estimates.index'),
+        pattern: 'price-estimates.*',
+        icon: '⌕',
+    },
+    {
         label: 'تنظیمات',
         href: route('settings.index'),
         pattern: 'settings.*',
