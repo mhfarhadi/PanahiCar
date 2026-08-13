@@ -781,7 +781,7 @@ const submit = () => {
                         </p>
 
                         <label
-                            class="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#ffcbd0] bg-[#fff0f1]/50 px-4 py-10 text-center transition hover:border-[#ff9299] dark:border-violet-900 dark:bg-[#ff6d76]/[0.06]"
+                            class="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#ffcbd0] bg-[#fff0f1]/50 px-4 py-10 text-center transition hover:border-[#ff9299] dark:border-[#ff6d76]/[0.20] dark:bg-[#ff6d76]/[0.06]"
                         >
                             <span class="text-3xl">＋</span>
                             <span class="mt-2 font-black">

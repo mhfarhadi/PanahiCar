@@ -513,7 +513,7 @@ const submit = () => {
                                     class="rounded-2xl border px-4 py-4 font-black transition"
                                     :class="
                                         form.sale_type === 'cash'
-                                            ? 'border-violet-600 bg-[#ff6d76] text-white'
+                                            ? 'border-[#ff6d76] bg-[#ff6d76] text-white'
                                             : 'border-slate-200/60 bg-[#f7f8fa] text-slate-600 dark:border-white/10 dark:bg-white/[0.025] dark:text-slate-300'
                                     "
                                     @click="form.sale_type = 'cash'"
@@ -526,7 +526,7 @@ const submit = () => {
                                     class="rounded-2xl border px-4 py-4 font-black transition"
                                     :class="
                                         form.sale_type === 'installment'
-                                            ? 'border-violet-600 bg-[#ff6d76] text-white'
+                                            ? 'border-[#ff6d76] bg-[#ff6d76] text-white'
                                             : 'border-slate-200/60 bg-[#f7f8fa] text-slate-600 dark:border-white/10 dark:bg-white/[0.025] dark:text-slate-300'
                                     "
                                     @click="form.sale_type = 'installment'"

@@ -118,7 +118,7 @@ const actions = [
         description: 'اعلام همکاران',
         href: route('announced-devices.index'),
         icon: 'M12 3l8 9-8 9-8-9 8-9Z',
-        tone: 'bg-[#f3edff] text-[#8468bb] dark:bg-violet-950/30 dark:text-violet-300',
+        tone: 'bg-[#eef4ff] text-[#6382b8] dark:bg-sky-950/30 dark:text-sky-300',
     },
     {
         title: 'تنظیمات',

@@ -129,7 +129,7 @@ const submit = () => {
                                     <input
                                         type="file"
                                         accept="image/jpeg,image/png,image/webp"
-                                        class="block w-full text-sm text-slate-500 file:ml-4 file:rounded-xl file:border-0 file:bg-[#fff0f1] file:px-4 file:py-2 file:font-bold file:text-[#d85e68] dark:text-slate-400 dark:file:bg-violet-950/40 dark:file:text-violet-300"
+                                        class="block w-full text-sm text-slate-500 file:ml-4 file:rounded-xl file:border-0 file:bg-[#fff0f1] file:px-4 file:py-2 file:font-bold file:text-[#d85e68] dark:text-slate-400 dark:file:bg-[#ff6d76]/[0.10] dark:file:text-[#ff9299]"
                                         @change="handleAvatar"
                                     />
 

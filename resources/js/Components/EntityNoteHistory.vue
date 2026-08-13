@@ -55,7 +55,7 @@ const persianDateTime = (value) => {
 </script>
 
 <template>
-    <section class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-6">
+    <section class="mh-surface sm:!p-6">
         <div class="flex items-center justify-between gap-4">
             <div>
                 <h2 class="text-lg font-black">{{ title }}</h2>
@@ -66,7 +66,7 @@ const persianDateTime = (value) => {
 
             <span
                 v-if="notes.length"
-                class="rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                class="mh-accent-soft rounded-xl px-3 py-1.5 text-xs font-black"
             >
                 {{ notes.length.toLocaleString('fa-IR') }} یادداشت
             </span>
@@ -78,7 +78,7 @@ const persianDateTime = (value) => {
                 rows="3"
                 maxlength="10000"
                 placeholder="یادداشت جدید را بنویسید..."
-                class="w-full resize-y rounded-2xl border-slate-200 bg-slate-50 text-sm leading-7 shadow-none focus:border-violet-400 focus:ring-violet-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                class="mh-input resize-y leading-7"
             />
 
             <div class="mt-3 flex items-center justify-between gap-3">
@@ -94,7 +94,7 @@ const persianDateTime = (value) => {
                 <button
                     type="submit"
                     :disabled="form.processing || !form.body.trim()"
-                    class="rounded-2xl bg-violet-600 px-5 py-2.5 text-sm font-black text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    class="mh-primary px-5 py-2.5 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     {{ form.processing ? 'در حال ثبت...' : 'افزودن یادداشت' }}
                 </button>
@@ -103,7 +103,7 @@ const persianDateTime = (value) => {
 
         <div
             v-if="!notes.length"
-            class="mt-5 rounded-2xl bg-slate-50 p-5 text-center text-sm text-slate-500 dark:bg-slate-950"
+            class="mh-soft-surface mt-5 text-center text-sm text-slate-500 dark:text-slate-400"
         >
             {{ emptyText }}
         </div>
@@ -112,7 +112,7 @@ const persianDateTime = (value) => {
             <article
                 v-for="note in notes"
                 :key="note.id"
-                class="rounded-2xl border border-slate-100 p-4 dark:border-slate-800"
+                class="mh-soft-surface"
             >
                 <p class="whitespace-pre-wrap text-sm leading-7 text-slate-700 dark:text-slate-200">
                     {{ note.body }}

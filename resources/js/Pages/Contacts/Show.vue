@@ -128,7 +128,7 @@ const paymentHistoryLabel = (stats) => {
                     >
                         <Link
                             :href="route('contacts.edit', contact.id)"
-                            class="rounded-2xl border border-[#ffcbd0] bg-[#fff0f1] px-4 py-2.5 text-center text-sm font-bold text-[#d85e68] dark:border-violet-900 dark:bg-[#ff6d76]/[0.08] dark:text-[#ff9299]"
+                            class="rounded-2xl border border-[#ffcbd0] bg-[#fff0f1] px-4 py-2.5 text-center text-sm font-bold text-[#d85e68] dark:border-[#ff6d76]/[0.20] dark:bg-[#ff6d76]/[0.08] dark:text-[#ff9299]"
                         >
                             ویرایش
                         </Link>
@@ -244,7 +244,7 @@ const paymentHistoryLabel = (stats) => {
                                     v-for="item in purchasedFromShop"
                                     :key="item.sale_id"
                                     :href="route('sales.show', item.sale_id)"
-                                    class="block rounded-2xl border border-slate-100 p-4 transition hover:border-[#ffadb4] hover:bg-[#fff0f1]/40 dark:border-white/5 dark:hover:bg-violet-950/20"
+                                    class="block rounded-2xl border border-slate-100 p-4 transition hover:border-[#ffadb4] hover:bg-[#fff0f1]/40 dark:border-white/5 dark:hover:bg-[#ff6d76]/[0.06]"
                                 >
                                     <div class="flex items-start justify-between gap-4">
                                         <div>
@@ -398,7 +398,7 @@ const paymentHistoryLabel = (stats) => {
                                     v-for="item in soldToShop"
                                     :key="item.purchase_id"
                                     :href="route('devices.show', item.device_id)"
-                                    class="block rounded-2xl border border-slate-100 p-4 transition hover:border-[#ffadb4] hover:bg-[#fff0f1]/40 dark:border-white/5 dark:hover:bg-violet-950/20"
+                                    class="block rounded-2xl border border-slate-100 p-4 transition hover:border-[#ffadb4] hover:bg-[#fff0f1]/40 dark:border-white/5 dark:hover:bg-[#ff6d76]/[0.06]"
                                 >
                                     <div class="flex items-start justify-between gap-4">
                                         <div>

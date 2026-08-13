@@ -466,7 +466,7 @@ const clearanceDelayDays = (installment) => {
                                         </div>
 
                                         <div class="rounded-2xl bg-[#fff0f1] p-4 dark:bg-[#ff6d76]/[0.06]">
-                                            <p class="text-xs font-bold text-violet-500">
+                                            <p class="text-xs font-bold text-[#ff6570]">
                                                 سود اقساط
                                             </p>
 
