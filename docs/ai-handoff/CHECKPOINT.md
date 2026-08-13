@@ -317,3 +317,56 @@ Validation:
 - `git diff --check` passed
 - Visual checks confirmed by user in Light and Dark modes.
 
+## Installment check management — 2026-08-13
+
+Completed:
+
+- `e981421` — added installment check metadata and document management.
+  - each installment/check can store:
+    - bank name
+    - check number
+    - 16-digit Sayad ID
+    - multiple check images
+  - bank is selected from a predefined list rather than entered manually
+  - Persian/Arabic digits in check number and Sayad ID are normalized before storage
+  - Sayad ID is validated as exactly 16 digits when provided
+  - check images are stored on the existing `public` disk
+  - new `installment_images` table keeps multiple images per installment
+  - image uploader records the user who uploaded each image
+  - check notes use existing append-only `entity_notes`; previous notes are preserved
+  - receivables search now also supports bank, check number and Sayad ID
+  - check details and images are managed directly from the checks/receivables page
+  - existing installment amounts, due dates, paid-state logic and financial calculations were not changed
+  - historical installment records remain valid because new metadata fields are nullable
+
+- Added `InstallmentCheckDetailsTest` covering:
+  - check metadata persistence
+  - Persian digit normalization
+  - image storage
+  - uploader attribution
+  - append-only note preservation
+  - 16-digit Sayad validation
+
+- `283c080` — completed final internal visual-system cleanup.
+  - removed remaining old violet/purple theme tokens from authenticated UI
+  - migrated shared `EntityNoteHistory` to the `mh-*` design system
+  - Persian date-picker accent now follows MayaHamrah coral visual language
+  - shared select styling now also targets `select.mh-input`
+  - select caret placement, RTL spacing and Vazirmatn typography now apply inside modals and future shared forms as well
+
+Validation:
+
+- user manually verified check metadata, image display, note history and bank select
+- user manually verified global select caret correction
+- user manually verified removal of old purple visual remnants
+- `php artisan test` passed: 36 tests / 128 assertions
+- `npm run build` passed
+- `git diff --check` passed
+
+Next logical installment/check work:
+
+- expose check metadata/images more fully inside sale details
+- allow marking a check paid directly from the receivables page
+- add safe reversal/undo for mistakenly marked-paid checks
+- add controlled image removal/replacement while preserving financial history
+
