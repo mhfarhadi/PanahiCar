@@ -284,3 +284,36 @@ Validation after these changes:
 - `npm run build` passed
 - `git diff --check` passed
 
+## Internal visual system rollout — 2026-08-13
+
+Completed:
+
+- `f37fa88` — applied the approved MayaHamrah visual system across internal application pages.
+- Added reusable `mh-*` visual classes in `resources/css/app.css` for:
+  - application page surfaces
+  - page headers/kickers
+  - cards and soft surfaces
+  - inputs
+  - primary/secondary actions
+  - filter chips
+  - coral accent treatment
+- Updated internal pages for:
+  - inventory/devices
+  - announced devices
+  - contacts
+  - sales
+  - price estimates
+  - settings
+- Preserved the approved Dashboard and dedicated receivables styling.
+- Light and dark modes now use the same visual language as the redesigned Dashboard.
+- Native select controls received a consistent custom caret and explicit Vazirmatn typography.
+- Fixed sidebar active-state overlap so `devices.create` activates only “ثبت دستگاه” rather than both it and “موجودی”.
+- No routes, validation, financial calculations, estimator rules, or stored financial history were changed.
+
+Validation:
+
+- `php artisan test` passed: 34 tests / 106 assertions
+- `npm run build` passed
+- `git diff --check` passed
+- Visual checks confirmed by user in Light and Dark modes.
+
