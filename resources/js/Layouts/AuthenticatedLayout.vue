@@ -210,7 +210,7 @@ const closeMobileMenu = () => {
 
             <div class="mb-3 h-px w-8 bg-slate-100 dark:bg-white/10" />
 
-            <Dropdown align="left" width="48">
+            <Dropdown align="left" width="48" placement="top">
                 <template #trigger>
                     <button
                         type="button"
@@ -384,10 +384,10 @@ const closeMobileMenu = () => {
         >
             <aside
                 v-if="mobileMenuOpen"
-                class="fixed inset-y-0 right-0 z-[60] flex w-[86%] max-w-sm flex-col bg-[#fbfbfa] shadow-2xl dark:bg-[#11151d] lg:hidden"
+                class="fixed inset-y-0 right-0 z-[60] flex h-[100dvh] max-h-[100dvh] w-[86%] max-w-sm flex-col overflow-hidden bg-[#fbfbfa] shadow-2xl dark:bg-[#11151d] lg:hidden"
             >
                 <div
-                    class="flex items-center justify-between border-b border-slate-100 px-5 py-5 dark:border-white/5"
+                    class="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-5 dark:border-white/5"
                 >
                     <Link
                         :href="route('dashboard')"
@@ -418,7 +418,7 @@ const closeMobileMenu = () => {
                     </button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-4">
+                <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
                     <div class="space-y-1">
                         <Link
                             v-for="item in navigation"
@@ -453,7 +453,10 @@ const closeMobileMenu = () => {
                     </div>
                 </div>
 
-                <div class="border-t border-slate-100 p-4 dark:border-white/5">
+                <div
+                    class="shrink-0 border-t border-slate-100 p-4 dark:border-white/5"
+                    style="padding-bottom: max(1rem, env(safe-area-inset-bottom));"
+                >
                     <div
                         class="mb-3 rounded-2xl bg-[#f1f4f8] p-4 dark:bg-white/5"
                     >
