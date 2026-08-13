@@ -10,6 +10,7 @@ use App\Http\Controllers\AnnouncedDeviceController;
 use App\Http\Controllers\AnnouncedDeviceCreateController;
 use App\Http\Controllers\AnnouncedDevicePurchaseController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\PriceEstimateController;
 use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\EntityNoteController;
 use Illuminate\Foundation\Application;
@@ -76,6 +77,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/announced-devices/{device}/purchase', [AnnouncedDevicePurchaseController::class, 'store'])->name('announced-devices.purchase.store');
     Route::get('/devices/create', [DeviceController::class, 'create'])->name('devices.create');
     Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');
+
+    Route::get('/price-estimates', [PriceEstimateController::class, 'index'])
+        ->name('price-estimates.index');
 
     Route::get('/sales', [SaleController::class, 'index'])->name('sales.index');
 

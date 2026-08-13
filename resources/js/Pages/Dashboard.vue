@@ -96,6 +96,7 @@ const actions = [
         title: 'برآورد قیمت',
         description: 'بررسی حدود قیمت گوشی در بازار',
         icon: '⌕',
+        href: route('price-estimates.index'),
     },
     {
         title: 'فروش گوشی',
