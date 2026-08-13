@@ -225,3 +225,28 @@ Improve methodology carefully as real sales accumulate:
 - do not use Divar asking prices directly in pricing formulas
 - keep tested purchase/sale/installment flows stable
 - use one terminal command per assistant turn and wait for its output
+
+## Visual redesign — 2026-08-13
+
+Completed in `ea57ccc`:
+
+- refreshed the authenticated application shell with a narrow desktop navigation rail
+- replaced the generic Tailwind-style dashboard composition with a softer custom visual system
+- introduced restrained pastel surfaces, asymmetric dashboard composition, lighter borders and shadows
+- preserved RTL, responsive/mobile behavior, routes, finance logic, currency logic and dark mode
+- mobile navigation drawer remains available
+- moved theme switching out of Settings into the shared application chrome
+- desktop theme control is in the navigation rail
+- mobile theme control is in the top header
+- theme switch uses sun/moon controls for light/dark
+- existing `maya_theme` localStorage behavior is preserved
+- removed the duplicate theme selector from Settings
+- user reviewed the visual result and approved it
+- `php artisan test` passed: 34 tests / 106 assertions
+- `npm run build` passed
+- `git diff --check` passed
+
+Important:
+- this was a visual-only pass; established business and financial logic must remain unchanged
+- continue to preserve the existing estimator and finance backlog after visual work
+
