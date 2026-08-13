@@ -58,18 +58,18 @@ const persianDate = (value) => {
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
-            <div class="mx-auto max-w-6xl">
+            <div class="mh-page-inner-narrow">
                 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-sm font-bold text-violet-600">مایاهمراه</p>
+                        <p class="mh-kicker">MAYA HAMRAH</p>
 
-                        <h1 class="mt-1 text-2xl font-black">
+                        <h1 class="mh-title">
                             {{ device.brand }} {{ device.model }}
                         </h1>
 
-                        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                        <p class="mh-subtitle">
                             جزئیات کامل دستگاه موجود در مغازه
                         </p>
                     </div>
@@ -77,14 +77,14 @@ const persianDate = (value) => {
                     <div class="flex flex-wrap gap-2">
                         <Link
                             :href="route('devices.edit', device.id)"
-                            class="rounded-2xl bg-violet-600 px-4 py-2.5 text-center text-sm font-black text-white transition hover:bg-violet-700"
+                            class="mh-primary"
                         >
                             ویرایش مشخصات
                         </Link>
 
                         <Link
                             :href="route('devices.index')"
-                            class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-center text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                            class="mh-secondary"
                         >
                             بازگشت به موجودی
                         </Link>
@@ -94,10 +94,10 @@ const persianDate = (value) => {
                 <div class="grid gap-6 lg:grid-cols-[1fr_1.25fr]">
                     <!-- Images -->
                     <section
-                        class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900"
+                        class="mh-surface"
                     >
                         <div
-                            class="flex min-h-[360px] items-center justify-center overflow-hidden rounded-[24px] bg-slate-100 dark:bg-slate-800"
+                            class="flex min-h-[360px] items-center justify-center overflow-hidden rounded-[24px] bg-[#f3f4f6] dark:bg-white/[0.04]"
                         >
                             <img
                                 v-if="activeImage"
@@ -117,10 +117,10 @@ const persianDate = (value) => {
                                 v-for="image in device.images"
                                 :key="image.id"
                                 type="button"
-                                class="overflow-hidden rounded-2xl border-2 bg-slate-50 transition"
+                                class="overflow-hidden rounded-2xl border-2 bg-[#f4f6f8] transition dark:bg-white/[0.04]"
                                 :class="
                                     activeImage === `/storage/${image.image_path}`
-                                        ? 'border-violet-500'
+                                        ? 'border-[#ff6d76]'
                                         : 'border-transparent'
                                 "
                                 @click="activeImage = `/storage/${image.image_path}`"
@@ -136,7 +136,7 @@ const persianDate = (value) => {
                     <!-- Details -->
                     <div class="space-y-6">
                         <section
-                            class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-7"
+                            class="mh-surface sm:!p-7"
                         >
                             <div class="flex items-start justify-between gap-4">
                                 <div>
@@ -156,27 +156,27 @@ const persianDate = (value) => {
                             </div>
 
                             <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                <div class="mh-soft-surface">
                                     <p class="text-xs text-slate-400">برند</p>
                                     <p class="mt-1 font-bold">{{ device.brand }}</p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                <div class="mh-soft-surface">
                                     <p class="text-xs text-slate-400">مدل</p>
                                     <p class="mt-1 font-bold">{{ device.model }}</p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                <div class="mh-soft-surface">
                                     <p class="text-xs text-slate-400">حافظه</p>
                                     <p class="mt-1 font-bold">{{ device.storage || '—' }}</p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                <div class="mh-soft-surface">
                                     <p class="text-xs text-slate-400">رنگ</p>
                                     <p class="mt-1 font-bold">{{ colorLabel(device.color) }}</p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                <div class="mh-soft-surface">
                                     <p class="text-xs text-slate-400">
                                         {{ device.brand === 'Samsung' ? 'کشور سازنده' : 'پارت نامبر' }}
                                     </p>
@@ -187,12 +187,12 @@ const persianDate = (value) => {
                                         }}</p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                <div class="mh-soft-surface">
                                     <p class="text-xs text-slate-400">نوع سیم‌کارت</p>
                                     <p class="mt-1 font-bold">{{ simTypeLabel(device.sim_type) }}</p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                <div class="mh-soft-surface">
                                     <p class="text-xs text-slate-400">
                                         {{ device.brand === 'Samsung' ? 'وضعیت باتری' : 'سلامت باتری' }}
                                     </p>
@@ -207,21 +207,21 @@ const persianDate = (value) => {
                                     </p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                <div class="mh-soft-surface">
                                     <p class="text-xs text-slate-400">تمیزی</p>
                                     <p class="mt-1 font-bold">
                                         {{ conditionLabel(device.condition_grade) }}
                                     </p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                <div class="mh-soft-surface">
                                     <p class="text-xs text-slate-400">رجیستری</p>
                                     <p class="mt-1 font-bold">
                                         {{ registrationStatusLabel(device.registration_status) }}
                                     </p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-4 sm:col-span-2 lg:col-span-3 dark:bg-slate-950">
+                                <div class="mh-soft-surface sm:col-span-2 lg:col-span-3">
                                     <p class="text-xs text-slate-400">IMEI</p>
                                     <p class="mt-1 font-bold" dir="ltr">
                                         {{ device.imei || '—' }}
@@ -240,12 +240,12 @@ const persianDate = (value) => {
                         />
 
                         <section
-                            class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-7"
+                            class="mh-surface sm:!p-7"
                         >
                             <h2 class="text-lg font-black">اطلاعات خرید</h2>
 
                             <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                <div class="mh-soft-surface">
                                     <p class="text-xs text-slate-400">فروشنده</p>
                                     <p class="mt-1 font-black">
                                         {{ device.seller_name || '—' }}
@@ -254,27 +254,27 @@ const persianDate = (value) => {
                                     <a
                                         v-if="device.seller_mobile"
                                         :href="`tel:${device.seller_mobile}`"
-                                        class="mt-2 inline-block text-sm font-bold text-violet-600"
+                                        class="mt-2 inline-block text-sm font-bold mh-accent-text"
                                     >
                                         {{ device.seller_mobile }}
                                     </a>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                <div class="mh-soft-surface">
                                     <p class="text-xs text-slate-400">تاریخ خرید</p>
                                     <p class="mt-1 font-bold">
                                         {{ persianDate(device.purchase_date) }}
                                     </p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                <div class="mh-soft-surface">
                                     <p class="text-xs text-slate-400">قیمت خرید</p>
                                     <p class="mt-1 font-black">
                                         {{ money(device.purchase_price) }}
                                     </p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                                <div class="mh-soft-surface">
                                     <p class="text-xs text-slate-400">نرخ دلار روز خرید</p>
                                     <p class="mt-1 font-black">
                                         <template v-if="device.purchase_usd_rate">
@@ -292,9 +292,9 @@ const persianDate = (value) => {
                                     </p>
                                 </div>
 
-                                <div class="rounded-2xl bg-violet-50 p-4 dark:bg-violet-950/30">
+                                <div class="mh-accent-soft rounded-2xl p-4">
                                     <p class="text-xs text-slate-500">قیمت پیشنهادی فروش +۱۰٪</p>
-                                    <p class="mt-1 text-lg font-black text-violet-700 dark:text-violet-300">
+                                    <p class="mt-1 text-lg font-black">
                                         {{ money(device.suggested_sale_price) }}
                                     </p>
                                 </div>
@@ -313,7 +313,7 @@ const persianDate = (value) => {
 
                         <Link
                             :href="route('sales.create', device.id)"
-                            class="block w-full rounded-2xl bg-violet-600 px-6 py-4 text-center text-base font-black text-white shadow-lg shadow-violet-200 transition hover:bg-violet-700 dark:shadow-none"
+                            class="mh-primary block w-full px-6 py-4 text-center text-base"
                         >
                             ثبت فروش این گوشی
                         </Link>

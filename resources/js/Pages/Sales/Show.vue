@@ -72,7 +72,7 @@ const installmentStatusClass = (status) => {
 
     return (
         classes[status] ??
-        'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+        'bg-[#f1f3f5] text-slate-600 dark:bg-white/[0.06] dark:text-slate-300'
     );
 };
 
@@ -205,12 +205,12 @@ const clearanceDelayDays = (installment) => {
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
             <div class="mx-auto max-w-7xl">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm font-bold text-violet-600">
+                        <p class="text-sm font-bold text-[#ff6570]">
                             مایاهمراه
                         </p>
 
@@ -225,7 +225,7 @@ const clearanceDelayDays = (installment) => {
 
                     <Link
                         :href="route('sales.index')"
-                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                        class="rounded-2xl border border-slate-200/60 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-white/5 dark:bg-white/[0.035] dark:text-slate-300"
                     >
                         بازگشت
                     </Link>
@@ -233,10 +233,10 @@ const clearanceDelayDays = (installment) => {
 
                 <div class="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
                     <section
-                        class="overflow-hidden rounded-[30px] bg-white shadow-sm dark:bg-slate-900"
+                        class="overflow-hidden rounded-[30px] bg-white shadow-sm dark:bg-white/[0.035]"
                     >
                         <div
-                            class="flex h-64 items-center justify-center overflow-hidden bg-slate-100 dark:bg-slate-800"
+                            class="flex h-64 items-center justify-center overflow-hidden bg-[#f1f3f5] dark:bg-white/[0.06]"
                         >
                             <img
                                 v-if="sale.cover_image"
@@ -272,7 +272,7 @@ const clearanceDelayDays = (installment) => {
                                 </div>
 
                                 <span
-                                    class="rounded-xl bg-violet-50 px-3 py-1.5 text-xs font-black text-violet-700 dark:bg-violet-950/30 dark:text-violet-300"
+                                    class="rounded-xl bg-[#fff0f1] px-3 py-1.5 text-xs font-black text-[#d85e68] dark:bg-[#ff6d76]/[0.08] dark:text-[#ff9299]"
                                 >
                                     {{ saleTypeLabel(sale.sale_type) }}
                                 </span>
@@ -286,7 +286,7 @@ const clearanceDelayDays = (installment) => {
 
                                     <Link
                                         :href="route('contacts.show', sale.buyer_id)"
-                                        class="font-black text-violet-600"
+                                        class="font-black text-[#ff6570]"
                                     >
                                         {{ sale.buyer_name }}
                                     </Link>
@@ -335,7 +335,7 @@ const clearanceDelayDays = (installment) => {
 
                             <div
                                 v-if="sale.notes"
-                                class="mt-5 rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-600 dark:bg-slate-950 dark:text-slate-300"
+                                class="mt-5 rounded-2xl bg-[#f7f8fa] p-4 text-sm leading-7 text-slate-600 dark:bg-white/[0.025] dark:text-slate-300"
                             >
                                 <p class="mb-1 text-xs font-bold text-slate-400">
                                     توضیحات فروش
@@ -348,7 +348,7 @@ const clearanceDelayDays = (installment) => {
 
                     <div class="space-y-5">
                         <section
-                            class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-6"
+                            class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-white/[0.035] sm:p-6"
                         >
                             <div class="mb-6 flex items-start justify-between gap-4">
                                 <div>
@@ -362,7 +362,7 @@ const clearanceDelayDays = (installment) => {
                                 </div>
 
                                 <span
-                                    class="shrink-0 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                                    class="shrink-0 rounded-full bg-[#f1f3f5] px-3 py-1.5 text-xs font-bold text-slate-600 dark:bg-white/[0.06] dark:text-slate-300"
                                 >
                                     {{ saleTypeLabel(sale.sale_type) }}
                                 </span>
@@ -371,7 +371,7 @@ const clearanceDelayDays = (installment) => {
                             <!-- معامله اصلی -->
                             <div class="grid gap-3 sm:grid-cols-3">
                                 <div
-                                    class="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950"
+                                    class="rounded-2xl border border-slate-100 bg-[#f7f8fa] p-4 dark:border-white/5 dark:bg-white/[0.025]"
                                 >
                                     <p class="text-xs font-bold text-slate-400">
                                         قیمت خرید
@@ -436,7 +436,7 @@ const clearanceDelayDays = (installment) => {
                             <!-- جزئیات اقساط -->
                             <template v-if="isInstallment">
                                 <div
-                                    class="mt-5 rounded-3xl border border-slate-100 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-950/50"
+                                    class="mt-5 rounded-3xl border border-slate-100 bg-[#f7f8fa]/60 p-4 dark:border-white/5 dark:bg-white/[0.025]/50"
                                 >
                                     <div class="mb-4 flex items-center justify-between gap-3">
                                         <p class="text-sm font-black">
@@ -454,7 +454,7 @@ const clearanceDelayDays = (installment) => {
                                     </div>
 
                                     <div class="grid gap-3 sm:grid-cols-3">
-                                        <div class="rounded-2xl bg-white p-4 dark:bg-slate-900">
+                                        <div class="rounded-2xl bg-white p-4 dark:bg-white/[0.035]">
                                             <p class="text-xs font-bold text-slate-400">
                                                 پیش‌پرداخت
                                             </p>
@@ -465,12 +465,12 @@ const clearanceDelayDays = (installment) => {
                                             </p>
                                         </div>
 
-                                        <div class="rounded-2xl bg-violet-50 p-4 dark:bg-violet-950/20">
+                                        <div class="rounded-2xl bg-[#fff0f1] p-4 dark:bg-[#ff6d76]/[0.06]">
                                             <p class="text-xs font-bold text-violet-500">
                                                 سود اقساط
                                             </p>
 
-                                            <p class="mt-2 font-black text-violet-700 dark:text-violet-300">
+                                            <p class="mt-2 font-black text-[#d85e68] dark:text-[#ff9299]">
                                                 +{{ formatMoney(sale.installment_profit) }}
                                                 <span class="text-xs">تومان</span>
                                             </p>
@@ -513,9 +513,9 @@ const clearanceDelayDays = (installment) => {
                             <!-- نرخ ارز؛ اطلاعات کمکی -->
                             <div
                                 v-if="sale.usd_rate"
-                                class="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800"
+                                class="mt-5 border-t border-slate-100 pt-4 dark:border-white/5"
                             >
-                                <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-950">
+                                <div class="rounded-2xl bg-[#f7f8fa] px-4 py-3 dark:bg-white/[0.025]">
                                     <div class="mb-3 flex items-center justify-between gap-3">
                                         <p class="text-xs font-bold text-slate-400">
                                             نرخ دلار
@@ -560,7 +560,7 @@ const clearanceDelayDays = (installment) => {
 
                         <section
                             v-if="isInstallment"
-                            class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-6"
+                            class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-white/[0.035] sm:p-6"
                         >
                             <div class="mb-5 flex flex-wrap items-start justify-between gap-4">
                                 <div>
@@ -588,7 +588,7 @@ const clearanceDelayDays = (installment) => {
 
                             <div class="mb-5 grid gap-3 sm:grid-cols-3">
                                 <div
-                                    class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950"
+                                    class="rounded-2xl bg-[#f7f8fa] p-4 dark:bg-white/[0.025]"
                                 >
                                     <p class="text-xs text-slate-400">
                                         مجموع اقساط
@@ -629,7 +629,7 @@ const clearanceDelayDays = (installment) => {
 
                             <div
                                 v-if="installments.length === 0"
-                                class="rounded-2xl bg-slate-50 p-6 text-center text-sm text-slate-500 dark:bg-slate-950 dark:text-slate-400"
+                                class="rounded-2xl bg-[#f7f8fa] p-6 text-center text-sm text-slate-500 dark:bg-white/[0.025] dark:text-slate-400"
                             >
                                 برای این فروش قسطی ثبت نشده است.
                             </div>
@@ -641,7 +641,7 @@ const clearanceDelayDays = (installment) => {
                                 <div
                                     v-for="installment in installments"
                                     :key="installment.id"
-                                    class="grid gap-3 rounded-2xl border border-slate-100 p-4 dark:border-slate-800 sm:grid-cols-[80px_1fr_1fr_1fr_auto] sm:items-center"
+                                    class="grid gap-3 rounded-2xl border border-slate-100 p-4 dark:border-white/5 sm:grid-cols-[80px_1fr_1fr_1fr_auto] sm:items-center"
                                 >
                                     <div>
                                         <p class="text-xs text-slate-400">
@@ -732,7 +732,7 @@ const clearanceDelayDays = (installment) => {
         >
             <div
                 dir="rtl"
-                class="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-5 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:p-6"
+                class="w-full max-w-md rounded-[28px] border border-slate-200/60 bg-white p-5 text-slate-900 shadow-2xl dark:border-white/10 dark:bg-white/[0.035] dark:text-slate-100 sm:p-6"
             >
                 <div class="flex items-start justify-between gap-4">
                     <div>
@@ -754,7 +754,7 @@ const clearanceDelayDays = (installment) => {
 
                     <button
                         type="button"
-                        class="rounded-xl bg-slate-100 px-3 py-2 text-sm font-black text-slate-500 dark:bg-slate-800 dark:text-slate-300"
+                        class="rounded-xl bg-[#f1f3f5] px-3 py-2 text-sm font-black text-slate-500 dark:bg-white/[0.06] dark:text-slate-300"
                         @click="closePaidModal"
                     >
                         ×
@@ -780,7 +780,7 @@ const clearanceDelayDays = (installment) => {
 
                     <input
                         type="text"
-                        class="check-paid-at-input w-full rounded-2xl border-slate-200 bg-slate-50 text-center font-black focus:border-emerald-500 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+                        class="check-paid-at-input w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] text-center font-black focus:border-emerald-500 focus:ring-emerald-500 dark:border-white/10 dark:bg-white/[0.025]"
                         placeholder="تاریخ پاس شدن چک"
                         readonly
                     />
@@ -800,7 +800,7 @@ const clearanceDelayDays = (installment) => {
                 <div class="mt-6 grid grid-cols-2 gap-3">
                     <button
                         type="button"
-                        class="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black text-slate-600 dark:border-slate-700 dark:text-slate-300"
+                        class="rounded-2xl border border-slate-200/60 px-4 py-3 text-sm font-black text-slate-600 dark:border-white/10 dark:text-slate-300"
                         :disabled="clearanceForm.processing"
                         @click="closePaidModal"
                     >

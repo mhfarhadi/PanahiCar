@@ -167,7 +167,7 @@ const confidenceClass = (value) =>
         medium: 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300',
         low: 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-300',
     })[value] ||
-    'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300';
+    'bg-[#f1f3f5] text-slate-600 dark:bg-white/[0.06] dark:text-slate-300';
 
 const batteryLabel = (sale) => {
     if (sale.battery_health !== null && sale.battery_health !== undefined) {
@@ -200,12 +200,12 @@ const divarSearchUrl = computed(() => {
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
             <div class="mx-auto max-w-6xl">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm font-bold text-violet-600">
+                        <p class="text-sm font-bold text-[#ff6570]">
                             مایاهمراه
                         </p>
 
@@ -220,14 +220,14 @@ const divarSearchUrl = computed(() => {
 
                     <Link
                         :href="route('dashboard')"
-                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                        class="rounded-2xl border border-slate-200/60 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-white/5 dark:bg-white/[0.035] dark:text-slate-300"
                     >
                         داشبورد
                     </Link>
                 </div>
 
                 <form
-                    class="rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6"
+                    class="rounded-[30px] border border-slate-200/60 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/[0.035] sm:p-6"
                     @submit.prevent="submit"
                 >
                     <div class="grid gap-4 md:grid-cols-3">
@@ -238,7 +238,7 @@ const divarSearchUrl = computed(() => {
 
                             <select
                                 v-model="brand"
-                                class="price-estimate-select w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                class="price-estimate-select w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] px-4 py-3 text-sm font-bold focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                             >
                                 <option value="">انتخاب برند</option>
                                 <option
@@ -259,7 +259,7 @@ const divarSearchUrl = computed(() => {
                             <select
                                 v-model="model"
                                 :disabled="!brand"
-                                class="price-estimate-select w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                class="price-estimate-select w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] px-4 py-3 text-sm font-bold focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
                             >
                                 <option value="">انتخاب مدل</option>
                                 <option
@@ -280,7 +280,7 @@ const divarSearchUrl = computed(() => {
                             <select
                                 v-model="storage"
                                 :disabled="!model"
-                                class="price-estimate-select w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                class="price-estimate-select w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] px-4 py-3 text-sm font-bold focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
                             >
                                 <option value="">انتخاب حافظه</option>
                                 <option
@@ -302,7 +302,7 @@ const divarSearchUrl = computed(() => {
 
                             <select
                                 v-model="conditionGrade"
-                                class="price-estimate-select w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                class="price-estimate-select w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] px-4 py-3 text-sm font-bold focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                             >
                                 <option value="">مهم نیست</option>
                                 <option value="A+">در حد نو</option>
@@ -319,7 +319,7 @@ const divarSearchUrl = computed(() => {
 
                             <select
                                 v-model="registrationStatus"
-                                class="price-estimate-select w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                class="price-estimate-select w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] px-4 py-3 text-sm font-bold focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                             >
                                 <option value="">مهم نیست</option>
                                 <option value="registered">رجیستر شده</option>
@@ -334,7 +334,7 @@ const divarSearchUrl = computed(() => {
 
                             <select
                                 v-model="batteryCondition"
-                                class="price-estimate-select w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                class="price-estimate-select w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] px-4 py-3 text-sm font-bold focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                             >
                                 <option value="">مهم نیست</option>
                                 <option
@@ -361,7 +361,7 @@ const divarSearchUrl = computed(() => {
                                     maxlength="3"
                                     placeholder="مثلاً ۹۲"
                                     @input="handleBatteryHealth"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 pl-12 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] px-4 py-3 pl-12 text-sm font-bold focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 />
                                 <span
                                     class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black text-slate-400"
@@ -389,7 +389,7 @@ const divarSearchUrl = computed(() => {
                         <button
                             type="submit"
                             :disabled="!brand || !model || !storage"
-                            class="rounded-2xl bg-violet-600 px-6 py-3 text-sm font-black text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-40"
+                            class="rounded-2xl bg-[#ff6d76] px-6 py-3 text-sm font-black text-white transition hover:bg-[#f45f6a] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             محاسبه برآورد
                         </button>
@@ -402,20 +402,20 @@ const divarSearchUrl = computed(() => {
                 >
                     <div class="grid gap-4 lg:grid-cols-3">
                         <div
-                            class="rounded-[30px] bg-violet-600 p-6 text-white shadow-sm lg:col-span-2"
+                            class="rounded-[30px] bg-[#ff6d76] p-6 text-white shadow-sm lg:col-span-2"
                         >
-                            <p class="text-sm font-bold text-violet-100">
+                            <p class="text-sm font-bold text-white/75">
                                 برآورد مرکزی
                             </p>
 
                             <p class="mt-3 text-3xl font-black sm:text-4xl">
                                 {{ formatMoney(estimate.estimate) }}
-                                <span class="text-base text-violet-100">
+                                <span class="text-base text-white/75">
                                     تومان
                                 </span>
                             </p>
 
-                            <p class="mt-4 text-sm text-violet-100">
+                            <p class="mt-4 text-sm text-white/75">
                                 بازه فروش‌های مشابه پس از تعدیل دلاری:
                                 {{ formatMoney(estimate.range_min) }}
                                 تا
@@ -425,7 +425,7 @@ const divarSearchUrl = computed(() => {
                         </div>
 
                         <div
-                            class="rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                            class="rounded-[30px] border border-slate-200/60 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-white/[0.035]"
                         >
                             <p class="text-xs font-bold text-slate-400">
                                 کیفیت داده
@@ -452,7 +452,7 @@ const divarSearchUrl = computed(() => {
                     </div>
 
                     <div
-                        class="rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6"
+                        class="rounded-[30px] border border-slate-200/60 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/[0.035] sm:p-6"
                     >
                         <div class="mb-5">
                             <h2 class="text-lg font-black">
@@ -468,7 +468,7 @@ const divarSearchUrl = computed(() => {
                             <div
                                 v-for="sale in estimate.comparables"
                                 :key="sale.sale_id"
-                                class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950"
+                                class="rounded-2xl bg-[#f7f8fa] p-4 dark:bg-white/[0.025]"
                             >
                                 <div
                                     class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
@@ -513,7 +513,7 @@ const divarSearchUrl = computed(() => {
 
                 <div
                     v-else-if="estimate && !estimate.available"
-                    class="mt-5 rounded-[30px] border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                    class="mt-5 rounded-[30px] border border-slate-200/60 bg-white p-8 text-center shadow-sm dark:border-white/5 dark:bg-white/[0.035]"
                 >
                     <p class="text-lg font-black">
                         داده کافی برای برآورد نداریم
@@ -526,7 +526,7 @@ const divarSearchUrl = computed(() => {
 
                 <div
                     v-if="brand && model && storage"
-                    class="mt-5 rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6"
+                    class="mt-5 rounded-[30px] border border-slate-200/60 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/[0.035] sm:p-6"
                 >
                     <div
                         class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"

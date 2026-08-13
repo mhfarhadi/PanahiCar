@@ -55,16 +55,16 @@ const money = (value) => {
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
-            <div class="mx-auto max-w-7xl">
+            <div class="mh-page-inner">
                 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-sm font-bold text-violet-600">مایاهمراه</p>
-                        <h1 class="mt-1 text-2xl font-black">
+                        <p class="mh-kicker">MAYA HAMRAH</p>
+                        <h1 class="mh-title">
                             {{ sellMode ? 'انتخاب گوشی برای فروش' : 'موجودی گوشی‌ها' }}
                         </h1>
-                        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                        <p class="mh-subtitle">
                             {{
                                 sellMode
                                     ? 'برای ثبت فروش، گوشی موردنظر را انتخاب کنید'
@@ -76,14 +76,14 @@ const money = (value) => {
                     <div class="flex gap-2">
                         <Link
                             :href="route('devices.create')"
-                            class="rounded-2xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-violet-700"
+                            class="mh-primary"
                         >
                             + ثبت دستگاه
                         </Link>
 
                         <Link
                             :href="route('dashboard')"
-                            class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                            class="mh-secondary"
                         >
                             بازگشت
                         </Link>
@@ -96,13 +96,13 @@ const money = (value) => {
                         type="search"
                         placeholder="جستجو با برند، مدل، حافظه، رنگ، IMEI یا فروشنده..."
                         autocomplete="off"
-                        class="w-full rounded-2xl border-slate-200 bg-white px-4 py-3 text-sm shadow-sm focus:border-violet-500 focus:ring-violet-500 dark:border-slate-800 dark:bg-slate-900"
+                        class="mh-input"
                     />
                 </div>
 
                 <div
                     v-if="!devices.length"
-                    class="rounded-[30px] bg-white p-12 text-center shadow-sm dark:bg-slate-900"
+                    class="mh-surface !p-12 text-center"
                 >
                     <div class="text-5xl">📱</div>
                     <h2 class="mt-4 text-lg font-black">موجودی خالی است</h2>
@@ -118,9 +118,9 @@ const money = (value) => {
                     :href="sellMode
                         ? route('sales.create', device.id)
                         : route('devices.show', device.id)"
-                    class="block cursor-pointer overflow-hidden rounded-[30px] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:bg-slate-900"
+                    class="mh-surface block cursor-pointer !overflow-hidden !p-0 transition hover:-translate-y-1"
                 >
-                        <div class="flex h-44 items-center justify-center bg-slate-100 dark:bg-slate-800">
+                        <div class="flex h-44 items-center justify-center bg-[#f3f4f6] dark:bg-white/[0.04]">
                             <img
                                 v-if="device.cover_image"
                                 :src="`/storage/${device.cover_image}`"
@@ -146,7 +146,7 @@ const money = (value) => {
                                     class="rounded-xl px-3 py-1 text-xs font-bold"
                                     :class="
                                         sellMode
-                                            ? 'bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300'
+                                            ? 'mh-accent-soft'
                                             : 'bg-emerald-50 text-emerald-700'
                                     "
                                 >
@@ -155,7 +155,7 @@ const money = (value) => {
                             </div>
 
                             <div class="mt-5 grid grid-cols-2 gap-3 text-sm">
-                                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
+                                <div class="mh-soft-surface !p-3">
                                     <p class="text-xs text-slate-400">
                                         {{ device.brand === 'Samsung' ? 'وضعیت باتری' : 'سلامت باتری' }}
                                     </p>
@@ -170,14 +170,14 @@ const money = (value) => {
                                     </p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
+                                <div class="mh-soft-surface !p-3">
                                     <p class="text-xs text-slate-400">تمیزی</p>
                                     <p class="mt-1 font-bold">
                                         {{ conditionLabel(device.condition_grade) }}
                                     </p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
+                                <div class="mh-soft-surface !p-3">
                                     <p class="text-xs text-slate-400">
                                         {{ device.brand === 'Samsung' ? 'کشور سازنده' : 'پارت نامبر' }}
                                     </p>
@@ -190,7 +190,7 @@ const money = (value) => {
                                     </p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
+                                <div class="mh-soft-surface !p-3">
                                     <p class="text-xs text-slate-400">سیم‌کارت</p>
                                     <p class="mt-1 font-bold">
                                         {{ simTypeLabel(device.sim_type) }}
@@ -198,7 +198,7 @@ const money = (value) => {
                                 </div>
                             </div>
 
-                            <div class="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800">
+                            <div class="mt-5 border-t border-slate-200/60 pt-4 dark:border-white/5">
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm text-slate-500">قیمت خرید</span>
                                     <span class="font-black">{{ money(device.purchase_price) }}</span>
@@ -206,7 +206,7 @@ const money = (value) => {
 
                                 <div class="mt-2 flex items-center justify-between">
                                     <span class="text-sm text-slate-500">پیشنهاد فروش +۱۰٪</span>
-                                    <span class="font-black text-violet-700">
+                                    <span class="font-black mh-accent-text">
                                         {{ money(device.suggested_sale_price) }}
                                     </span>
                                 </div>

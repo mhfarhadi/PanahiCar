@@ -96,12 +96,12 @@ const paymentHistoryLabel = (stats) => {
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
             <div class="mx-auto max-w-6xl">
                 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-sm font-bold text-violet-600">مایاهمراه</p>
+                        <p class="text-sm font-bold text-[#ff6570]">مایاهمراه</p>
                         <h1 class="mt-1 text-2xl font-black">{{ contact.name }}</h1>
 
                         <div class="mt-2 flex flex-wrap items-center gap-2">
@@ -109,8 +109,8 @@ const paymentHistoryLabel = (stats) => {
                                 class="rounded-xl px-3 py-1 text-xs font-bold"
                                 :class="
                                     contact.contact_type === 'colleague'
-                                        ? 'bg-violet-50 text-violet-700 dark:bg-violet-950/30 dark:text-violet-300'
-                                        : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                                        ? 'bg-[#fff0f1] text-[#d85e68] dark:bg-[#ff6d76]/[0.08] dark:text-[#ff9299]'
+                                        : 'bg-slate-200 text-slate-700 dark:bg-white/[0.06] dark:text-slate-300'
                                 "
                             >
                                 {{ contact.contact_type === 'colleague' ? 'همکار' : 'شخص عادی' }}
@@ -128,7 +128,7 @@ const paymentHistoryLabel = (stats) => {
                     >
                         <Link
                             :href="route('contacts.edit', contact.id)"
-                            class="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-center text-sm font-bold text-violet-700 dark:border-violet-900 dark:bg-violet-950/30 dark:text-violet-300"
+                            class="rounded-2xl border border-[#ffcbd0] bg-[#fff0f1] px-4 py-2.5 text-center text-sm font-bold text-[#d85e68] dark:border-violet-900 dark:bg-[#ff6d76]/[0.08] dark:text-[#ff9299]"
                         >
                             ویرایش
                         </Link>
@@ -162,7 +162,7 @@ const paymentHistoryLabel = (stats) => {
 
                     <Link
                         :href="route('contacts.index')"
-                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-center text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                        class="rounded-2xl border border-slate-200/60 bg-white px-4 py-2.5 text-center text-sm font-bold text-slate-600 dark:border-white/5 dark:bg-white/[0.035] dark:text-slate-300"
                     >
                         بازگشت به اشخاص
                     </Link>
@@ -177,9 +177,9 @@ const paymentHistoryLabel = (stats) => {
 
                 <div class="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
                     <div class="space-y-5">
-                        <section class="rounded-[30px] bg-white p-6 shadow-sm dark:bg-slate-900">
+                        <section class="rounded-[30px] bg-white p-6 shadow-sm dark:bg-white/[0.035]">
                             <div class="mb-6 flex flex-col items-center gap-5 sm:flex-row sm:items-start">
-                                <div class="flex h-36 w-36 sm:h-44 sm:w-44 shrink-0 items-center justify-center overflow-hidden rounded-[34px] sm:rounded-[38px] bg-violet-50 text-4xl dark:bg-violet-950/40">
+                                <div class="flex h-36 w-36 sm:h-44 sm:w-44 shrink-0 items-center justify-center overflow-hidden rounded-[34px] sm:rounded-[38px] bg-[#fff0f1] text-4xl dark:bg-[#ff6d76]/[0.10]">
                                     <img
                                         v-if="contact.avatar_path"
                                         :src="`/storage/${contact.avatar_path}`"
@@ -204,7 +204,7 @@ const paymentHistoryLabel = (stats) => {
                                     <p class="text-xs text-slate-400">موبایل</p>
                                     <a
                                         :href="`tel:${contact.mobile}`"
-                                        class="mt-1 inline-block font-bold text-violet-600"
+                                        class="mt-1 inline-block font-bold text-[#ff6570]"
                                         dir="ltr"
                                     >
                                         {{ contact.mobile }}
@@ -229,12 +229,12 @@ const paymentHistoryLabel = (stats) => {
                             empty-text="هنوز یادداشتی برای این شخص ثبت نشده است."
                         />
 
-                        <section class="rounded-[30px] bg-white p-6 shadow-sm dark:bg-slate-900">
+                        <section class="rounded-[30px] bg-white p-6 shadow-sm dark:bg-white/[0.035]">
                             <h2 class="text-lg font-black">گوشی‌های خریداری‌شده از ما</h2>
 
                             <div
                                 v-if="!purchasedFromShop.length"
-                                class="mt-5 rounded-2xl bg-slate-50 p-6 text-center text-sm text-slate-500 dark:bg-slate-950"
+                                class="mt-5 rounded-2xl bg-[#f7f8fa] p-6 text-center text-sm text-slate-500 dark:bg-white/[0.025]"
                             >
                                 هنوز خریدی از ما ثبت نشده است.
                             </div>
@@ -244,7 +244,7 @@ const paymentHistoryLabel = (stats) => {
                                     v-for="item in purchasedFromShop"
                                     :key="item.sale_id"
                                     :href="route('sales.show', item.sale_id)"
-                                    class="block rounded-2xl border border-slate-100 p-4 transition hover:border-violet-300 hover:bg-violet-50/40 dark:border-slate-800 dark:hover:bg-violet-950/20"
+                                    class="block rounded-2xl border border-slate-100 p-4 transition hover:border-[#ffadb4] hover:bg-[#fff0f1]/40 dark:border-white/5 dark:hover:bg-violet-950/20"
                                 >
                                     <div class="flex items-start justify-between gap-4">
                                         <div>
@@ -256,7 +256,7 @@ const paymentHistoryLabel = (stats) => {
                                             </p>
                                         </div>
 
-                                        <span class="rounded-lg bg-violet-50 px-2 py-1 text-xs font-bold text-violet-700 dark:bg-violet-950/30 dark:text-violet-300">
+                                        <span class="rounded-lg bg-[#fff0f1] px-2 py-1 text-xs font-bold text-[#d85e68] dark:bg-[#ff6d76]/[0.08] dark:text-[#ff9299]">
                                             {{ saleTypeLabel(item.sale_type) }}
                                         </span>
                                     </div>
@@ -282,21 +282,21 @@ const paymentHistoryLabel = (stats) => {
                         </section>
 
                         <section class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                            <div class="rounded-[24px] bg-white p-5 shadow-sm dark:bg-slate-900">
+                            <div class="rounded-[24px] bg-white p-5 shadow-sm dark:bg-white/[0.035]">
                                 <p class="text-xs text-slate-400">گوشی‌های اعلامی</p>
                                 <p class="mt-2 text-2xl font-black">
                                     {{ contact.stats.announced_count.toLocaleString('fa-IR') }}
                                 </p>
                             </div>
 
-                            <div class="rounded-[24px] bg-white p-5 shadow-sm dark:bg-slate-900">
+                            <div class="rounded-[24px] bg-white p-5 shadow-sm dark:bg-white/[0.035]">
                                 <p class="text-xs text-slate-400">فروش به مغازه</p>
                                 <p class="mt-2 text-2xl font-black">
                                     {{ contact.stats.sold_to_shop_count.toLocaleString('fa-IR') }}
                                 </p>
                             </div>
 
-                            <div class="col-span-2 sm:col-span-1 rounded-[24px] bg-white p-5 shadow-sm dark:bg-slate-900">
+                            <div class="col-span-2 sm:col-span-1 rounded-[24px] bg-white p-5 shadow-sm dark:bg-white/[0.035]">
                                 <p class="text-xs text-slate-400">خرید از ما</p>
                                 <p class="mt-2 text-2xl font-black">
                                     {{ contact.stats.purchased_from_shop_count.toLocaleString('fa-IR') }}
@@ -304,7 +304,7 @@ const paymentHistoryLabel = (stats) => {
                             </div>
                         </section>
 
-                        <section class="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                        <section class="rounded-[24px] border border-slate-200/60 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/[0.035]">
                             <div class="flex items-start justify-between gap-4">
                                 <div>
                                     <p class="text-xs font-bold text-slate-400">سابقه پرداخت چک‌ها</p>
@@ -337,12 +337,12 @@ const paymentHistoryLabel = (stats) => {
                     </div>
 
                     <div class="space-y-5">
-                        <section class="rounded-[30px] bg-white p-6 shadow-sm dark:bg-slate-900">
+                        <section class="rounded-[30px] bg-white p-6 shadow-sm dark:bg-white/[0.035]">
                             <h2 class="text-lg font-black">گوشی‌های اعلامی</h2>
 
                             <div
                                 v-if="!announcedDevices.length"
-                                class="mt-5 rounded-2xl bg-slate-50 p-6 text-center text-sm text-slate-500 dark:bg-slate-950"
+                                class="mt-5 rounded-2xl bg-[#f7f8fa] p-6 text-center text-sm text-slate-500 dark:bg-white/[0.025]"
                             >
                                 سابقه گوشی اعلامی ندارد.
                             </div>
@@ -351,7 +351,7 @@ const paymentHistoryLabel = (stats) => {
                                 <div
                                     v-for="device in announcedDevices"
                                     :key="device.id"
-                                    class="rounded-2xl border border-slate-100 p-4 dark:border-slate-800"
+                                    class="rounded-2xl border border-slate-100 p-4 dark:border-white/5"
                                 >
                                     <div class="flex items-start justify-between gap-4">
                                         <div>
@@ -363,7 +363,7 @@ const paymentHistoryLabel = (stats) => {
                                             </p>
                                         </div>
 
-                                        <span class="rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold dark:bg-slate-800">
+                                        <span class="rounded-lg bg-[#f1f3f5] px-2 py-1 text-xs font-bold dark:bg-white/[0.06]">
                                             {{ deviceStatusLabel(device.status) }}
                                         </span>
                                     </div>
@@ -383,12 +383,12 @@ const paymentHistoryLabel = (stats) => {
                             </div>
                         </section>
 
-                        <section class="rounded-[30px] bg-white p-6 shadow-sm dark:bg-slate-900">
+                        <section class="rounded-[30px] bg-white p-6 shadow-sm dark:bg-white/[0.035]">
                             <h2 class="text-lg font-black">فروش گوشی به مغازه</h2>
 
                             <div
                                 v-if="!soldToShop.length"
-                                class="mt-5 rounded-2xl bg-slate-50 p-6 text-center text-sm text-slate-500 dark:bg-slate-950"
+                                class="mt-5 rounded-2xl bg-[#f7f8fa] p-6 text-center text-sm text-slate-500 dark:bg-white/[0.025]"
                             >
                                 سابقه فروش گوشی به مغازه ندارد.
                             </div>
@@ -398,7 +398,7 @@ const paymentHistoryLabel = (stats) => {
                                     v-for="item in soldToShop"
                                     :key="item.purchase_id"
                                     :href="route('devices.show', item.device_id)"
-                                    class="block rounded-2xl border border-slate-100 p-4 transition hover:border-violet-300 hover:bg-violet-50/40 dark:border-slate-800 dark:hover:bg-violet-950/20"
+                                    class="block rounded-2xl border border-slate-100 p-4 transition hover:border-[#ffadb4] hover:bg-[#fff0f1]/40 dark:border-white/5 dark:hover:bg-violet-950/20"
                                 >
                                     <div class="flex items-start justify-between gap-4">
                                         <div>
@@ -410,7 +410,7 @@ const paymentHistoryLabel = (stats) => {
                                             </p>
                                         </div>
 
-                                        <span class="rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold dark:bg-slate-800">
+                                        <span class="rounded-lg bg-[#f1f3f5] px-2 py-1 text-xs font-bold dark:bg-white/[0.06]">
                                             {{ deviceStatusLabel(item.status) }}
                                         </span>
                                     </div>

@@ -68,12 +68,12 @@ const submit = () => {
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
             <div class="mx-auto max-w-3xl">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm font-bold text-violet-600">مایاهمراه</p>
+                        <p class="text-sm font-bold text-[#ff6570]">مایاهمراه</p>
                         <h1 class="mt-1 text-2xl font-black">افزودن شخص</h1>
                         <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
                             ثبت همکار، فروشنده یا خریدار جدید
@@ -82,14 +82,14 @@ const submit = () => {
 
                     <Link
                         :href="props.returnTo ? route(props.returnTo) : route('contacts.index')"
-                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                        class="rounded-2xl border border-slate-200/60 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-white/5 dark:bg-white/[0.035] dark:text-slate-300"
                     >
                         بازگشت
                     </Link>
                 </div>
 
                 <form
-                    class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-7"
+                    class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-white/[0.035] sm:p-7"
                     @submit.prevent="submit"
                 >
                     <div class="grid gap-5 sm:grid-cols-2">
@@ -99,8 +99,8 @@ const submit = () => {
                                 <span class="font-normal text-slate-400">(اختیاری)</span>
                             </label>
 
-                            <div class="flex flex-col gap-4 rounded-2xl border border-dashed border-slate-200 p-4 dark:border-slate-700 sm:flex-row sm:items-center">
-                                <div class="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-violet-50 text-4xl dark:bg-violet-950/40">
+                            <div class="flex flex-col gap-4 rounded-2xl border border-dashed border-slate-200/60 p-4 dark:border-white/10 sm:flex-row sm:items-center">
+                                <div class="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-[#fff0f1] text-4xl dark:bg-[#ff6d76]/[0.10]">
                                     <img
                                         v-if="avatarPreview"
                                         :src="avatarPreview"
@@ -115,7 +115,7 @@ const submit = () => {
                                     <input
                                         type="file"
                                         accept="image/jpeg,image/png,image/webp"
-                                        class="block w-full text-sm text-slate-500 file:ml-4 file:rounded-xl file:border-0 file:bg-violet-50 file:px-4 file:py-2 file:font-bold file:text-violet-700 dark:text-slate-400 dark:file:bg-violet-950/40 dark:file:text-violet-300"
+                                        class="block w-full text-sm text-slate-500 file:ml-4 file:rounded-xl file:border-0 file:bg-[#fff0f1] file:px-4 file:py-2 file:font-bold file:text-[#d85e68] dark:text-slate-400 dark:file:bg-violet-950/40 dark:file:text-violet-300"
                                         @change="handleAvatar"
                                     />
 
@@ -141,7 +141,7 @@ const submit = () => {
                             <input
                                 v-model="form.name"
                                 type="text"
-                                class="w-full rounded-2xl border-slate-200 bg-white px-4 py-3 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-800 dark:bg-slate-950"
+                                class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/5 dark:bg-white/[0.025]"
                                 placeholder="مثلاً علی احمدی"
                             />
 
@@ -163,7 +163,7 @@ const submit = () => {
                                 type="tel"
                                 inputmode="numeric"
                                 dir="ltr"
-                                class="w-full rounded-2xl border-slate-200 bg-white px-4 py-3 text-left focus:border-violet-500 focus:ring-violet-500 dark:border-slate-800 dark:bg-slate-950"
+                                class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 text-left focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/5 dark:bg-white/[0.025]"
                                 placeholder="09123456789"
                                 @input="handleMobile"
                             />
@@ -186,7 +186,7 @@ const submit = () => {
                                 type="tel"
                                 inputmode="numeric"
                                 dir="ltr"
-                                class="w-full rounded-2xl border-slate-200 bg-white px-4 py-3 text-left focus:border-violet-500 focus:ring-violet-500 dark:border-slate-800 dark:bg-slate-950"
+                                class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 text-left focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/5 dark:bg-white/[0.025]"
                                 placeholder="اختیاری"
                                 @input="handlePhone"
                             />
@@ -209,8 +209,8 @@ const submit = () => {
                                     class="cursor-pointer rounded-2xl border p-4 transition"
                                     :class="
                                         form.contact_type === 'individual'
-                                            ? 'border-violet-500 bg-violet-50 dark:bg-violet-950/30'
-                                            : 'border-slate-200 dark:border-slate-800'
+                                            ? 'border-[#ff6d76] bg-[#fff0f1] dark:bg-[#ff6d76]/[0.08]'
+                                            : 'border-slate-200/60 dark:border-white/5'
                                     "
                                 >
                                     <input
@@ -230,8 +230,8 @@ const submit = () => {
                                     class="cursor-pointer rounded-2xl border p-4 transition"
                                     :class="
                                         form.contact_type === 'colleague'
-                                            ? 'border-violet-500 bg-violet-50 dark:bg-violet-950/30'
-                                            : 'border-slate-200 dark:border-slate-800'
+                                            ? 'border-[#ff6d76] bg-[#fff0f1] dark:bg-[#ff6d76]/[0.08]'
+                                            : 'border-slate-200/60 dark:border-white/5'
                                     "
                                 >
                                     <input
@@ -263,7 +263,7 @@ const submit = () => {
                             <textarea
                                 v-model="form.description"
                                 rows="4"
-                                class="w-full rounded-2xl border-slate-200 bg-white px-4 py-3 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-800 dark:bg-slate-950"
+                                class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/5 dark:bg-white/[0.025]"
                                 placeholder="مثلاً همکار بازار موبایل، توضیحات یا اطلاعات تکمیلی..."
                             ></textarea>
 
@@ -280,14 +280,14 @@ const submit = () => {
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="rounded-2xl bg-violet-600 px-6 py-3 font-black text-white transition hover:bg-violet-700 disabled:opacity-50"
+                            class="rounded-2xl bg-[#ff6d76] px-6 py-3 font-black text-white transition hover:bg-[#f45f6a] disabled:opacity-50"
                         >
                             {{ form.processing ? 'در حال ثبت...' : 'ثبت شخص' }}
                         </button>
 
                         <Link
                             :href="route('contacts.index')"
-                            class="rounded-2xl border border-slate-200 px-6 py-3 text-center font-bold text-slate-600 dark:border-slate-800 dark:text-slate-300"
+                            class="rounded-2xl border border-slate-200/60 px-6 py-3 text-center font-bold text-slate-600 dark:border-white/5 dark:text-slate-300"
                         >
                             انصراف
                         </Link>

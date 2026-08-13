@@ -54,12 +54,12 @@ const money = (value) => {
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
             <div class="mx-auto max-w-7xl">
                 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-sm font-bold text-violet-600">مایاهمراه</p>
+                        <p class="text-sm font-bold text-[#ff6570]">مایاهمراه</p>
                         <h1 class="mt-1 text-2xl font-black">گوشی‌های اعلامی</h1>
                         <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
                             {{ devices.length.toLocaleString('fa-IR') }} گوشی اعلام‌شده توسط همکاران
@@ -69,14 +69,14 @@ const money = (value) => {
                     <div class="flex gap-2">
                         <Link
                             :href="route('announced-devices.create')"
-                            class="rounded-2xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-violet-700"
+                            class="rounded-2xl bg-[#ff6d76] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#f45f6a]"
                         >
                             + ثبت گوشی اعلامی
                         </Link>
 
                         <Link
                             :href="route('dashboard')"
-                            class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                            class="rounded-2xl border border-slate-200/60 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-white/5 dark:bg-white/[0.035] dark:text-slate-300"
                         >
                             بازگشت
                         </Link>
@@ -89,13 +89,13 @@ const money = (value) => {
                         type="search"
                         placeholder="جستجو با برند، مدل، حافظه، رنگ، IMEI یا اعلام‌کننده..."
                         autocomplete="off"
-                        class="w-full rounded-2xl border-slate-200 bg-white px-4 py-3 text-sm shadow-sm focus:border-violet-500 focus:ring-violet-500 dark:border-slate-800 dark:bg-slate-900"
+                        class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 text-sm shadow-sm focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/5 dark:bg-white/[0.035]"
                     />
                 </div>
 
                 <div
                     v-if="!devices.length"
-                    class="rounded-[30px] bg-white p-12 text-center shadow-sm dark:bg-slate-900"
+                    class="rounded-[30px] bg-white p-12 text-center shadow-sm dark:bg-white/[0.035]"
                 >
                     <div class="text-5xl">☎</div>
                     <h2 class="mt-4 text-lg font-black">گوشی اعلامی نداریم</h2>
@@ -105,9 +105,9 @@ const money = (value) => {
                     <article
                         v-for="device in devices"
                         :key="device.id"
-                        class="overflow-hidden rounded-[30px] bg-white shadow-sm dark:bg-slate-900"
+                        class="overflow-hidden rounded-[30px] bg-white shadow-sm dark:bg-white/[0.035]"
                     >
-                        <div class="flex h-44 items-center justify-center bg-slate-100 dark:bg-slate-800">
+                        <div class="flex h-44 items-center justify-center bg-[#f1f3f5] dark:bg-white/[0.06]">
                             <img
                                 v-if="device.cover_image"
                                 :src="`/storage/${device.cover_image}`"
@@ -134,7 +134,7 @@ const money = (value) => {
                             </div>
 
                             <div class="mt-5 grid grid-cols-2 gap-3 text-sm">
-                                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
+                                <div class="rounded-2xl bg-[#f7f8fa] p-3 dark:bg-white/[0.025]">
                                     <p class="text-xs text-slate-400">
                                         {{ device.brand === 'Samsung' ? 'وضعیت باتری' : 'سلامت باتری' }}
                                     </p>
@@ -149,14 +149,14 @@ const money = (value) => {
                                     </p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
+                                <div class="rounded-2xl bg-[#f7f8fa] p-3 dark:bg-white/[0.025]">
                                     <p class="text-xs text-slate-400">تمیزی</p>
                                     <p class="mt-1 font-bold">
                                         {{ conditionLabel(device.condition_grade) }}
                                     </p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
+                                <div class="rounded-2xl bg-[#f7f8fa] p-3 dark:bg-white/[0.025]">
                                     <p class="text-xs text-slate-400">
                                         {{ device.brand === 'Samsung' ? 'کشور سازنده' : 'پارت نامبر' }}
                                     </p>
@@ -167,20 +167,20 @@ const money = (value) => {
                                         }}</p>
                                 </div>
 
-                                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
+                                <div class="rounded-2xl bg-[#f7f8fa] p-3 dark:bg-white/[0.025]">
                                     <p class="text-xs text-slate-400">سیم‌کارت</p>
                                     <p class="mt-1 font-bold">{{ simTypeLabel(device.sim_type) }}</p>
                                 </div>
                             </div>
 
-                            <div class="mt-5 rounded-2xl bg-violet-50 p-4 dark:bg-violet-950/30">
+                            <div class="mt-5 rounded-2xl bg-[#fff0f1] p-4 dark:bg-[#ff6d76]/[0.08]">
                                 <p class="text-xs text-slate-500">قیمت اعلامی</p>
-                                <p class="mt-1 text-lg font-black text-violet-700">
+                                <p class="mt-1 text-lg font-black text-[#d85e68]">
                                     {{ money(device.announced_price) }}
                                 </p>
                             </div>
 
-                            <div class="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800">
+                            <div class="mt-5 border-t border-slate-100 pt-4 dark:border-white/5">
                                 <p class="text-xs text-slate-400">اعلام‌کننده</p>
                                 <p class="mt-1 font-black">
                                     {{ device.announcer_name || '—' }}
@@ -189,7 +189,7 @@ const money = (value) => {
                                 <a
                                     v-if="device.announcer_mobile"
                                     :href="`tel:${device.announcer_mobile}`"
-                                    class="mt-2 inline-block text-sm font-bold text-violet-600"
+                                    class="mt-2 inline-block text-sm font-bold text-[#ff6570]"
                                 >
                                     {{ device.announcer_mobile }}
                                 </a>
@@ -197,7 +197,7 @@ const money = (value) => {
 
                             <Link
                                 :href="route('announced-devices.purchase.create', device.id)"
-                                class="mt-5 block rounded-2xl bg-violet-600 px-4 py-3 text-center text-sm font-black text-white transition hover:bg-violet-700"
+                                class="mt-5 block rounded-2xl bg-[#ff6d76] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[#f45f6a]"
                             >
                                 خرید این گوشی و انتقال به موجودی
                             </Link>

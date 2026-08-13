@@ -159,12 +159,12 @@ const submit = () => {
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
             <div class="mx-auto max-w-5xl">
                 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-sm font-bold text-violet-600">
+                        <p class="text-sm font-bold text-[#ff6570]">
                             مایاهمراه
                         </p>
 
@@ -179,7 +179,7 @@ const submit = () => {
 
                     <Link
                         :href="route('devices.show', device.id)"
-                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-center text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                        class="rounded-2xl border border-slate-200/60 bg-white px-4 py-2.5 text-center text-sm font-bold text-slate-600 dark:border-white/5 dark:bg-white/[0.035] dark:text-slate-300"
                     >
                         بازگشت به دستگاه
                     </Link>
@@ -196,7 +196,7 @@ const submit = () => {
                     @submit.prevent="submit"
                 >
                     <section
-                        class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-7"
+                        class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-white/[0.035] sm:p-7"
                     >
                         <div class="mb-6">
                             <h2 class="text-lg font-black">
@@ -216,7 +216,7 @@ const submit = () => {
 
                                 <select
                                     v-model="selectedBrandId"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                     @change="selectBrand"
                                 >
                                     <option value="">انتخاب برند</option>
@@ -246,7 +246,7 @@ const submit = () => {
                                 <select
                                     v-model="selectedModelId"
                                     :disabled="!selectedBrandId"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب مدل</option>
 
@@ -275,7 +275,7 @@ const submit = () => {
                                 <select
                                     v-model="form.storage"
                                     :disabled="!selectedModelId"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب حافظه</option>
 
@@ -297,7 +297,7 @@ const submit = () => {
                                 <select
                                     v-model="form.color"
                                     :disabled="!selectedModelId"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب رنگ</option>
 
@@ -318,7 +318,7 @@ const submit = () => {
 
                                 <select
                                     v-model="form.manufacturing_country"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب کشور سازنده</option>
 
@@ -340,7 +340,7 @@ const submit = () => {
                                 <select
                                     v-model="form.part_number"
                                     :disabled="!selectedModelId || !filteredPartNumbers.length"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">
                                         {{ filteredPartNumbers.length ? 'انتخاب پارت نامبر' : 'پارت نامبر ندارد' }}
@@ -363,7 +363,7 @@ const submit = () => {
 
                                 <select
                                     v-model="form.sim_type"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب کنید</option>
                                     <option value="single">تک‌سیم</option>
@@ -378,7 +378,7 @@ const submit = () => {
 
                                 <select
                                     v-model="form.battery_condition"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب وضعیت باتری</option>
 
@@ -403,7 +403,7 @@ const submit = () => {
                                         type="text"
                                         inputmode="numeric"
                                         placeholder="مثلاً ۸۹ یا 89"
-                                        class="w-full rounded-2xl border-slate-200 bg-slate-50 pl-12 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                        class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] pl-12 focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                         @input="form.battery_health = normalizeDigits($event.target.value).replace(/\D/g, '').slice(0, 3)"
                                     />
 
@@ -422,7 +422,7 @@ const submit = () => {
 
                                 <select
                                     v-model="form.condition_grade"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب کنید</option>
                                     <option value="A+">A+ | در حد نو</option>
@@ -444,7 +444,7 @@ const submit = () => {
                                     maxlength="15"
                                     placeholder="IMEI پانزده رقمی"
                                     dir="ltr"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 text-left focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] text-left focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                     @input="form.imei = normalizeDigits($event.target.value).replace(/\D/g, '').slice(0, 15)"
                                 />
 
@@ -463,7 +463,7 @@ const submit = () => {
 
                                 <select
                                     v-model="form.registration_status"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب کنید</option>
                                     <option value="registered">
@@ -482,14 +482,14 @@ const submit = () => {
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="rounded-2xl bg-violet-600 px-8 py-3 font-black text-white shadow-lg shadow-violet-200 transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-none"
+                            class="rounded-2xl bg-[#ff6d76] px-8 py-3 font-black text-white shadow-lg shadow-[#ff6d76]/15 transition hover:bg-[#f45f6a] disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-none"
                         >
                             {{ form.processing ? 'در حال ذخیره...' : 'ذخیره تغییرات' }}
                         </button>
 
                         <Link
                             :href="route('devices.show', device.id)"
-                            class="rounded-2xl bg-white px-8 py-3 text-center font-bold text-slate-600 shadow-sm dark:bg-slate-900 dark:text-slate-300"
+                            class="rounded-2xl bg-white px-8 py-3 text-center font-bold text-slate-600 shadow-sm dark:bg-white/[0.035] dark:text-slate-300"
                         >
                             انصراف
                         </Link>

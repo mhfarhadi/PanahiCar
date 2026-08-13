@@ -71,12 +71,12 @@ const saleTypeLabel = (type) =>
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
             <div class="mx-auto max-w-7xl">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm font-bold text-violet-600">
+                        <p class="text-sm font-bold text-[#ff6570]">
                             مایاهمراه
                         </p>
 
@@ -91,7 +91,7 @@ const saleTypeLabel = (type) =>
 
                     <Link
                         :href="route('dashboard')"
-                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                        class="rounded-2xl border border-slate-200/60 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-white/5 dark:bg-white/[0.035] dark:text-slate-300"
                     >
                         داشبورد
                     </Link>
@@ -103,13 +103,13 @@ const saleTypeLabel = (type) =>
                         type="search"
                         placeholder="جستجو با برند، مدل، حافظه، رنگ، IMEI یا خریدار..."
                         autocomplete="off"
-                        class="w-full rounded-2xl border-slate-200 bg-white px-4 py-3 text-sm shadow-sm focus:border-violet-500 focus:ring-violet-500 dark:border-slate-800 dark:bg-slate-900"
+                        class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 text-sm shadow-sm focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/5 dark:bg-white/[0.035]"
                     />
                 </div>
 
                 <div class="mb-5 grid gap-3 lg:grid-cols-2">
                     <div
-                        class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                        class="rounded-3xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-white/[0.035]"
                     >
                         <p class="mb-3 text-xs font-black text-slate-400">
                             نوع فروش
@@ -127,8 +127,8 @@ const saleTypeLabel = (type) =>
                                 class="rounded-xl px-3 py-2.5 text-sm font-black transition"
                                 :class="
                                     saleType === option.value
-                                        ? 'bg-violet-600 text-white'
-                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                                        ? 'bg-[#ff6d76] text-white'
+                                        : 'bg-[#f1f3f5] text-slate-600 hover:bg-slate-200 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:bg-slate-700'
                                 "
                                 @click="saleType = option.value"
                             >
@@ -138,7 +138,7 @@ const saleTypeLabel = (type) =>
                     </div>
 
                     <div
-                        class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                        class="rounded-3xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-white/[0.035]"
                     >
                         <p class="mb-3 text-xs font-black text-slate-400">
                             بازه زمانی
@@ -146,7 +146,7 @@ const saleTypeLabel = (type) =>
 
                         <select
                             v-model="period"
-                            class="w-full rounded-xl border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-800"
+                            class="w-full rounded-xl border-slate-200/60 bg-[#f7f8fa] px-3 py-2.5 text-sm font-bold focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.06]"
                         >
                             <option value="all">همه زمان‌ها</option>
                             <option value="last_7_days">۷ روز گذشته</option>
@@ -158,7 +158,7 @@ const saleTypeLabel = (type) =>
 
                 <div class="mb-5 grid gap-3 sm:grid-cols-2">
                     <div
-                        class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                        class="rounded-3xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/[0.035]"
                     >
                         <p class="text-xs font-bold text-slate-400">
                             تعداد فروش در نتایج
@@ -171,13 +171,13 @@ const saleTypeLabel = (type) =>
                     </div>
 
                     <div
-                        class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                        class="rounded-3xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/[0.035]"
                     >
                         <p class="text-xs font-bold text-slate-400">
                             مجموع مبلغ فروش
                         </p>
 
-                        <p class="mt-2 text-2xl font-black text-violet-700 dark:text-violet-300">
+                        <p class="mt-2 text-2xl font-black text-[#d85e68] dark:text-[#ff9299]">
                             {{ formatMoney(summary.total_sale_amount) }}
                             <span class="text-sm text-slate-400">تومان</span>
                         </p>
@@ -186,7 +186,7 @@ const saleTypeLabel = (type) =>
 
                 <div
                     v-if="sales.length === 0"
-                    class="rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-slate-900"
+                    class="rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-white/[0.035]"
                 >
                     <p class="text-lg font-black">
                         هنوز فروشی ثبت نشده
@@ -204,9 +204,9 @@ const saleTypeLabel = (type) =>
                     <article
                         v-for="sale in sales"
                         :key="sale.id"
-                    class="flex h-full flex-col overflow-hidden rounded-[30px] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:bg-slate-900"
+                    class="flex h-full flex-col overflow-hidden rounded-[30px] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:bg-white/[0.035]"
                     >
-                    <div class="w-full shrink-0 overflow-hidden bg-slate-100 dark:bg-slate-800" style="height: 224px; min-height: 224px; max-height: 224px;">
+                    <div class="w-full shrink-0 overflow-hidden bg-[#f1f3f5] dark:bg-white/[0.06]" style="height: 224px; min-height: 224px; max-height: 224px;">
                         <img
                             v-if="sale.cover_image"
                             :src="`/storage/${sale.cover_image}`"
@@ -216,7 +216,7 @@ const saleTypeLabel = (type) =>
 
                         <div
                             v-else
-                            class="flex w-full items-center justify-center bg-slate-100 dark:bg-slate-800" style="height: 224px; min-height: 224px; max-height: 224px;"
+                            class="flex w-full items-center justify-center bg-[#f1f3f5] dark:bg-white/[0.06]" style="height: 224px; min-height: 224px; max-height: 224px;"
                         >
                             <span class="text-8xl opacity-40">📱</span>
                         </div>
@@ -248,7 +248,7 @@ const saleTypeLabel = (type) =>
                             </div>
 
                             <span
-                                class="rounded-xl bg-violet-50 px-3 py-1.5 text-xs font-black text-violet-700 dark:bg-violet-950/30 dark:text-violet-300"
+                                class="rounded-xl bg-[#fff0f1] px-3 py-1.5 text-xs font-black text-[#d85e68] dark:bg-[#ff6d76]/[0.08] dark:text-[#ff9299]"
                             >
                                 {{ saleTypeLabel(sale.sale_type) }}
                             </span>
@@ -262,7 +262,7 @@ const saleTypeLabel = (type) =>
 
                                 <Link
                                     :href="route('contacts.show', sale.buyer_id)"
-                                    class="font-black text-violet-600"
+                                    class="font-black text-[#ff6570]"
                                 >
                                     {{ sale.buyer_name }}
                                 </Link>
@@ -314,7 +314,7 @@ const saleTypeLabel = (type) =>
 
                             <div
                                 v-if="sale.profit !== null"
-                                class="flex items-center justify-between gap-4 border-t border-slate-100 pt-3 dark:border-slate-800"
+                                class="flex items-center justify-between gap-4 border-t border-slate-100 pt-3 dark:border-white/5"
                             >
                                 <span class="text-slate-400">
                                     سود / زیان
@@ -335,7 +335,7 @@ const saleTypeLabel = (type) =>
 
                         <div
                             v-if="sale.imei"
-                            class="mt-4 rounded-2xl bg-slate-50 p-3 text-xs text-slate-500 dark:bg-slate-950 dark:text-slate-400"
+                            class="mt-4 rounded-2xl bg-[#f7f8fa] p-3 text-xs text-slate-500 dark:bg-white/[0.025] dark:text-slate-400"
                         >
                             IMEI:
                             <span class="font-bold" dir="ltr">
@@ -345,7 +345,7 @@ const saleTypeLabel = (type) =>
 
                         <Link
                             :href="route('sales.show', sale.id)"
-                            class="mt-4 flex w-full items-center justify-center rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white transition hover:bg-violet-700"
+                            class="mt-4 flex w-full items-center justify-center rounded-2xl bg-[#ff6d76] px-4 py-3 text-sm font-black text-white transition hover:bg-[#f45f6a]"
                         >
                             مشاهده جزئیات فروش
                         </Link>

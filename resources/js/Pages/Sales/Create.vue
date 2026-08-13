@@ -438,12 +438,12 @@ const submit = () => {
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
             <div class="mx-auto max-w-4xl">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm font-bold text-violet-600">
+                        <p class="text-sm font-bold text-[#ff6570]">
                             مایاهمراه
                         </p>
 
@@ -459,13 +459,13 @@ const submit = () => {
 
                     <Link
                         :href="route('devices.show', device.id)"
-                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                        class="rounded-2xl border border-slate-200/60 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-white/5 dark:bg-white/[0.035] dark:text-slate-300"
                     >
                         بازگشت
                     </Link>
                 </div>
 
-                <div class="mb-5 rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-900">
+                <div class="mb-5 rounded-3xl bg-white p-5 shadow-sm dark:bg-white/[0.035]">
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div>
                             <p class="text-xs text-slate-400">دستگاه</p>
@@ -498,7 +498,7 @@ const submit = () => {
                 </div>
 
                 <form
-                    class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-7"
+                    class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-white/[0.035] sm:p-7"
                     @submit.prevent="submit"
                 >
                     <div class="grid gap-5 sm:grid-cols-2">
@@ -513,8 +513,8 @@ const submit = () => {
                                     class="rounded-2xl border px-4 py-4 font-black transition"
                                     :class="
                                         form.sale_type === 'cash'
-                                            ? 'border-violet-600 bg-violet-600 text-white'
-                                            : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300'
+                                            ? 'border-violet-600 bg-[#ff6d76] text-white'
+                                            : 'border-slate-200/60 bg-[#f7f8fa] text-slate-600 dark:border-white/10 dark:bg-white/[0.025] dark:text-slate-300'
                                     "
                                     @click="form.sale_type = 'cash'"
                                 >
@@ -526,8 +526,8 @@ const submit = () => {
                                     class="rounded-2xl border px-4 py-4 font-black transition"
                                     :class="
                                         form.sale_type === 'installment'
-                                            ? 'border-violet-600 bg-violet-600 text-white'
-                                            : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300'
+                                            ? 'border-violet-600 bg-[#ff6d76] text-white'
+                                            : 'border-slate-200/60 bg-[#f7f8fa] text-slate-600 dark:border-white/10 dark:bg-white/[0.025] dark:text-slate-300'
                                     "
                                     @click="form.sale_type = 'installment'"
                                 >
@@ -545,11 +545,11 @@ const submit = () => {
                                 v-model="buyerSearch"
                                 type="text"
                                 placeholder="جستجو با نام یا موبایل"
-                                class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                             />
 
                             <div
-                                class="mt-3 max-h-52 space-y-2 overflow-y-auto rounded-2xl border border-slate-100 p-2 dark:border-slate-800"
+                                class="mt-3 max-h-52 space-y-2 overflow-y-auto rounded-2xl border border-slate-100 p-2 dark:border-white/5"
                             >
                                 <button
                                     v-for="contact in filteredContacts"
@@ -558,8 +558,8 @@ const submit = () => {
                                     class="flex w-full items-center justify-between rounded-xl px-3 py-3 text-right transition"
                                     :class="
                                         String(form.buyer_id) === String(contact.id)
-                                            ? 'bg-violet-600 text-white'
-                                            : 'hover:bg-slate-50 dark:hover:bg-slate-800'
+                                            ? 'bg-[#ff6d76] text-white'
+                                            : 'hover:bg-[#f7f8fa] dark:hover:bg-slate-800'
                                     "
                                     @click="form.buyer_id = contact.id"
                                 >
@@ -575,7 +575,7 @@ const submit = () => {
 
                             <div
                                 v-if="selectedBuyer"
-                                class="mt-3 rounded-2xl bg-violet-50 p-4 dark:bg-violet-950/30"
+                                class="mt-3 rounded-2xl bg-[#fff0f1] p-4 dark:bg-[#ff6d76]/[0.08]"
                             >
                                 <p class="font-black">
                                     {{ selectedBuyer.name }}
@@ -603,7 +603,7 @@ const submit = () => {
                                 type="text"
                                 inputmode="numeric"
                                 placeholder="مثلاً ۱۳۵,۰۰۰,۰۰۰"
-                                class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 @input="handleSalePrice"
                             />
 
@@ -626,7 +626,7 @@ const submit = () => {
                                     type="text"
                                     inputmode="numeric"
                                     placeholder="مثلاً ۳۰,۰۰۰,۰۰۰"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                     @input="handleDownPayment"
                                 />
 
@@ -646,7 +646,7 @@ const submit = () => {
                                 <div class="flex items-stretch gap-2">
                                     <button
                                         type="button"
-                                        class="flex w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 text-xl font-black transition hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+                                        class="flex w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200/60 bg-[#f1f3f5] text-xl font-black transition hover:bg-slate-200 dark:border-white/10 dark:bg-white/[0.06] dark:hover:bg-slate-700"
                                         @click="adjustMonthlyProfitRate(-0.1)"
                                     >
                                         −
@@ -658,7 +658,7 @@ const submit = () => {
                                             type="text"
                                             inputmode="decimal"
                                             placeholder="۶.۵"
-                                            class="w-full rounded-2xl border-slate-200 bg-slate-50 pl-12 text-center focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                            class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] pl-12 text-center focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                             @input="handleMonthlyProfitRate"
                                             @blur="normalizeMonthlyProfitRate"
                                         />
@@ -672,7 +672,7 @@ const submit = () => {
 
                                     <button
                                         type="button"
-                                        class="flex w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 text-xl font-black transition hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+                                        class="flex w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200/60 bg-[#f1f3f5] text-xl font-black transition hover:bg-slate-200 dark:border-white/10 dark:bg-white/[0.06] dark:hover:bg-slate-700"
                                         @click="adjustMonthlyProfitRate(0.1)"
                                     >
                                         +
@@ -701,7 +701,7 @@ const submit = () => {
                                     type="text"
                                         inputmode="numeric"
                                     @input="handleInstallmentCount"
-                                        class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                        class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 />
 
                                 <p
@@ -730,7 +730,7 @@ const submit = () => {
 
                                 <input
                                     type="text"
-                                    class="first-due-date-input w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="first-due-date-input w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                     placeholder="تاریخ اولین قسط"
                                     readonly
                                 />
@@ -801,7 +801,7 @@ const submit = () => {
                             </div>
 
                             <div
-                                class="sm:col-span-2 grid gap-3 rounded-2xl bg-violet-50 p-4 dark:bg-violet-950/30 sm:grid-cols-2 lg:grid-cols-6"
+                                class="sm:col-span-2 grid gap-3 rounded-2xl bg-[#fff0f1] p-4 dark:bg-[#ff6d76]/[0.08] sm:grid-cols-2 lg:grid-cols-6"
                             >
                                 <div>
                                     <p class="text-xs text-slate-500 dark:text-slate-400">
@@ -825,7 +825,7 @@ const submit = () => {
                                     <p class="text-xs text-slate-500 dark:text-slate-400">
                                         مبلغ هر چک
                                     </p>
-                                    <p class="mt-1 font-black text-violet-700 dark:text-violet-300">
+                                    <p class="mt-1 font-black text-[#d85e68] dark:text-[#ff9299]">
                                         {{ formatMoney(installmentAmount) }} تومان
                                     </p>
                                 </div>
@@ -834,7 +834,7 @@ const submit = () => {
                                     <p class="text-xs text-slate-500 dark:text-slate-400">
                                         مجموع اقساط
                                     </p>
-                                    <p class="mt-1 font-black text-violet-700 dark:text-violet-300">
+                                    <p class="mt-1 font-black text-[#d85e68] dark:text-[#ff9299]">
                                         {{ formatMoney(installmentTotal) }} تومان
                                     </p>
                                 </div>
@@ -885,7 +885,7 @@ const submit = () => {
 
                             <input
                                 type="text"
-                                class="sale-date-input w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                class="sale-date-input w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 placeholder="تاریخ فروش"
                                 readonly
                             />
@@ -916,7 +916,7 @@ const submit = () => {
                                                 ? ''
                                                 : 'نرخ دلار را دستی وارد کنید'
                                     "
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 pl-16 focus:border-violet-500 focus:ring-violet-500 read-only:cursor-default read-only:text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:read-only:text-slate-400"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] pl-16 focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 read-only:cursor-default read-only:text-slate-500 dark:border-white/10 dark:bg-white/[0.025] dark:read-only:text-slate-400"
                                     @input="handleUsdRate"
                                 />
 
@@ -1014,7 +1014,7 @@ const submit = () => {
                             <textarea
                                 v-model="form.notes"
                                 rows="4"
-                                class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 placeholder="اختیاری"
                             ></textarea>
                         </div>
@@ -1024,7 +1024,7 @@ const submit = () => {
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="rounded-2xl bg-violet-600 px-6 py-3 text-sm font-black text-white transition hover:bg-violet-700 disabled:opacity-50"
+                            class="rounded-2xl bg-[#ff6d76] px-6 py-3 text-sm font-black text-white transition hover:bg-[#f45f6a] disabled:opacity-50"
                         >
                             {{ form.sale_type === 'cash' ? 'ثبت فروش نقدی' : 'ثبت فروش اقساطی' }}
                         </button>

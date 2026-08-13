@@ -362,12 +362,12 @@ const submit = () => {
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
             <div class="mx-auto max-w-5xl">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm font-bold text-violet-600">
+                        <p class="text-sm font-bold text-[#ff6570]">
                             مایاهمراه
                         </p>
                         <h1 class="mt-1 text-2xl font-black">
@@ -380,7 +380,7 @@ const submit = () => {
 
                     <Link
                         :href="route('announced-devices.index')"
-                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 transition hover:border-violet-300 hover:text-violet-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                        class="rounded-2xl border border-slate-200/60 bg-white px-4 py-2 text-sm font-bold text-slate-600 transition hover:border-[#ffadb4] hover:text-[#d85e68] dark:border-white/5 dark:bg-white/[0.035] dark:text-slate-300"
                     >
                         بازگشت
                     </Link>
@@ -389,7 +389,7 @@ const submit = () => {
                 <form @submit.prevent="submit" class="space-y-6">
                     <!-- Device -->
                     <section
-                        class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-7"
+                        class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-white/[0.035] sm:p-7"
                     >
                         <div class="mb-6">
                             <h2 class="text-lg font-black">
@@ -408,7 +408,7 @@ const submit = () => {
                                 <select
                                     v-model="selectedBrandId"
                                     @change="selectBrand"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب برند</option>
                                     <option
@@ -434,7 +434,7 @@ const submit = () => {
                                 <select
                                     v-model="selectedModelId"
                                     :disabled="!selectedBrandId"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب مدل</option>
                                     <option
@@ -460,7 +460,7 @@ const submit = () => {
                                 <select
                                     v-model="form.storage"
                                     :disabled="!selectedModelId"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب حافظه</option>
                                     <option
@@ -480,7 +480,7 @@ const submit = () => {
                                 <select
                                     v-model="form.color"
                                     :disabled="!selectedModelId"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب رنگ</option>
                                     <option
@@ -500,7 +500,7 @@ const submit = () => {
                                 <select
                                     v-model="form.manufacturing_country"
                                     :disabled="!selectedModelId"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب کشور سازنده</option>
                                     <option
@@ -520,7 +520,7 @@ const submit = () => {
                                 <select
                                     v-model="form.part_number"
                                     :disabled="!selectedModelId || !filteredPartNumbers.length"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">
                                         {{ filteredPartNumbers.length ? 'انتخاب پارت نامبر' : 'پارت نامبر ندارد' }}
@@ -541,7 +541,7 @@ const submit = () => {
                                 </label>
                                 <select
                                     v-model="form.sim_type"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب کنید</option>
                                     <option value="single">تک‌سیم</option>
@@ -555,7 +555,7 @@ const submit = () => {
                                 </label>
                                 <select
                                     v-model="form.battery_condition"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب وضعیت باتری</option>
                                     <option
@@ -578,7 +578,7 @@ const submit = () => {
                                         type="text"
                                         inputmode="numeric"
                                         placeholder="مثلاً ۸۹ یا 89"
-                                        class="w-full rounded-2xl border-slate-200 bg-slate-50 pl-12 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                        class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] pl-12 focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                         @input="form.battery_health = normalizeDigits($event.target.value).replace(/\D/g, '').slice(0, 3)"
                                     />
                                     <span
@@ -595,7 +595,7 @@ const submit = () => {
                                 </label>
                                 <select
                                     v-model="form.condition_grade"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب کنید</option>
                                     <option value="A+">A+ | در حد نو</option>
@@ -617,7 +617,7 @@ const submit = () => {
                                     maxlength="15"
                                     placeholder="IMEI پانزده رقمی"
                                     dir="ltr"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 text-left focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] text-left focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 />
                                 <p
                                     v-if="form.errors.imei"
@@ -633,7 +633,7 @@ const submit = () => {
                                 </label>
                                 <select
                                     v-model="form.registration_status"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 >
                                     <option value="">انتخاب کنید</option>
                                     <option value="registered">{{ registrationStatusLabel('registered') }}</option>
@@ -651,14 +651,14 @@ const submit = () => {
                                 v-model="form.description"
                                 rows="3"
                                 placeholder="توضیحات تکمیلی درباره دستگاه..."
-                                class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                             ></textarea>
                         </div>
                     </section>
 
                     <!-- Announcement -->
                     <section
-                        class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-7"
+                        class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-white/[0.035] sm:p-7"
                     >
                         <h2 class="text-lg font-black">
                             اطلاعات اعلام‌کننده
@@ -674,12 +674,12 @@ const submit = () => {
                                 v-model="announcerSearch"
                                 type="text"
                                 placeholder="جستجو با نام یا شماره موبایل..."
-                                class="mb-3 w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                class="mb-3 w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                             />
 
                             <select
                                 v-model="form.announcer_id"
-                                class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                             >
                                 <option value="">انتخاب شخص</option>
 
@@ -701,7 +701,7 @@ const submit = () => {
 
                             <div
                                 v-if="selectedAnnouncer"
-                                class="mt-3 rounded-2xl bg-violet-50 p-4 dark:bg-violet-950/30"
+                                class="mt-3 rounded-2xl bg-[#fff0f1] p-4 dark:bg-[#ff6d76]/[0.08]"
                             >
                                 <p class="font-black">
                                     {{ selectedAnnouncer.name }}
@@ -715,7 +715,7 @@ const submit = () => {
                                 شخص موردنظر در لیست نیست؟
                                 <Link
                                     :href="route('contacts.create')"
-                                    class="font-bold text-violet-600"
+                                    class="font-bold text-[#ff6570]"
                                 >
                                     افزودن شخص جدید
                                 </Link>
@@ -731,12 +731,12 @@ const submit = () => {
                                     inputmode="numeric"
                                     placeholder="مثلاً ۱۲۲,۰۰۰,۰۰۰"
                                     @input="handleAnnouncedPrice"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 />
 
                                 <p
                                     v-if="announcedPriceWords"
-                                    class="mt-2 text-sm font-bold leading-6 text-violet-600 dark:text-violet-300"
+                                    class="mt-2 text-sm font-bold leading-6 text-[#ff6570] dark:text-[#ff9299]"
                                 >
                                     {{ announcedPriceWords }}
                                 </p>
@@ -760,8 +760,8 @@ const submit = () => {
                                     convert-numbers
                                     :editable="false"
                                     :auto-submit="true"
-                                    color="#7c3aed"
-                                    input-class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-right focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    color="#ff6d76"
+                                    input-class="w-full rounded-2xl border border-slate-200/60 bg-[#f7f8fa] px-3 py-2 text-right focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                     placeholder="انتخاب تاریخ اعلام"
                                 />
                             </div>
@@ -770,7 +770,7 @@ const submit = () => {
 
                     <!-- Images -->
                     <section
-                        class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-7"
+                        class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-white/[0.035] sm:p-7"
                     >
                         <h2 class="text-lg font-black">
                             تصاویر دستگاه
@@ -781,7 +781,7 @@ const submit = () => {
                         </p>
 
                         <label
-                            class="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-violet-200 bg-violet-50/50 px-4 py-10 text-center transition hover:border-violet-400 dark:border-violet-900 dark:bg-violet-950/20"
+                            class="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#ffcbd0] bg-[#fff0f1]/50 px-4 py-10 text-center transition hover:border-[#ff9299] dark:border-violet-900 dark:bg-[#ff6d76]/[0.06]"
                         >
                             <span class="text-3xl">＋</span>
                             <span class="mt-2 font-black">
@@ -802,7 +802,7 @@ const submit = () => {
 
                         <p
                             v-if="form.images.length"
-                            class="mt-3 text-sm font-bold text-violet-600"
+                            class="mt-3 text-sm font-bold text-[#ff6570]"
                         >
                             {{ form.images.length }} تصویر انتخاب شده
                         </p>
@@ -821,14 +821,14 @@ const submit = () => {
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="rounded-2xl bg-violet-600 px-8 py-3 font-black text-white shadow-lg shadow-violet-200 transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-none"
+                            class="rounded-2xl bg-[#ff6d76] px-8 py-3 font-black text-white shadow-lg shadow-[#ff6d76]/15 transition hover:bg-[#f45f6a] disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-none"
                         >
                             {{ form.processing ? 'در حال ثبت...' : 'ثبت گوشی اعلامی' }}
                         </button>
 
                         <Link
                             :href="route('announced-devices.index')"
-                            class="rounded-2xl bg-white px-8 py-3 text-center font-bold text-slate-600 shadow-sm dark:bg-slate-900 dark:text-slate-300"
+                            class="rounded-2xl bg-white px-8 py-3 text-center font-bold text-slate-600 shadow-sm dark:bg-white/[0.035] dark:text-slate-300"
                         >
                             انصراف
                         </Link>

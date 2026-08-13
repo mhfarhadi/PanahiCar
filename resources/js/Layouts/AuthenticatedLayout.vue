@@ -81,6 +81,7 @@ const isActive = (item) => {
 
     if (item.pattern === 'devices.*') {
         return route().current('devices.*')
+            && !route().current('devices.create')
             && new URLSearchParams(window.location.search).get('mode') !== 'sell';
     }
 

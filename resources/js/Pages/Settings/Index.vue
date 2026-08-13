@@ -10,11 +10,11 @@ import { Head, Link } from '@inertiajs/vue3';
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
             <div class="mx-auto max-w-5xl">
                 <div class="mb-6">
-                    <p class="text-sm font-bold text-violet-600">
+                    <p class="text-sm font-bold text-[#ff6570]">
                         مایاهمراه
                     </p>
 
@@ -30,10 +30,10 @@ import { Head, Link } from '@inertiajs/vue3';
                 <div class="grid gap-4 md:grid-cols-2">
                     <Link
                         :href="route('contacts.index')"
-                        class="group rounded-3xl bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:bg-slate-900"
+                        class="group rounded-3xl bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:bg-white/[0.035]"
                     >
                         <div
-                            class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-xl dark:bg-violet-950/40"
+                            class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fff0f1] text-xl dark:bg-[#ff6d76]/[0.10]"
                         >
                             👤
                         </div>
@@ -48,10 +48,10 @@ import { Head, Link } from '@inertiajs/vue3';
                     </Link>
 
                     <div
-                        class="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-900"
+                        class="rounded-3xl bg-white p-5 shadow-sm dark:bg-white/[0.035]"
                     >
                         <div
-                            class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-xl dark:bg-slate-800"
+                            class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f1f3f5] text-xl dark:bg-white/[0.06]"
                         >
                             ●
                         </div>
@@ -64,16 +64,16 @@ import { Head, Link } from '@inertiajs/vue3';
                             انتخاب رنگ اصلی رابط کاربری مایاهمراه
                         </p>
 
-                        <p class="mt-4 text-xs font-bold text-violet-600">
+                        <p class="mt-4 text-xs font-bold text-[#ff6570]">
                             در مرحله بعد
                         </p>
                     </div>
 
                     <div
-                        class="rounded-3xl bg-white p-5 shadow-sm dark:bg-slate-900"
+                        class="rounded-3xl bg-white p-5 shadow-sm dark:bg-white/[0.035]"
                     >
                         <div
-                            class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-xl font-black dark:bg-slate-800"
+                            class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f1f3f5] text-xl font-black dark:bg-white/[0.06]"
                         >
                             Aa
                         </div>
@@ -86,7 +86,7 @@ import { Head, Link } from '@inertiajs/vue3';
                             انتخاب فونت و اندازه نوشته‌های برنامه
                         </p>
 
-                        <p class="mt-4 text-xs font-bold text-violet-600">
+                        <p class="mt-4 text-xs font-bold text-[#ff6570]">
                             در مرحله بعد
                         </p>
                     </div>

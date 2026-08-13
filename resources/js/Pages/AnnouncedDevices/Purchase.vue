@@ -127,12 +127,12 @@ const submit = () => {
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
             <div class="mx-auto max-w-4xl">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm font-bold text-violet-600">مایاهمراه</p>
+                        <p class="text-sm font-bold text-[#ff6570]">مایاهمراه</p>
                         <h1 class="mt-1 text-2xl font-black">خرید گوشی اعلامی</h1>
                         <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
                             با ثبت خرید، گوشی از لیست اعلامی خارج و وارد موجودی مغازه می‌شود.
@@ -141,62 +141,62 @@ const submit = () => {
 
                     <Link
                         :href="route('announced-devices.index')"
-                        class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                        class="rounded-2xl border border-slate-200/60 bg-white px-4 py-2 text-sm font-bold text-slate-600 dark:border-white/5 dark:bg-white/[0.035] dark:text-slate-300"
                     >
                         بازگشت
                     </Link>
                 </div>
 
                 <form @submit.prevent="submit" class="space-y-6">
-                    <section class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-7">
+                    <section class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-white/[0.035] sm:p-7">
                         <h2 class="text-lg font-black">مشخصات گوشی</h2>
 
                         <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                            <div class="rounded-2xl bg-[#f7f8fa] p-4 dark:bg-white/[0.025]">
                                 <p class="text-xs text-slate-400">دستگاه</p>
                                 <p class="mt-1 font-black">
                                     {{ device.brand }} {{ device.model }}
                                 </p>
                             </div>
 
-                            <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                            <div class="rounded-2xl bg-[#f7f8fa] p-4 dark:bg-white/[0.025]">
                                 <p class="text-xs text-slate-400">حافظه / رنگ</p>
                                 <p class="mt-1 font-bold">
                                     {{ device.storage || '—' }} · {{ colorLabel(device.color) }}
                                 </p>
                             </div>
 
-                            <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                            <div class="rounded-2xl bg-[#f7f8fa] p-4 dark:bg-white/[0.025]">
                                 <p class="text-xs text-slate-400">IMEI</p>
                                 <p class="mt-1 font-bold" dir="ltr">
                                     {{ device.imei || '—' }}
                                 </p>
                             </div>
 
-                            <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                            <div class="rounded-2xl bg-[#f7f8fa] p-4 dark:bg-white/[0.025]">
                                 <p class="text-xs text-slate-400">اعلام‌کننده / فروشنده</p>
                                 <p class="mt-1 font-black">
                                     {{ device.announcer_name || '—' }}
                                 </p>
                             </div>
 
-                            <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+                            <div class="rounded-2xl bg-[#f7f8fa] p-4 dark:bg-white/[0.025]">
                                 <p class="text-xs text-slate-400">شماره تماس</p>
                                 <p class="mt-1 font-bold" dir="ltr">
                                     {{ device.announcer_mobile || '—' }}
                                 </p>
                             </div>
 
-                            <div class="rounded-2xl bg-violet-50 p-4 dark:bg-violet-950/30">
+                            <div class="rounded-2xl bg-[#fff0f1] p-4 dark:bg-[#ff6d76]/[0.08]">
                                 <p class="text-xs text-slate-500">قیمت اعلامی</p>
-                                <p class="mt-1 font-black text-violet-700 dark:text-violet-300">
+                                <p class="mt-1 font-black text-[#d85e68] dark:text-[#ff9299]">
                                     {{ money(device.announced_price) }}
                                 </p>
                             </div>
                         </div>
                     </section>
 
-                    <section class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-slate-900 sm:p-7">
+                    <section class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-white/[0.035] sm:p-7">
                         <h2 class="text-lg font-black">ثبت خرید واقعی</h2>
 
                         <div class="mt-6 grid gap-5 sm:grid-cols-2">
@@ -210,12 +210,12 @@ const submit = () => {
                                     type="text"
                                     inputmode="numeric"
                                     @input="handlePurchasePrice"
-                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 />
 
                                 <p
                                     v-if="purchasePriceWords"
-                                    class="mt-2 text-sm font-bold text-violet-600 dark:text-violet-300"
+                                    class="mt-2 text-sm font-bold text-[#ff6570] dark:text-[#ff9299]"
                                 >
                                     {{ purchasePriceWords }}
                                 </p>
@@ -240,8 +240,8 @@ const submit = () => {
                                     convert-numbers
                                     :editable="false"
                                     :auto-submit="true"
-                                    color="#7c3aed"
-                                    input-class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-right focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                    color="#ff6d76"
+                                    input-class="w-full rounded-2xl border border-slate-200/60 bg-[#f7f8fa] px-3 py-2 text-right focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                     placeholder="انتخاب تاریخ خرید"
                                 />
                             </div>
@@ -256,7 +256,7 @@ const submit = () => {
                                 v-model="form.notes"
                                 rows="3"
                                 placeholder="در صورت نیاز توضیحات خرید را وارد کنید..."
-                                class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
                             ></textarea>
                         </div>
                     </section>
@@ -265,14 +265,14 @@ const submit = () => {
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="rounded-2xl bg-violet-600 px-8 py-3 font-black text-white shadow-lg shadow-violet-200 transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-none"
+                            class="rounded-2xl bg-[#ff6d76] px-8 py-3 font-black text-white shadow-lg shadow-[#ff6d76]/15 transition hover:bg-[#f45f6a] disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-none"
                         >
                             {{ form.processing ? 'در حال ثبت خرید...' : 'تأیید خرید و انتقال به موجودی' }}
                         </button>
 
                         <Link
                             :href="route('announced-devices.index')"
-                            class="rounded-2xl bg-white px-8 py-3 text-center font-bold text-slate-600 shadow-sm dark:bg-slate-900 dark:text-slate-300"
+                            class="rounded-2xl bg-white px-8 py-3 text-center font-bold text-slate-600 shadow-sm dark:bg-white/[0.035] dark:text-slate-300"
                         >
                             انصراف
                         </Link>

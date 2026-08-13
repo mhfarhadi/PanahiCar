@@ -58,12 +58,12 @@ watch(view, () => {
     <AuthenticatedLayout>
         <div
             dir="rtl"
-            class="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+            class="mh-page"
         >
             <div class="mx-auto max-w-6xl">
                 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-sm font-bold text-violet-600">مایاهمراه</p>
+                        <p class="text-sm font-bold text-[#ff6570]">مایاهمراه</p>
                         <h1 class="mt-1 text-2xl font-black">اشخاص</h1>
                         <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
                             همکاران، فروشندگان و خریداران
@@ -73,14 +73,14 @@ watch(view, () => {
                     <div class="flex gap-2">
                         <Link
                             :href="route('contacts.create')"
-                            class="rounded-2xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-violet-700"
+                            class="rounded-2xl bg-[#ff6d76] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#f45f6a]"
                         >
                             + افزودن شخص
                         </Link>
 
                         <Link
                             :href="route('dashboard')"
-                            class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                            class="rounded-2xl border border-slate-200/60 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-white/5 dark:bg-white/[0.035] dark:text-slate-300"
                         >
                             بازگشت
                         </Link>
@@ -93,8 +93,8 @@ watch(view, () => {
                         class="rounded-xl px-4 py-2 text-sm font-bold transition"
                         :class="
                             view === 'active'
-                                ? 'bg-violet-600 text-white'
-                                : 'bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-300'
+                                ? 'bg-[#ff6d76] text-white'
+                                : 'bg-white text-slate-600 dark:bg-white/[0.035] dark:text-slate-300'
                         "
                         @click="view = 'active'"
                     >
@@ -106,8 +106,8 @@ watch(view, () => {
                         class="rounded-xl px-4 py-2 text-sm font-bold transition"
                         :class="
                             view === 'archived'
-                                ? 'bg-violet-600 text-white'
-                                : 'bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-300'
+                                ? 'bg-[#ff6d76] text-white'
+                                : 'bg-white text-slate-600 dark:bg-white/[0.035] dark:text-slate-300'
                         "
                         @click="view = 'archived'"
                     >
@@ -122,8 +122,8 @@ watch(view, () => {
                             class="rounded-xl px-4 py-2 text-sm font-bold transition"
                             :class="
                                 type === ''
-                                    ? 'bg-violet-600 text-white'
-                                    : 'bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-300'
+                                    ? 'bg-[#ff6d76] text-white'
+                                    : 'bg-white text-slate-600 dark:bg-white/[0.035] dark:text-slate-300'
                             "
                             @click="type = ''"
                         >
@@ -135,8 +135,8 @@ watch(view, () => {
                             class="rounded-xl px-4 py-2 text-sm font-bold transition"
                             :class="
                                 type === 'colleague'
-                                    ? 'bg-violet-600 text-white'
-                                    : 'bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-300'
+                                    ? 'bg-[#ff6d76] text-white'
+                                    : 'bg-white text-slate-600 dark:bg-white/[0.035] dark:text-slate-300'
                             "
                             @click="type = 'colleague'"
                         >
@@ -148,8 +148,8 @@ watch(view, () => {
                             class="rounded-xl px-4 py-2 text-sm font-bold transition"
                             :class="
                                 type === 'individual'
-                                    ? 'bg-violet-600 text-white'
-                                    : 'bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-300'
+                                    ? 'bg-[#ff6d76] text-white'
+                                    : 'bg-white text-slate-600 dark:bg-white/[0.035] dark:text-slate-300'
                             "
                             @click="type = 'individual'"
                         >
@@ -161,13 +161,13 @@ watch(view, () => {
                         v-model="search"
                         type="text"
                         placeholder="جستجو با نام یا شماره موبایل..."
-                        class="w-full rounded-2xl border-slate-200 bg-white px-4 py-3 text-sm shadow-sm focus:border-violet-500 focus:ring-violet-500 dark:border-slate-800 dark:bg-slate-900"
+                        class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 text-sm shadow-sm focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/5 dark:bg-white/[0.035]"
                     />
                 </div>
 
                 <div
                     v-if="!contacts.length"
-                    class="rounded-[30px] bg-white p-12 text-center shadow-sm dark:bg-slate-900"
+                    class="rounded-[30px] bg-white p-12 text-center shadow-sm dark:bg-white/[0.035]"
                 >
                     <div class="text-5xl">👤</div>
                     <h2 class="mt-4 text-lg font-black">شخصی پیدا نشد</h2>
@@ -180,12 +180,12 @@ watch(view, () => {
                     <article
                         v-for="contact in contacts"
                         :key="contact.id"
-                        class="cursor-pointer transition hover:-translate-y-1 hover:shadow-md rounded-[26px] bg-white p-5 shadow-sm dark:bg-slate-900"
+                        class="cursor-pointer transition hover:-translate-y-1 hover:shadow-md rounded-[26px] bg-white p-5 shadow-sm dark:bg-white/[0.035]"
                         @click="router.visit(route('contacts.show', contact.id))"
                     >
                         <div class="flex items-start gap-4">
                             <div
-                                class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-violet-50 text-xl dark:bg-violet-950/40"
+                                class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#fff0f1] text-xl dark:bg-[#ff6d76]/[0.10]"
                             >
                                 <img
                                     v-if="contact.avatar_path"
@@ -204,7 +204,7 @@ watch(view, () => {
 
                                 <a
                                     :href="`tel:${contact.mobile}`"
-                                    class="mt-1 inline-block text-sm font-bold text-violet-600"
+                                    class="mt-1 inline-block text-sm font-bold text-[#ff6570]"
                                     @click.stop
                                     dir="ltr"
                                 >
@@ -228,13 +228,13 @@ watch(view, () => {
                             {{ contact.description }}
                         </p>
 
-                        <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-400 dark:border-slate-800">
+                        <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-400 dark:border-white/5">
                             <span
                                 class="rounded-lg px-2 py-1 font-bold"
                                 :class="
                                     contact.contact_type === 'colleague'
-                                        ? 'bg-violet-50 text-violet-700 dark:bg-violet-950/30 dark:text-violet-300'
-                                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                                        ? 'bg-[#fff0f1] text-[#d85e68] dark:bg-[#ff6d76]/[0.08] dark:text-[#ff9299]'
+                                        : 'bg-[#f1f3f5] text-slate-600 dark:bg-white/[0.06] dark:text-slate-300'
                                 "
                             >
                                 {{ contact.contact_type === 'colleague' ? 'همکار' : 'شخص عادی' }}
