@@ -924,17 +924,22 @@ const submit = () => {
                                 v-else-if="currencyRateFound"
                                 class="mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400"
                             >
-                                نرخ ثبت‌شده مایاهمراه
-                                <span v-if="currencyRateSource === 'navasan'">
-                                    · منبع: نوسان
-                                </span>
+                                <template v-if="currencyRateSource === 'navasan_historical_last'">
+                                    نرخ تاریخی · منبع: نوسان
+                                </template>
+                                <template v-else-if="currencyRateSource === 'navasan'">
+                                    منبع: نوسان
+                                </template>
+                                <template v-else>
+                                    نرخ آرشیوی
+                                </template>
                             </p>
 
                             <p
                                 v-else
                                 class="mt-2 text-xs font-bold text-amber-600 dark:text-amber-400"
                             >
-                                برای این تاریخ نرخ آرشیوی نداریم؛ نرخ دلار همان روز را دستی وارد کنید.
+                                دریافت نرخ این تاریخ از نوسان انجام نشد؛ نرخ دلار همان روز را دستی وارد کنید.
                             </p>
 
                             <p
