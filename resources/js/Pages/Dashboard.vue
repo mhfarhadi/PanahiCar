@@ -151,7 +151,7 @@ const stats = computed(() => [
     {
         label: 'مطالبات اقساطی',
         value: money(props.receivables.total_amount),
-        href: route('sales.index'),
+        href: route('installments.index'),
         note: `${props.receivables.total_count.toLocaleString('fa-IR')} چک باز`,
         card: 'bg-[#edf8ef] dark:bg-[#17271d]',
         accent: 'text-[#4e9c69] dark:text-emerald-300',
@@ -513,10 +513,10 @@ const stats = computed(() => [
                             </h3>
 
                             <Link
-                                :href="route('sales.index')"
+                                :href="route('installments.index')"
                                 class="text-[10px] font-black text-[#ff6570]"
                             >
-                                همه فروش‌ها ←
+                                همه چک‌ها ←
                             </Link>
                         </div>
 

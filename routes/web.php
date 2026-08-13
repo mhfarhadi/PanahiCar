@@ -98,6 +98,9 @@ Route::get('/sales/currency-rate', [SaleController::class, 'currencyRate'])
         ->whereNumber('device')
         ->name('sales.store');
 
+    Route::get('/installments', [InstallmentController::class, 'index'])
+        ->name('installments.index');
+
     Route::post('/installments/{installment}/mark-paid', [InstallmentController::class, 'markPaid'])
         ->whereNumber('installment')
         ->name('installments.mark-paid');
