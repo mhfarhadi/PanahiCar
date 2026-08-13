@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -31,6 +31,7 @@ const props = defineProps({
 });
 
 const search = ref(props.filters.search || '');
+const selectedInstallment = ref(null);
 
 const money = (value) =>
     `${Number(value || 0).toLocaleString('fa-IR')} تومان`;
@@ -45,8 +46,25 @@ const formatDate = (value) => {
     }).format(new Date(`${value}T00:00:00`));
 };
 
+const formatDateTime = (value) => {
+    if (!value) return '—';
+
+    return new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(new Date(value));
+};
+
 const formatNumber = (value) =>
     Number(value || 0).toLocaleString('fa-IR');
+
+const normalizeDigits = (value) =>
+    String(value ?? '')
+        .replace(/[۰-۹]/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit))
+        .replace(/[٠-٩]/g, (digit) => '٠١٢٣٤٥٦٧٨٩'.indexOf(digit));
 
 const tabs = [
     { label: 'همه', value: 'all' },
@@ -54,6 +72,35 @@ const tabs = [
     { label: 'معوق', value: 'overdue' },
     { label: '۷ روز آینده', value: 'due_soon' },
     { label: 'پاس‌شده', value: 'paid' },
+];
+
+const bankOptions = [
+    'بانک ملی ایران',
+    'بانک سپه',
+    'بانک ملت',
+    'بانک تجارت',
+    'بانک صادرات ایران',
+    'بانک رفاه کارگران',
+    'بانک کشاورزی',
+    'بانک مسکن',
+    'بانک صنعت و معدن',
+    'بانک توسعه صادرات ایران',
+    'بانک توسعه تعاون',
+    'پست بانک ایران',
+    'بانک اقتصاد نوین',
+    'بانک پارسیان',
+    'بانک پاسارگاد',
+    'بانک سامان',
+    'بانک سینا',
+    'بانک شهر',
+    'بانک دی',
+    'بانک گردشگری',
+    'بانک ایران زمین',
+    'بانک خاورمیانه',
+    'بانک کارآفرین',
+    'بانک سرمایه',
+    'بانک قرض‌الحسنه مهر ایران',
+    'بانک قرض‌الحسنه رسالت',
 ];
 
 const submitSearch = () => {
@@ -128,6 +175,76 @@ const overdueDays = (item) => {
         Math.floor((todayUtc - due.getTime()) / 86400000),
     );
 };
+
+const hasCheckDetails = (item) =>
+    Boolean(
+        item.check_number ||
+        item.bank_name ||
+        item.sayad_id ||
+        item.images?.length,
+    );
+
+const checkForm = useForm({
+    check_number: '',
+    bank_name: '',
+    sayad_id: '',
+    images: [],
+    note: '',
+});
+
+const openCheckModal = (item) => {
+    selectedInstallment.value = item;
+
+    checkForm.clearErrors();
+    checkForm.check_number = item.check_number || '';
+    checkForm.bank_name = item.bank_name || '';
+    checkForm.sayad_id = item.sayad_id || '';
+    checkForm.images = [];
+    checkForm.note = '';
+};
+
+const closeCheckModal = () => {
+    if (checkForm.processing) return;
+
+    selectedInstallment.value = null;
+    checkForm.reset();
+    checkForm.clearErrors();
+};
+
+const handleCheckNumber = (event) => {
+    checkForm.check_number = normalizeDigits(event.target.value)
+        .replace(/\D/g, '')
+        .slice(0, 50);
+};
+
+const handleSayadId = (event) => {
+    checkForm.sayad_id = normalizeDigits(event.target.value)
+        .replace(/\D/g, '')
+        .slice(0, 16);
+};
+
+const handleImages = (event) => {
+    checkForm.images = Array.from(event.target.files || []).slice(0, 6);
+};
+
+const submitCheckDetails = () => {
+    if (!selectedInstallment.value) return;
+
+    checkForm.post(
+        route(
+            'installments.check-details',
+            selectedInstallment.value.id,
+        ),
+        {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                selectedInstallment.value = null;
+                checkForm.reset();
+            },
+        },
+    );
+};
 </script>
 
 <template>
@@ -143,7 +260,6 @@ const overdueDays = (item) => {
             />
 
             <div class="relative mx-auto max-w-[1480px]">
-                <!-- Header -->
                 <div
                     class="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
                 >
@@ -159,7 +275,7 @@ const overdueDays = (item) => {
                         </h1>
 
                         <p class="mt-2 text-sm leading-7 text-slate-400">
-                            مدیریت سررسیدها و وضعیت وصول چک‌های فروش اقساطی
+                            مدیریت سررسید، مشخصات و مدارک چک‌های فروش اقساطی
                         </p>
                     </div>
 
@@ -171,18 +287,13 @@ const overdueDays = (item) => {
                     </Link>
                 </div>
 
-                <!-- Summary -->
                 <div class="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <Link
                         :href="route('installments.index', { status: 'open', search: filters.search || undefined })"
                         class="rounded-[24px] bg-[#eef4ff] p-5 transition hover:-translate-y-0.5 dark:bg-sky-950/20"
                     >
-                        <p class="text-[11px] font-black text-[#6685b9]">
-                            چک‌های باز
-                        </p>
-                        <p class="mt-3 text-xl font-black">
-                            {{ money(summary.open_amount) }}
-                        </p>
+                        <p class="text-[11px] font-black text-[#6685b9]">چک‌های باز</p>
+                        <p class="mt-3 text-xl font-black">{{ money(summary.open_amount) }}</p>
                         <p class="mt-2 text-[11px] text-[#7d96bf]">
                             {{ formatNumber(summary.open_count) }} چک
                         </p>
@@ -192,12 +303,8 @@ const overdueDays = (item) => {
                         :href="route('installments.index', { status: 'overdue', search: filters.search || undefined })"
                         class="rounded-[24px] bg-[#fff0f1] p-5 transition hover:-translate-y-0.5 dark:bg-red-950/20"
                     >
-                        <p class="text-[11px] font-black text-[#d85e68]">
-                            معوق
-                        </p>
-                        <p class="mt-3 text-xl font-black">
-                            {{ money(summary.overdue_amount) }}
-                        </p>
+                        <p class="text-[11px] font-black text-[#d85e68]">معوق</p>
+                        <p class="mt-3 text-xl font-black">{{ money(summary.overdue_amount) }}</p>
                         <p class="mt-2 text-[11px] text-[#df7d85]">
                             {{ formatNumber(summary.overdue_count) }} چک
                         </p>
@@ -210,9 +317,7 @@ const overdueDays = (item) => {
                         <p class="text-[11px] font-black text-[#bd8526]">
                             سررسید ۷ روز آینده
                         </p>
-                        <p class="mt-3 text-xl font-black">
-                            {{ money(summary.due_soon_amount) }}
-                        </p>
+                        <p class="mt-3 text-xl font-black">{{ money(summary.due_soon_amount) }}</p>
                         <p class="mt-2 text-[11px] text-[#ca9740]">
                             {{ formatNumber(summary.due_soon_count) }} چک
                         </p>
@@ -222,19 +327,14 @@ const overdueDays = (item) => {
                         :href="route('installments.index', { status: 'paid', search: filters.search || undefined })"
                         class="rounded-[24px] bg-[#edf8ef] p-5 transition hover:-translate-y-0.5 dark:bg-emerald-950/20"
                     >
-                        <p class="text-[11px] font-black text-[#4f9968]">
-                            پاس‌شده
-                        </p>
-                        <p class="mt-3 text-xl font-black">
-                            {{ money(summary.paid_amount) }}
-                        </p>
+                        <p class="text-[11px] font-black text-[#4f9968]">پاس‌شده</p>
+                        <p class="mt-3 text-xl font-black">{{ money(summary.paid_amount) }}</p>
                         <p class="mt-2 text-[11px] text-[#6da47f]">
                             {{ formatNumber(summary.paid_count) }} چک
                         </p>
                     </Link>
                 </div>
 
-                <!-- Filters -->
                 <section
                     class="mb-5 rounded-[28px] border border-white bg-white/75 p-4 shadow-[0_16px_50px_rgba(40,50,70,0.045)] backdrop-blur dark:border-white/5 dark:bg-white/[0.025]"
                 >
@@ -261,14 +361,14 @@ const overdueDays = (item) => {
                         </div>
 
                         <form
-                            class="flex w-full gap-2 xl:max-w-md"
+                            class="flex w-full gap-2 xl:max-w-lg"
                             @submit.prevent="submitSearch"
                         >
                             <input
                                 v-model="search"
                                 type="search"
                                 class="min-w-0 flex-1 rounded-2xl border-0 bg-[#f4f6f8] px-4 py-3 text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-[#ff6d76]/30 dark:bg-white/5"
-                                placeholder="نام، موبایل، مدل یا IMEI..."
+                                placeholder="نام، موبایل، مدل، IMEI، بانک یا شماره چک..."
                             />
 
                             <button
@@ -281,7 +381,7 @@ const overdueDays = (item) => {
                             <button
                                 v-if="filters.search"
                                 type="button"
-                                class="rounded-2xl bg-[#fff0f1] px-4 py-3 text-xs font-black text-[#d85e68] dark:bg-red-950/20 dark:text-red-300"
+                                class="rounded-2xl bg-[#fff0f1] px-4 py-3 text-xs font-black text-[#d85e68]"
                                 @click="clearSearch"
                             >
                                 ×
@@ -290,34 +390,25 @@ const overdueDays = (item) => {
                     </div>
                 </section>
 
-                <!-- Checks -->
                 <section
                     class="rounded-[30px] border border-white bg-white/75 p-4 shadow-[0_18px_60px_rgba(40,50,70,0.05)] backdrop-blur dark:border-white/5 dark:bg-white/[0.025] sm:p-6"
                 >
-                    <div class="mb-5 flex items-center justify-between gap-4">
-                        <div>
-                            <h2 class="text-base font-black">
-                                فهرست چک‌ها
-                            </h2>
-                            <p class="mt-1 text-xs text-slate-400">
-                                {{ formatNumber(installments.length) }} نتیجه
-                            </p>
-                        </div>
+                    <div class="mb-5">
+                        <h2 class="text-base font-black">فهرست چک‌ها</h2>
+                        <p class="mt-1 text-xs text-slate-400">
+                            {{ formatNumber(installments.length) }} نتیجه
+                        </p>
                     </div>
 
-                    <div
-                        v-if="installments.length"
-                        class="space-y-2.5"
-                    >
+                    <div v-if="installments.length" class="space-y-2.5">
                         <div
                             v-for="item in installments"
                             :key="item.id"
                             class="group rounded-[20px] border border-transparent bg-[#f7f8fa] p-4 transition hover:border-[#ffdadd] hover:bg-white dark:bg-white/[0.025] dark:hover:border-rose-300/10 dark:hover:bg-white/[0.04]"
                         >
                             <div
-                                class="grid gap-4 lg:grid-cols-[minmax(180px,1.4fr)_minmax(150px,1fr)_130px_minmax(150px,1fr)_auto] lg:items-center"
+                                class="grid gap-4 xl:grid-cols-[minmax(170px,1.25fr)_minmax(150px,1fr)_95px_minmax(135px,.85fr)_minmax(155px,1fr)_auto] xl:items-center"
                             >
-                                <!-- Customer -->
                                 <div class="min-w-0">
                                     <Link
                                         :href="route('contacts.show', item.buyer_id)"
@@ -331,37 +422,26 @@ const overdueDays = (item) => {
                                     </p>
                                 </div>
 
-                                <!-- Device -->
                                 <div class="min-w-0">
                                     <p class="truncate text-sm font-black">
                                         {{ item.brand }} {{ item.model }}
                                     </p>
 
                                     <p class="mt-1 truncate text-[11px] text-slate-400">
-                                        <span v-if="item.storage">
-                                            {{ item.storage }}
-                                        </span>
-                                        <span v-if="item.imei">
-                                            · IMEI {{ item.imei }}
-                                        </span>
+                                        <span v-if="item.storage">{{ item.storage }}</span>
+                                        <span v-if="item.imei"> · IMEI {{ item.imei }}</span>
                                     </p>
                                 </div>
 
-                                <!-- Installment -->
                                 <div>
-                                    <p class="text-[10px] text-slate-400">
-                                        شماره قسط
-                                    </p>
+                                    <p class="text-[10px] text-slate-400">قسط</p>
                                     <p class="mt-1 text-sm font-black">
                                         {{ formatNumber(item.installment_number) }}
                                     </p>
                                 </div>
 
-                                <!-- Date & amount -->
                                 <div>
-                                    <p class="text-[10px] text-slate-400">
-                                        سررسید
-                                    </p>
+                                    <p class="text-[10px] text-slate-400">سررسید</p>
                                     <p class="mt-1 text-sm font-black">
                                         {{ formatDate(item.due_date) }}
                                     </p>
@@ -374,9 +454,37 @@ const overdueDays = (item) => {
                                     </p>
                                 </div>
 
-                                <!-- Status -->
-                                <div class="flex flex-wrap items-center gap-2 lg:justify-end">
-                                    <div class="text-left lg:ml-2">
+                                <div>
+                                    <p class="text-[10px] text-slate-400">
+                                        مشخصات چک
+                                    </p>
+
+                                    <template v-if="hasCheckDetails(item)">
+                                        <p class="mt-1 truncate text-xs font-black">
+                                            {{ item.bank_name || 'بانک نامشخص' }}
+                                            <span v-if="item.check_number">
+                                                · {{ item.check_number }}
+                                            </span>
+                                        </p>
+
+                                        <p class="mt-1 text-[10px] text-slate-400">
+                                            <span v-if="item.sayad_id">
+                                                صیاد: {{ item.sayad_id }}
+                                            </span>
+                                            <span v-if="item.images?.length">
+                                                {{ item.sayad_id ? ' · ' : '' }}
+                                                {{ formatNumber(item.images.length) }} تصویر
+                                            </span>
+                                        </p>
+                                    </template>
+
+                                    <p v-else class="mt-1 text-xs text-slate-400">
+                                        ثبت نشده
+                                    </p>
+                                </div>
+
+                                <div class="flex flex-wrap items-center gap-2 xl:justify-end">
+                                    <div class="text-left xl:ml-1">
                                         <p class="text-sm font-black">
                                             {{
                                                 item.status === 'paid'
@@ -400,6 +508,18 @@ const overdueDays = (item) => {
                                     >
                                         {{ statusLabel(item) }}
                                     </span>
+
+                                    <button
+                                        type="button"
+                                        class="rounded-xl bg-[#fff0f1] px-3 py-2 text-[10px] font-black text-[#d85e68] transition hover:bg-[#ffe5e7] dark:bg-[#ff6d76]/10 dark:text-[#ff9299]"
+                                        @click="openCheckModal(item)"
+                                    >
+                                        {{
+                                            hasCheckDetails(item)
+                                                ? 'مشخصات'
+                                                : 'ثبت چک'
+                                        }}
+                                    </button>
 
                                     <Link
                                         :href="route('sales.show', item.sale_id)"
@@ -426,6 +546,275 @@ const overdueDays = (item) => {
                         </p>
                     </div>
                 </section>
+            </div>
+        </div>
+
+        <!-- Check details modal -->
+        <div
+            v-if="selectedInstallment"
+            class="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm"
+            @click.self="closeCheckModal"
+        >
+            <div
+                dir="rtl"
+                class="max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-[30px] border border-white bg-[#fbfbfa] p-5 shadow-2xl dark:border-white/5 dark:bg-[#11151d] sm:p-6"
+            >
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="text-[11px] font-black text-[#ff6570]">
+                            مشخصات چک
+                        </p>
+
+                        <h2 class="mt-1 text-xl font-black">
+                            قسط
+                            {{ formatNumber(selectedInstallment.installment_number) }}
+                            · {{ selectedInstallment.buyer_name }}
+                        </h2>
+
+                        <p class="mt-2 text-xs leading-6 text-slate-400">
+                            {{ selectedInstallment.brand }}
+                            {{ selectedInstallment.model }}
+                            · سررسید
+                            {{ formatDate(selectedInstallment.due_date) }}
+                            · {{ money(selectedInstallment.amount) }}
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f1f3f5] text-slate-500 dark:bg-white/5 dark:text-slate-300"
+                        @click="closeCheckModal"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                <form class="mt-6" @submit.prevent="submitCheckDetails">
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label class="mb-2 block text-sm font-bold">
+                                بانک
+                            </label>
+
+                            <select
+                                v-model="checkForm.bank_name"
+                                class="mh-input"
+                            >
+                                <option value="">
+                                    انتخاب بانک
+                                </option>
+
+                                <option
+                                    v-for="bank in bankOptions"
+                                    :key="bank"
+                                    :value="bank"
+                                >
+                                    {{ bank }}
+                                </option>
+                            </select>
+
+                            <p
+                                v-if="checkForm.errors.bank_name"
+                                class="mt-2 text-xs font-bold text-red-500"
+                            >
+                                {{ checkForm.errors.bank_name }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="mb-2 block text-sm font-bold">
+                                شماره چک
+                            </label>
+
+                            <input
+                                :value="checkForm.check_number"
+                                type="text"
+                                inputmode="numeric"
+                                maxlength="50"
+                                dir="ltr"
+                                class="mh-input text-left"
+                                placeholder="شماره چک"
+                                @input="handleCheckNumber"
+                            />
+
+                            <p
+                                v-if="checkForm.errors.check_number"
+                                class="mt-2 text-xs font-bold text-red-500"
+                            >
+                                {{ checkForm.errors.check_number }}
+                            </p>
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label class="mb-2 block text-sm font-bold">
+                                شناسه صیاد
+                            </label>
+
+                            <input
+                                :value="checkForm.sayad_id"
+                                type="text"
+                                inputmode="numeric"
+                                maxlength="16"
+                                dir="ltr"
+                                class="mh-input text-left tracking-[0.12em]"
+                                placeholder="شناسه ۱۶ رقمی صیاد"
+                                @input="handleSayadId"
+                            />
+
+                            <p class="mt-2 text-[11px] text-slate-400">
+                                در صورت ثبت، شناسه صیاد باید دقیقاً ۱۶ رقم باشد.
+                            </p>
+
+                            <p
+                                v-if="checkForm.errors.sayad_id"
+                                class="mt-2 text-xs font-bold text-red-500"
+                            >
+                                {{ checkForm.errors.sayad_id }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        v-if="selectedInstallment.images?.length"
+                        class="mt-6"
+                    >
+                        <p class="mb-3 text-sm font-black">
+                            تصاویر ثبت‌شده
+                        </p>
+
+                        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                            <a
+                                v-for="image in selectedInstallment.images"
+                                :key="image.id"
+                                :href="`/storage/${image.image_path}`"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="overflow-hidden rounded-2xl border border-slate-200/60 bg-white dark:border-white/5 dark:bg-white/5"
+                            >
+                                <img
+                                    :src="`/storage/${image.image_path}`"
+                                    alt="تصویر چک"
+                                    class="h-32 w-full object-cover"
+                                />
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <label class="mb-2 block text-sm font-bold">
+                            افزودن تصویر چک
+                        </label>
+
+                        <label
+                            class="flex cursor-pointer flex-col items-center justify-center rounded-[22px] border-2 border-dashed border-[#ffcbd0] bg-[#fff5f5] px-4 py-7 text-center transition hover:border-[#ff9299] dark:border-[#ff6d76]/20 dark:bg-[#ff6d76]/[0.06]"
+                        >
+                            <span class="text-2xl">＋</span>
+                            <span class="mt-2 text-sm font-black">
+                                انتخاب تصویر
+                            </span>
+                            <span class="mt-1 text-[11px] text-slate-400">
+                                حداکثر ۶ تصویر، هر فایل تا ۵ مگابایت
+                            </span>
+
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/jpeg,image/png,image/webp"
+                                class="hidden"
+                                @change="handleImages"
+                            />
+                        </label>
+
+                        <p
+                            v-if="checkForm.images.length"
+                            class="mt-2 text-xs font-black text-[#ff6570]"
+                        >
+                            {{ formatNumber(checkForm.images.length) }}
+                            تصویر جدید انتخاب شده
+                        </p>
+
+                        <p
+                            v-if="checkForm.errors.images"
+                            class="mt-2 text-xs font-bold text-red-500"
+                        >
+                            {{ checkForm.errors.images }}
+                        </p>
+                    </div>
+
+                    <div class="mt-6">
+                        <label class="mb-2 block text-sm font-bold">
+                            یادداشت جدید
+                        </label>
+
+                        <textarea
+                            v-model="checkForm.note"
+                            rows="3"
+                            maxlength="10000"
+                            class="mh-input resize-y leading-7"
+                            placeholder="مثلاً چک توسط مشتری تحویل شد، وضعیت ثبت صیاد و..."
+                        />
+
+                        <p class="mt-2 text-[11px] text-slate-400">
+                            این یادداشت به تاریخچه اضافه می‌شود و یادداشت‌های قبلی حذف نمی‌شوند.
+                        </p>
+
+                        <p
+                            v-if="checkForm.errors.note"
+                            class="mt-2 text-xs font-bold text-red-500"
+                        >
+                            {{ checkForm.errors.note }}
+                        </p>
+                    </div>
+
+                    <div
+                        v-if="selectedInstallment.notes?.length"
+                        class="mt-6 rounded-[22px] bg-[#f4f6f8] p-4 dark:bg-white/[0.035]"
+                    >
+                        <p class="mb-3 text-sm font-black">
+                            تاریخچه یادداشت‌ها
+                        </p>
+
+                        <div class="space-y-3">
+                            <div
+                                v-for="note in selectedInstallment.notes"
+                                :key="note.id"
+                                class="rounded-2xl bg-white p-4 dark:bg-white/[0.04]"
+                            >
+                                <p class="whitespace-pre-wrap text-sm leading-7">
+                                    {{ note.body }}
+                                </p>
+
+                                <p class="mt-2 text-[10px] text-slate-400">
+                                    {{ note.author_name || 'کاربر سابق / نامشخص' }}
+                                    · {{ formatDateTime(note.created_at) }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-7 grid grid-cols-2 gap-3">
+                        <button
+                            type="button"
+                            class="mh-secondary"
+                            :disabled="checkForm.processing"
+                            @click="closeCheckModal"
+                        >
+                            انصراف
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="mh-primary"
+                            :disabled="checkForm.processing"
+                        >
+                            {{
+                                checkForm.processing
+                                    ? 'در حال ذخیره...'
+                                    : 'ذخیره مشخصات چک'
+                            }}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </AuthenticatedLayout>
