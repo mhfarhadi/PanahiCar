@@ -19,6 +19,18 @@ class PriceEstimateController extends Controller
         $brand = trim((string) $request->query('brand'));
         $model = trim((string) $request->query('model'));
         $storage = trim((string) $request->query('storage'));
+        $conditionGrade = $request->filled('condition_grade')
+            ? (string) $request->query('condition_grade')
+            : null;
+        $batteryHealth = $request->filled('battery_health')
+            ? $request->integer('battery_health')
+            : null;
+        $batteryCondition = $request->filled('battery_condition')
+            ? (string) $request->query('battery_condition')
+            : null;
+        $registrationStatus = $request->filled('registration_status')
+            ? (string) $request->query('registration_status')
+            : null;
 
         $currentRates = $currencyRateService->latest();
         $currentUsdRate = (int) ($currentRates['usd']['value'] ?? 0);
@@ -30,7 +42,11 @@ class PriceEstimateController extends Controller
                 $brand,
                 $model,
                 $storage,
-                $currentUsdRate
+                $currentUsdRate,
+                $conditionGrade,
+                $batteryHealth,
+                $batteryCondition,
+                $registrationStatus
             );
         }
 
@@ -74,6 +90,10 @@ class PriceEstimateController extends Controller
                 'brand' => $brand,
                 'model' => $model,
                 'storage' => $storage,
+                'condition_grade' => $conditionGrade,
+                'battery_health' => $batteryHealth,
+                'battery_condition' => $batteryCondition,
+                'registration_status' => $registrationStatus,
             ],
 
             'currentUsdRate' => $currentUsdRate,

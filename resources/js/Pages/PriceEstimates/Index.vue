@@ -6,6 +6,7 @@ import {
     batteryConditionLabel,
     conditionLabel,
     registrationStatusLabel,
+    samsungBatteryConditionOptions,
 } from '@/Utils/deviceLabels';
 
 const props = defineProps({
@@ -30,10 +31,16 @@ const props = defineProps({
 const brand = ref(props.filters.brand || '');
 const model = ref(props.filters.model || '');
 const storage = ref(props.filters.storage || '');
+const conditionGrade = ref(props.filters.condition_grade || '');
+const batteryHealth = ref(props.filters.battery_health ?? '');
+const batteryCondition = ref(props.filters.battery_condition || '');
+const registrationStatus = ref(props.filters.registration_status || '');
 
 const selectedBrand = computed(() =>
     props.catalog.brands.find((item) => item.name === brand.value)
 );
+
+const isSamsung = computed(() => brand.value === 'Samsung');
 
 const availableModels = computed(() => {
     if (!selectedBrand.value) {
@@ -70,6 +77,8 @@ watch(brand, (value, oldValue) => {
     if (oldValue !== undefined && value !== props.filters.brand) {
         model.value = '';
         storage.value = '';
+        batteryHealth.value = '';
+        batteryCondition.value = '';
     }
 });
 
@@ -90,6 +99,16 @@ const submit = () => {
             brand: brand.value,
             model: model.value,
             storage: storage.value,
+            condition_grade: conditionGrade.value || undefined,
+            battery_health:
+                !isSamsung.value && batteryHealth.value !== ''
+                    ? batteryHealth.value
+                    : undefined,
+            battery_condition:
+                isSamsung.value && batteryCondition.value
+                    ? batteryCondition.value
+                    : undefined,
+            registration_status: registrationStatus.value || undefined,
         },
         {
             preserveScroll: true,
@@ -97,6 +116,28 @@ const submit = () => {
             replace: true,
         }
     );
+};
+
+const normalizeDigits = (value) =>
+    String(value ?? '')
+        .replace(/[۰-۹]/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit))
+        .replace(/[٠-٩]/g, (digit) => '٠١٢٣٤٥٦٧٨٩'.indexOf(digit));
+
+const handleBatteryHealth = (event) => {
+    const normalized = normalizeDigits(event.target.value)
+        .replace(/\D/g, '')
+        .slice(0, 3);
+
+    if (normalized === '') {
+        batteryHealth.value = '';
+        event.target.value = '';
+        return;
+    }
+
+    const clamped = Math.min(100, Math.max(0, Number(normalized)));
+
+    batteryHealth.value = String(clamped);
+    event.target.value = batteryHealth.value;
 };
 
 const formatMoney = (value) =>
@@ -197,7 +238,7 @@ const divarSearchUrl = computed(() => {
 
                             <select
                                 v-model="brand"
-                                class="w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                class="price-estimate-select w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
                             >
                                 <option value="">انتخاب برند</option>
                                 <option
@@ -218,7 +259,7 @@ const divarSearchUrl = computed(() => {
                             <select
                                 v-model="model"
                                 :disabled="!brand"
-                                class="w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                class="price-estimate-select w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
                             >
                                 <option value="">انتخاب مدل</option>
                                 <option
@@ -239,7 +280,7 @@ const divarSearchUrl = computed(() => {
                             <select
                                 v-model="storage"
                                 :disabled="!model"
-                                class="w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
+                                class="price-estimate-select w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950"
                             >
                                 <option value="">انتخاب حافظه</option>
                                 <option
@@ -250,6 +291,84 @@ const divarSearchUrl = computed(() => {
                                     {{ item.name }}
                                 </option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 grid gap-4 md:grid-cols-3">
+                        <div>
+                            <label class="mb-2 block text-sm font-black">
+                                وضعیت ظاهری
+                            </label>
+
+                            <select
+                                v-model="conditionGrade"
+                                class="price-estimate-select w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                            >
+                                <option value="">مهم نیست</option>
+                                <option value="A+">در حد نو</option>
+                                <option value="A">بسیار تمیز</option>
+                                <option value="B">تمیز</option>
+                                <option value="C">خط و خش‌دار</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="mb-2 block text-sm font-black">
+                                وضعیت رجیستری
+                            </label>
+
+                            <select
+                                v-model="registrationStatus"
+                                class="price-estimate-select w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                            >
+                                <option value="">مهم نیست</option>
+                                <option value="registered">رجیستر شده</option>
+                                <option value="unregistered">رجیستر نشده</option>
+                            </select>
+                        </div>
+
+                        <div v-if="isSamsung">
+                            <label class="mb-2 block text-sm font-black">
+                                وضعیت باتری
+                            </label>
+
+                            <select
+                                v-model="batteryCondition"
+                                class="price-estimate-select w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                            >
+                                <option value="">مهم نیست</option>
+                                <option
+                                    v-for="item in samsungBatteryConditionOptions"
+                                    :key="item.value"
+                                    :value="item.value"
+                                >
+                                    {{ item.label }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div v-else>
+                            <label class="mb-2 block text-sm font-black">
+                                سلامت باتری
+                            </label>
+
+                            <div class="relative">
+                                <input
+                                    :value="batteryHealth"
+                                    type="text"
+                                    inputmode="numeric"
+                                    pattern="[0-9۰-۹٠-٩]*"
+                                    maxlength="3"
+                                    placeholder="مثلاً ۹۲"
+                                    @input="handleBatteryHealth"
+                                    class="w-full rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 pl-12 text-sm font-bold focus:border-violet-500 focus:ring-violet-500 dark:border-slate-700 dark:bg-slate-950"
+                                />
+                                <span
+                                    class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black text-slate-400"
+                                >
+                                    ٪
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -444,3 +563,14 @@ const divarSearchUrl = computed(() => {
         </div>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+.price-estimate-select {
+    appearance: none;
+    padding-left: 2.75rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%2364758B' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 0.9rem center;
+    background-size: 1rem;
+}
+</style>

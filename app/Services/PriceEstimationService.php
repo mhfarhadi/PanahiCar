@@ -11,7 +11,11 @@ class PriceEstimationService
         string $brand,
         string $model,
         string $storage,
-        int $currentUsdRate
+        int $currentUsdRate,
+        ?string $conditionGrade = null,
+        ?int $batteryHealth = null,
+        ?string $batteryCondition = null,
+        ?string $registrationStatus = null
     ): array {
         if ($currentUsdRate <= 0) {
             return $this->emptyResult('current_usd_unavailable');
@@ -41,14 +45,30 @@ class PriceEstimationService
                 'd.registration_status',
                 'd.color',
             ])
-            ->map(function ($sale) use ($currentUsdRate) {
+            ->map(function ($sale) use (
+                $currentUsdRate,
+                $conditionGrade,
+                $batteryHealth,
+                $batteryCondition,
+                $registrationStatus
+            ) {
                 $sale->normalized_price = (int) round(
                     ((int) $sale->sale_price / (int) $sale->usd_rate)
                     * $currentUsdRate
                 );
 
+                $sale->similarity_score = $this->similarityScore(
+                    $sale,
+                    $conditionGrade,
+                    $batteryHealth,
+                    $batteryCondition,
+                    $registrationStatus
+                );
+
                 return $sale;
-            });
+            })
+            ->sortByDesc('similarity_score')
+            ->values();
 
         if ($comparables->isEmpty()) {
             return $this->emptyResult('no_exact_comparables');
@@ -60,12 +80,16 @@ class PriceEstimationService
             ->sort()
             ->values();
 
-        $estimate = $this->median($prices);
+        $hasSpecificationInputs = $conditionGrade !== null
+            || $batteryHealth !== null
+            || $batteryCondition !== null
+            || $registrationStatus !== null;
 
-        $minimum = (int) $prices->min();
-        $maximum = (int) $prices->max();
+        $estimate = $hasSpecificationInputs
+            ? $this->weightedMedian($comparables)
+            : $this->median($prices);
 
-        $count = $prices->count();
+        $count = $comparables->count();
 
         $confidence = match (true) {
             $count >= 6 => 'high',
@@ -77,17 +101,119 @@ class PriceEstimationService
             'available' => true,
             'reason' => null,
             'estimate' => $estimate,
-            'range_min' => $minimum,
-            'range_max' => $maximum,
+            'range_min' => (int) $prices->min(),
+            'range_max' => (int) $prices->max(),
             'comparable_count' => $count,
             'confidence' => $confidence,
             'current_usd_rate' => $currentUsdRate,
-            'comparables' => $comparables->values()->all(),
+            'specification_adjusted' => $hasSpecificationInputs,
+            'comparables' => $comparables->all(),
         ];
+    }
+
+    private function similarityScore(
+        object $sale,
+        ?string $conditionGrade,
+        ?int $batteryHealth,
+        ?string $batteryCondition,
+        ?string $registrationStatus
+    ): int {
+        $distances = [];
+
+        if ($conditionGrade !== null) {
+            $conditionRanks = [
+                'A+' => 0,
+                'A' => 1,
+                'B' => 2,
+                'C' => 3,
+            ];
+
+            $target = $conditionRanks[$conditionGrade] ?? null;
+            $actual = $conditionRanks[$sale->condition_grade] ?? null;
+
+            $distances[] = $target !== null && $actual !== null
+                ? abs($target - $actual) / 3
+                : 1;
+        }
+
+        if ($batteryHealth !== null) {
+            $distances[] = $sale->battery_health !== null
+                ? min(
+                    1,
+                    abs($batteryHealth - (int) $sale->battery_health) / 100
+                )
+                : 1;
+        }
+
+        if ($batteryCondition !== null) {
+            $batteryRanks = [
+                'excellent' => 0,
+                'good' => 1,
+                'poor' => 2,
+                'replace' => 3,
+            ];
+
+            $target = $batteryRanks[$batteryCondition] ?? null;
+            $actual = $batteryRanks[$sale->battery_condition] ?? null;
+
+            $distances[] = $target !== null && $actual !== null
+                ? abs($target - $actual) / 3
+                : 1;
+        }
+
+        if ($registrationStatus !== null) {
+            $distances[] = $sale->registration_status === $registrationStatus
+                ? 0
+                : 1;
+        }
+
+        if ($distances === []) {
+            return 100;
+        }
+
+        $averageDistance = array_sum($distances) / count($distances);
+
+        return (int) round(
+            max(0, min(1, 1 - $averageDistance)) * 100
+        );
+    }
+
+    private function weightedMedian(Collection $comparables): int
+    {
+        $rows = $comparables
+            ->map(fn ($sale) => [
+                'price' => (int) $sale->normalized_price,
+                'weight' => max(0, (int) $sale->similarity_score),
+            ])
+            ->sortBy('price')
+            ->values();
+
+        $totalWeight = (int) $rows->sum('weight');
+
+        if ($totalWeight <= 0) {
+            return $this->median(
+                $rows->pluck('price')->map(fn ($price) => (int) $price)
+            );
+        }
+
+        $threshold = $totalWeight / 2;
+        $runningWeight = 0;
+
+        foreach ($rows as $row) {
+            $runningWeight += $row['weight'];
+
+            if ($runningWeight >= $threshold) {
+                return $row['price'];
+            }
+        }
+
+        return (int) $rows->last()['price'];
     }
 
     private function median(Collection $values): int
     {
+        $values = $values->sort()->values();
+
         $count = $values->count();
         $middle = intdiv($count, 2);
 
@@ -111,6 +237,7 @@ class PriceEstimationService
             'comparable_count' => 0,
             'confidence' => 'none',
             'current_usd_rate' => null,
+            'specification_adjusted' => false,
             'comparables' => [],
         ];
     }
