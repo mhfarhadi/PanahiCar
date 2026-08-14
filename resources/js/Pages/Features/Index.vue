@@ -13,6 +13,7 @@ const tools = [
         title: 'فرم قرارداد فروش',
         description: 'قرارداد فروش با ضمانت چک یا طلا',
         accent: 'lavender',
+        route: 'features.contracts.index',
         icon: 'M7 3h7l4 4v14H7V3Zm7 0v5h4M10 12h5M10 16h5',
     },
     {

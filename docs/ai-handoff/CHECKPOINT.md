@@ -623,3 +623,164 @@ Validation:
 - targeted installment/public calculator tests passed: 16 tests / 173 assertions
 - full Laravel suite passed: 50 tests / 271 assertions
 - `git diff --check` passed
+
+## Public installment sales contract — 2026-08-15
+
+Implemented and manually verified for the current scope.
+
+Public route:
+
+- `GET /features/contracts`
+
+Purpose:
+
+- public standalone installment-sale contract tool
+- intended for mobile/device sellers without requiring authentication
+- current scope is installment sales only
+- seller information is entered manually for now
+- future authenticated flow may auto-fill seller/shop profile data
+
+Contract inputs:
+
+- seller:
+  - shop name
+  - seller/representative full name
+  - national ID
+  - mobile
+  - address
+- buyer:
+  - full name
+  - national ID
+  - mobile
+  - address
+  - occupation
+- sold device:
+  - brand
+  - model
+  - storage
+  - color
+  - IMEI
+- optional accessories:
+  - item title
+  - description/specification
+- sale financial data:
+  - sale date
+  - sale price
+  - down payment
+  - monthly sale profit rate
+- guarantee type:
+  - installment checks
+  - gold collateral
+- guarantee types are mutually exclusive
+
+Device catalog integration:
+
+- public contract tool reuses the same existing MayaHamrah device catalog tables used by internal device creation
+- brand selection filters models
+- model selection filters supported storage options and colors
+- no new duplicate catalog/table was introduced
+- displayed color labels reuse MayaHamrah `colorLabel()` Persian labels
+- stored device color value remains the existing catalog value
+
+Numeric / date UX:
+
+- public contract date fields use Persian/Jalali date picker UI
+- printed contract dates are displayed in Jalali format
+- visible numeric inputs use Persian digits while normalized values remain suitable for internal calculations/data
+- money formatting uses Persian digit grouping
+- monthly profit rate and other numeric contract fields are displayed with Persian digits
+
+Installment-check guarantee:
+
+- installment checks are the actual payment instruments; there is no separate guarantee check
+- each installment/check supports:
+  - due date
+  - amount
+  - bank
+  - check number
+  - 16-digit Sayad ID
+  - account holder / issuer name
+  - explicit Sayad registration/acceptance confirmation
+- bank is selected from the predefined MayaHamrah bank list
+
+Gold guarantee:
+
+- installment schedule remains separate from the gold guarantee
+- gold fields:
+  - type
+  - weight
+  - karat
+  - optional visual description
+- buyer declares lawful ownership of the pledged gold and absence of third-party rights
+- gold is held until final installment settlement
+- contract wording provides seller authority to sell collateral after the agreed default condition, subject to applicable law
+- sale proceeds are applied to remaining debt, accrued contractual delay charge and actual/provable costs
+- surplus is returned to buyer
+- any deficit remains buyer debt
+
+Confirmed payment/default business rules reflected in the contract draft:
+
+- seller may wait up to 10 days after an installment/check due date before legal action
+- this 10-day waiting period is not a grace-free period
+- delay charge begins the day after the original due date
+- delay charge applies only to the overdue installment/check amount
+- daily delay formula:
+  - installment amount × monthly sale profit rate ÷ 30
+- if the next installment due date arrives while the previous installment remains unpaid:
+  - entire remaining debt becomes immediately claimable
+  - delay charge for each installment still begins only from that installment's own original due date
+- HAMTA ownership transfer is delayed until final settlement
+- contract separately reserves a contractual rescission/right-to-return mechanism instead of treating registry status itself as the sole legal ownership basis
+- if the device is returned following rescission, previously paid amounts are settled after deduction of:
+  - usage cost
+  - depreciation
+  - damages
+  - actual/provable costs
+
+Print output:
+
+- web UI and print document are now completely separate render modes
+- print mode hides the public web UI and renders only the formal contract
+- output is designed specifically for A4 portrait
+- print presentation is intentionally minimal and formal, similar to a Word-designed contract
+- no web cards, hero layout, gradients or application chrome appear in print
+- print contract includes:
+  - compact formal header
+  - contract date and guarantee type
+  - seller and buyer information
+  - device information
+  - accessory information when present
+  - financial summary
+  - installment/check table
+  - gold-collateral table when applicable
+  - contractual/default terms
+  - seller/buyer signature areas
+- print tables are explicitly RTL
+- party-information tables were corrected to stay inside A4 printable width
+- Vazirmatn is used for Persian print typography
+- font sizing remains restrained and document-like
+- previous public disclaimer text saying the contract was only a draft and should be lawyer-reviewed was removed from the visible UI at user request
+
+Public Features UX:
+
+- guarantee selection was moved above guarantee-specific details so users first select check vs gold
+- selected guarantee state is visually explicit
+- contract web UI was refined to a modern/minimal direction
+- current contract UI is accepted for the current phase
+- overall public Features visual design is still provisional and must NOT be treated as final
+
+Files / areas changed in this phase:
+
+- `resources/js/Pages/Features/Contracts/Index.vue`
+- `resources/js/Pages/Features/Index.vue`
+- `routes/web.php`
+- `tests/Feature/PublicFeaturesTest.php`
+
+Validation:
+
+- user manually confirmed final web-form behavior and print layout
+- `npm run build` passed
+- public feature tests passed: 2 tests / 2 assertions
+- full Laravel suite passed: 51 tests / 272 assertions
+- `git diff --check` passed
+

@@ -5,3 +5,9 @@ test('public features page is accessible without authentication', function () {
         ->get(route('features.index'))
         ->assertOk();
 });
+
+test('public installment contract page is accessible without authentication', function () {
+    $this
+        ->get(route('features.contracts.index'))
+        ->assertOk();
+});

@@ -16,6 +16,7 @@ use App\Http\Controllers\PublicInstallmentCalculatorController;
 use App\Http\Controllers\EntityNoteController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -29,6 +30,33 @@ Route::get('/', function () {
 
 Route::get('/features', fn () => Inertia::render('Features/Index'))
     ->name('features.index');
+
+Route::get('/features/contracts', function () {
+    return Inertia::render('Features/Contracts/Index', [
+        'catalog' => [
+            'brands' => DB::table('brands')
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(),
+            'models' => DB::table('device_models')
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(),
+            'storages' => DB::table('storage_options')
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->get(),
+            'colors' => DB::table('color_options')
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->get(),
+            'modelStorages' => DB::table('device_model_storage_option')->get(),
+            'modelColors' => DB::table('device_model_color_option')->get(),
+        ],
+    ]);
+})->name('features.contracts.index');
 
 Route::get(
     '/features/installments',
