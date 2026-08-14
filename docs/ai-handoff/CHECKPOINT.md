@@ -482,3 +482,46 @@ Next check-management work:
 
 - controlled removal/replacement of check images
 
+## Controlled check image management — 2026-08-14
+
+Completed:
+
+- `ea3f89f` — added controlled removal and replacement of installment check images.
+- Check images are no longer physically destroyed when removed or replaced.
+- `installment_images` now stores:
+  - `removed_at`
+  - `removed_by`
+  - `removal_reason`
+- Removed images disappear from active check views but remain preserved as historical evidence.
+- Replacement creates a new active image and archives the previous image.
+- Both removal and replacement require a reason.
+- Audit notes are appended to the installment history for both actions.
+- Sale Details only displays active check images.
+- The six-image limit now applies to the total active images for a check, not six additional images per upload.
+- If replacement fails after the new file is stored, the newly uploaded orphan file is cleaned up.
+
+Manual verification:
+
+- user verified image removal hides the image from active check images and records the reason in history
+- user verified image replacement shows the new image and preserves replacement history
+- user verified archived images do not appear after reopening check details
+- user verified Sale Details displays only active images
+- user verified bank, check number, Sayad ID, installment amount, due date and payment state remain unchanged
+
+Validation:
+
+- migration `2026_08_14_130800_add_removal_audit_to_installment_images` ran successfully
+- targeted check tests passed: 5 tests / 103 assertions
+- full test suite passed: 39 tests / 209 assertions
+- `npm run build` passed
+- `git diff --check` passed
+
+Check-management phase status:
+
+- check metadata and documents: complete
+- direct payment registration: complete
+- safe paid-state reversal with audit history: complete
+- controlled check image removal/replacement: complete
+
+The installment check-management phase is considered complete for the current scope.
+
