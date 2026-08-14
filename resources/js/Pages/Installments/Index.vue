@@ -34,6 +34,7 @@ const props = defineProps({
 const search = ref(props.filters.search || '');
 const selectedInstallment = ref(null);
 const selectedPaidInstallment = ref(null);
+const selectedReverseInstallment = ref(null);
 
 const money = (value) =>
     `${Number(value || 0).toLocaleString('fa-IR')} تومان`;
@@ -127,6 +128,42 @@ const submitInstallmentPaid = () => {
             onSuccess: () => {
                 selectedPaidInstallment.value = null;
                 clearanceForm.reset();
+            },
+        },
+    );
+};
+
+const reversalForm = useForm({
+    reason: '',
+});
+
+const openReverseModal = (item) => {
+    selectedReverseInstallment.value = item;
+    reversalForm.reset();
+    reversalForm.clearErrors();
+};
+
+const closeReverseModal = () => {
+    if (reversalForm.processing) return;
+
+    selectedReverseInstallment.value = null;
+    reversalForm.reset();
+    reversalForm.clearErrors();
+};
+
+const submitPaidReversal = () => {
+    if (!selectedReverseInstallment.value) return;
+
+    reversalForm.post(
+        route(
+            'installments.reverse-paid',
+            selectedReverseInstallment.value.id,
+        ),
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                selectedReverseInstallment.value = null;
+                reversalForm.reset();
             },
         },
     );
@@ -582,7 +619,7 @@ const submitCheckDetails = () => {
                                     >
                                         {{
                                             hasCheckDetails(item)
-                                                ? 'مشخصات'
+                                                ? 'مشخصات چک'
                                                 : 'ثبت چک'
                                         }}
                                     </button>
@@ -594,6 +631,15 @@ const submitCheckDetails = () => {
                                         @click="openPaidModal(item)"
                                     >
                                         ثبت پاس شدن
+                                    </button>
+
+                                    <button
+                                        v-else
+                                        type="button"
+                                        class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-black text-amber-700 transition hover:bg-amber-100 dark:border-amber-400/10 dark:bg-amber-950/20 dark:text-amber-300"
+                                        @click="openReverseModal(item)"
+                                    >
+                                        اصلاح وصول
                                     </button>
 
                                     <Link
@@ -1000,6 +1046,128 @@ const submitCheckDetails = () => {
                         }}
                     </button>
                 </div>
+            </div>
+        </div>
+
+
+        <!-- Reverse paid modal -->
+        <div
+            v-if="selectedReverseInstallment"
+            class="fixed inset-0 z-[95] flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm"
+            @click.self="closeReverseModal"
+        >
+            <div
+                dir="rtl"
+                class="w-full max-w-lg rounded-[30px] border border-white bg-[#fbfbfa] p-5 shadow-2xl dark:border-white/5 dark:bg-[#11151d] sm:p-6"
+            >
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="text-[11px] font-black text-amber-600 dark:text-amber-400">
+                            اصلاح ثبت وصول
+                        </p>
+
+                        <h2 class="mt-1 text-xl font-black">
+                            برگشت پاس شدن چک
+                        </h2>
+
+                        <p class="mt-2 text-xs leading-6 text-slate-400">
+                            قسط
+                            {{ formatNumber(selectedReverseInstallment.installment_number) }}
+                            · {{ selectedReverseInstallment.buyer_name }}
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f1f3f5] text-slate-500 dark:bg-white/5 dark:text-slate-300"
+                        @click="closeReverseModal"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                <div
+                    class="mt-5 rounded-[20px] bg-amber-50 p-4 dark:bg-amber-950/20"
+                >
+                    <p class="text-xs font-black text-amber-700 dark:text-amber-300">
+                        این عملیات اطلاعات قبلی را بی‌صدا حذف نمی‌کند.
+                    </p>
+
+                    <p class="mt-2 text-xs leading-6 text-amber-700/80 dark:text-amber-300/80">
+                        وضعیت چک دوباره باز می‌شود، اما تاریخ و مبلغ وصول قبلی
+                        همراه با دلیل این اصلاح در تاریخچه چک ثبت خواهد شد.
+                    </p>
+
+                    <div class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs">
+                        <span>
+                            تاریخ وصول فعلی:
+                            <strong>
+                                {{ formatDate(selectedReverseInstallment.paid_at) }}
+                            </strong>
+                        </span>
+
+                        <span>
+                            مبلغ:
+                            <strong>
+                                {{ money(selectedReverseInstallment.paid_amount) }}
+                            </strong>
+                        </span>
+                    </div>
+                </div>
+
+                <form
+                    class="mt-5"
+                    @submit.prevent="submitPaidReversal"
+                >
+                    <label class="mb-2 block text-sm font-bold">
+                        دلیل اصلاح
+                    </label>
+
+                    <textarea
+                        v-model="reversalForm.reason"
+                        rows="3"
+                        maxlength="1000"
+                        class="mh-input resize-y leading-7"
+                        placeholder="مثلاً پاس شدن این چک اشتباهی ثبت شده بود..."
+                    />
+
+                    <p class="mt-2 text-[11px] leading-6 text-slate-400">
+                        این توضیح به سابقه دائمی چک اضافه می‌شود.
+                    </p>
+
+                    <p
+                        v-if="reversalForm.errors.reason"
+                        class="mt-2 text-xs font-bold text-red-500"
+                    >
+                        {{ reversalForm.errors.reason }}
+                    </p>
+
+                    <div class="mt-6 grid grid-cols-2 gap-3">
+                        <button
+                            type="button"
+                            class="mh-secondary"
+                            :disabled="reversalForm.processing"
+                            @click="closeReverseModal"
+                        >
+                            انصراف
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="inline-flex items-center justify-center rounded-2xl bg-amber-600 px-4 py-3 text-sm font-black text-white transition hover:bg-amber-700 disabled:opacity-50"
+                            :disabled="
+                                reversalForm.processing ||
+                                reversalForm.reason.trim().length < 3
+                            "
+                        >
+                            {{
+                                reversalForm.processing
+                                    ? 'در حال اصلاح...'
+                                    : 'تأیید اصلاح وصول'
+                            }}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 

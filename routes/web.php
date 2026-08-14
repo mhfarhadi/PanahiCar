@@ -109,6 +109,10 @@ Route::get('/sales/currency-rate', [SaleController::class, 'currencyRate'])
         ->whereNumber('installment')
         ->name('installments.mark-paid');
 
+    Route::post('/installments/{installment}/reverse-paid', [InstallmentController::class, 'reversePaid'])
+        ->whereNumber('installment')
+        ->name('installments.reverse-paid');
+
     Route::post('/entity-notes', [EntityNoteController::class, 'store'])
         ->name('entity-notes.store');
 

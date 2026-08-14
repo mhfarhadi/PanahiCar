@@ -296,7 +296,9 @@ class InstallmentController extends Controller
             'paid_at' => ['required', 'date'],
         ]);
 
-        DB::transaction(function () use ($installment, $validated) {
+        $userId = $request->user()->id;
+
+        DB::transaction(function () use ($installment, $validated, $userId) {
             $row = DB::table('installments')
                 ->where('id', $installment)
                 ->lockForUpdate()
@@ -316,9 +318,71 @@ class InstallmentController extends Controller
                     'paid_at' => $validated['paid_at'],
                     'updated_at' => now(),
                 ]);
+
+            EntityNoteService::add(
+                'installment',
+                $installment,
+                sprintf(
+                    'وصول چک ثبت شد. تاریخ پاس شدن: %s، مبلغ وصول: %s تومان.',
+                    $validated['paid_at'],
+                    number_format((int) $row->amount)
+                ),
+                $userId
+            );
         });
 
         return back()->with('success', 'پاس شدن چک با موفقیت ثبت شد.');
+    }
+
+    public function reversePaid(Request $request, int $installment): RedirectResponse
+    {
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'min:3', 'max:1000'],
+        ]);
+
+        $userId = $request->user()->id;
+
+        DB::transaction(function () use ($installment, $validated, $userId) {
+            $row = DB::table('installments')
+                ->where('id', $installment)
+                ->lockForUpdate()
+                ->first();
+
+            abort_unless($row, 404);
+
+            if ($row->status !== 'paid') {
+                return;
+            }
+
+            $previousPaidAt = $row->paid_at;
+            $previousPaidAmount = (int) $row->paid_amount;
+
+            DB::table('installments')
+                ->where('id', $installment)
+                ->update([
+                    'paid_amount' => 0,
+                    'status' => 'pending',
+                    'paid_at' => null,
+                    'updated_at' => now(),
+                ]);
+
+            EntityNoteService::add(
+                'installment',
+                $installment,
+                sprintf(
+                    'اصلاح وصول چک: ثبت پاس شدن لغو شد. تاریخ وصول قبلی: %s، مبلغ وصول قبلی: %s تومان. دلیل اصلاح: %s',
+                    $previousPaidAt ?: 'نامشخص',
+                    number_format($previousPaidAmount),
+                    trim($validated['reason'])
+                ),
+                $userId
+            );
+        });
+
+        return back()->with(
+            'success',
+            'ثبت پاس شدن چک با حفظ سابقه اصلاح شد.'
+        );
     }
 
     private function normalizeDigits(?string $value): string

@@ -367,3 +367,200 @@ test('marking an installment paid stores the real paid date without rewriting fi
         ->toBe((int) $firstInstallment->amount)
         ->and($afterRepeatedRequest->paid_at)->toBe($paidAt);
 });
+
+test('a mistakenly paid check can be safely reopened with an append only audit note', function () {
+    $user = User::factory()->create();
+
+    $buyerId = DB::table('contacts')->insertGetId([
+        'name' => 'خریدار تست اصلاح وصول',
+        'mobile' => '09120000005',
+        'created_by' => $user->id,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $deviceId = DB::table('devices')->insertGetId([
+        'brand' => 'Apple',
+        'model' => 'iPhone 16 Pro',
+        'storage' => '256GB',
+        'status' => 'in_stock',
+        'created_by' => $user->id,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $saleDate = '2026-08-14';
+
+    $firstDueDate = Jalalian::fromCarbon(
+        \Carbon\Carbon::parse($saleDate)
+    )
+        ->addMonths(1)
+        ->toCarbon()
+        ->toDateString();
+
+    $this->mock(CurrencyRateService::class, function ($mock) use ($saleDate) {
+        $mock->shouldReceive('snapshotForDate')
+            ->once()
+            ->with('USD', $saleDate)
+            ->andReturn([
+                'rate' => 190_000,
+                'rate_date' => $saleDate,
+                'source' => 'test',
+            ]);
+    });
+
+    $this
+        ->actingAs($user)
+        ->post(route('sales.store', $deviceId), [
+            'buyer_id' => $buyerId,
+            'sale_type' => 'installment',
+            'sale_price' => 400_000_000,
+            'down_payment' => 100_000_000,
+            'monthly_profit_rate' => 6.5,
+            'installment_count' => 2,
+            'first_due_date' => $firstDueDate,
+            'sale_date' => $saleDate,
+        ])
+        ->assertRedirect(route('sales.index'));
+
+    $sale = DB::table('sales')
+        ->where('device_id', $deviceId)
+        ->first();
+
+    $installments = DB::table('installments')
+        ->where('sale_id', $sale->id)
+        ->orderBy('installment_number')
+        ->get();
+
+    $target = $installments[0];
+    $other = $installments[1];
+
+    $saleSnapshot = [
+        'sale_price' => (int) $sale->sale_price,
+        'down_payment' => (int) $sale->down_payment,
+        'installment_profit' => (int) $sale->installment_profit,
+        'contract_total' => (int) $sale->contract_total,
+    ];
+
+    $otherSnapshot = [
+        'amount' => (int) $other->amount,
+        'paid_amount' => (int) $other->paid_amount,
+        'status' => $other->status,
+        'paid_at' => $other->paid_at,
+    ];
+
+    $this
+        ->actingAs($user)
+        ->from(route('installments.index'))
+        ->post(
+            route('installments.mark-paid', $target->id),
+            ['paid_at' => '2026-10-20']
+        )
+        ->assertSessionHasNoErrors();
+
+    $paid = DB::table('installments')
+        ->where('id', $target->id)
+        ->first();
+
+    expect($paid->status)->toBe('paid')
+        ->and((int) $paid->paid_amount)->toBe((int) $target->amount)
+        ->and($paid->paid_at)->toBe('2026-10-20');
+
+    $notesAfterPayment = DB::table('entity_notes')
+        ->where('entity_type', 'installment')
+        ->where('entity_id', $target->id)
+        ->pluck('body')
+        ->all();
+
+    expect(collect($notesAfterPayment)->contains(
+        fn ($body) => str_contains($body, 'وصول چک ثبت شد')
+            && str_contains($body, '2026-10-20')
+    ))->toBeTrue();
+
+    // Reversal reason is mandatory; invalid request must preserve paid state.
+    $this
+        ->actingAs($user)
+        ->from(route('installments.index'))
+        ->post(
+            route('installments.reverse-paid', $target->id),
+            ['reason' => '']
+        )
+        ->assertSessionHasErrors('reason');
+
+    $stillPaid = DB::table('installments')
+        ->where('id', $target->id)
+        ->first();
+
+    expect($stillPaid->status)->toBe('paid')
+        ->and((int) $stillPaid->paid_amount)->toBe((int) $target->amount)
+        ->and($stillPaid->paid_at)->toBe('2026-10-20');
+
+    $reason = 'پاس شدن این چک اشتباهی ثبت شده بود.';
+
+    $this
+        ->actingAs($user)
+        ->from(route('installments.index'))
+        ->post(
+            route('installments.reverse-paid', $target->id),
+            ['reason' => $reason]
+        )
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('installments.index'));
+
+    $reopened = DB::table('installments')
+        ->where('id', $target->id)
+        ->first();
+
+    expect($reopened->status)->toBe('pending')
+        ->and((int) $reopened->paid_amount)->toBe(0)
+        ->and($reopened->paid_at)->toBeNull();
+
+    $auditNotes = DB::table('entity_notes')
+        ->where('entity_type', 'installment')
+        ->where('entity_id', $target->id)
+        ->orderBy('id')
+        ->pluck('body')
+        ->all();
+
+    expect($auditNotes)->toHaveCount(2)
+        ->and(collect($auditNotes)->contains(
+            fn ($body) => str_contains($body, 'اصلاح وصول چک')
+                && str_contains($body, '2026-10-20')
+                && str_contains($body, $reason)
+        ))->toBeTrue();
+
+    $unchangedOther = DB::table('installments')
+        ->where('id', $other->id)
+        ->first();
+
+    expect((int) $unchangedOther->amount)->toBe($otherSnapshot['amount'])
+        ->and((int) $unchangedOther->paid_amount)->toBe($otherSnapshot['paid_amount'])
+        ->and($unchangedOther->status)->toBe($otherSnapshot['status'])
+        ->and($unchangedOther->paid_at)->toBe($otherSnapshot['paid_at']);
+
+    $unchangedSale = DB::table('sales')
+        ->where('id', $sale->id)
+        ->first();
+
+    expect((int) $unchangedSale->sale_price)->toBe($saleSnapshot['sale_price'])
+        ->and((int) $unchangedSale->down_payment)->toBe($saleSnapshot['down_payment'])
+        ->and((int) $unchangedSale->installment_profit)->toBe($saleSnapshot['installment_profit'])
+        ->and((int) $unchangedSale->contract_total)->toBe($saleSnapshot['contract_total']);
+
+    // Repeating reversal on an already-open check must not add another audit entry.
+    $this
+        ->actingAs($user)
+        ->from(route('installments.index'))
+        ->post(
+            route('installments.reverse-paid', $target->id),
+            ['reason' => 'درخواست تکراری']
+        )
+        ->assertSessionHasNoErrors();
+
+    expect(
+        DB::table('entity_notes')
+            ->where('entity_type', 'installment')
+            ->where('entity_id', $target->id)
+            ->count()
+    )->toBe(2);
+});
