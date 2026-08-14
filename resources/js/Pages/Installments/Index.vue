@@ -35,6 +35,8 @@ const search = ref(props.filters.search || '');
 const selectedInstallment = ref(null);
 const selectedPaidInstallment = ref(null);
 const selectedReverseInstallment = ref(null);
+const selectedImageAction = ref(null);
+const imageActionMode = ref('remove');
 
 const money = (value) =>
     `${Number(value || 0).toLocaleString('fa-IR')} تومان`;
@@ -343,6 +345,56 @@ const submitCheckDetails = () => {
             preserveScroll: true,
             onSuccess: () => {
                 selectedInstallment.value = null;
+                checkForm.reset();
+            },
+        },
+    );
+};
+
+const imageActionForm = useForm({
+    reason: '',
+    image: null,
+});
+
+const openImageAction = (image, mode) => {
+    selectedImageAction.value = image;
+    imageActionMode.value = mode;
+    imageActionForm.reset();
+    imageActionForm.clearErrors();
+};
+
+const closeImageAction = () => {
+    if (imageActionForm.processing) return;
+
+    selectedImageAction.value = null;
+    imageActionForm.reset();
+    imageActionForm.clearErrors();
+};
+
+const handleReplacementImage = (event) => {
+    imageActionForm.image = event.target.files?.[0] || null;
+};
+
+const submitImageAction = () => {
+    if (!selectedInstallment.value || !selectedImageAction.value) return;
+
+    const routeName =
+        imageActionMode.value === 'replace'
+            ? 'installments.images.replace'
+            : 'installments.images.remove';
+
+    imageActionForm.post(
+        route(routeName, {
+            installment: selectedInstallment.value.id,
+            image: selectedImageAction.value.id,
+        }),
+        {
+            forceFormData: imageActionMode.value === 'replace',
+            preserveScroll: true,
+            onSuccess: () => {
+                selectedImageAction.value = null;
+                selectedInstallment.value = null;
+                imageActionForm.reset();
                 checkForm.reset();
             },
         },
@@ -804,21 +856,48 @@ const submitCheckDetails = () => {
                         </p>
 
                         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                            <a
+                            <div
                                 v-for="image in selectedInstallment.images"
                                 :key="image.id"
-                                :href="`/storage/${image.image_path}`"
-                                target="_blank"
-                                rel="noopener noreferrer"
                                 class="overflow-hidden rounded-2xl border border-slate-200/60 bg-white dark:border-white/5 dark:bg-white/5"
                             >
-                                <img
-                                    :src="`/storage/${image.image_path}`"
-                                    alt="تصویر چک"
-                                    class="h-32 w-full object-cover"
-                                />
-                            </a>
+                                <a
+                                    :href="`/storage/${image.image_path}`"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="block"
+                                >
+                                    <img
+                                        :src="`/storage/${image.image_path}`"
+                                        alt="تصویر چک"
+                                        class="h-32 w-full object-cover"
+                                    />
+                                </a>
+
+                                <div class="grid grid-cols-2 gap-2 p-2">
+                                    <button
+                                        type="button"
+                                        class="rounded-xl bg-[#eef4ff] px-2 py-2 text-[10px] font-black text-[#6382b8] transition hover:bg-[#e3edff] dark:bg-sky-950/30 dark:text-sky-300"
+                                        @click="openImageAction(image, 'replace')"
+                                    >
+                                        جایگزینی
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="rounded-xl bg-[#fff0f1] px-2 py-2 text-[10px] font-black text-[#d85e68] transition hover:bg-[#ffe5e7] dark:bg-red-950/25 dark:text-red-300"
+                                        @click="openImageAction(image, 'remove')"
+                                    >
+                                        حذف
+                                    </button>
+                                </div>
+                            </div>
                         </div>
+
+                        <p class="mt-3 text-[11px] leading-6 text-slate-400">
+                            حذف یا جایگزینی، نسخه قبلی تصویر را از سابقه مالی
+                            نابود نمی‌کند؛ فایل قبلی در آرشیو باقی می‌ماند.
+                        </p>
                     </div>
 
                     <div class="mt-6">
@@ -1164,6 +1243,150 @@ const submitCheckDetails = () => {
                                 reversalForm.processing
                                     ? 'در حال اصلاح...'
                                     : 'تأیید اصلاح وصول'
+                            }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <!-- Check image remove / replace modal -->
+        <div
+            v-if="selectedImageAction && selectedInstallment"
+            class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm"
+            @click.self="closeImageAction"
+        >
+            <div
+                dir="rtl"
+                class="w-full max-w-lg rounded-[30px] border border-white bg-[#fbfbfa] p-5 shadow-2xl dark:border-white/5 dark:bg-[#11151d] sm:p-6"
+            >
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p
+                            class="text-[11px] font-black"
+                            :class="
+                                imageActionMode === 'replace'
+                                    ? 'text-[#6382b8] dark:text-sky-300'
+                                    : 'text-[#d85e68] dark:text-red-300'
+                            "
+                        >
+                            مدیریت تصویر چک
+                        </p>
+
+                        <h2 class="mt-1 text-xl font-black">
+                            {{
+                                imageActionMode === 'replace'
+                                    ? 'جایگزینی تصویر'
+                                    : 'حذف تصویر'
+                            }}
+                        </h2>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f1f3f5] text-slate-500 dark:bg-white/5 dark:text-slate-300"
+                        @click="closeImageAction"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                <div class="mt-5 overflow-hidden rounded-[20px] bg-[#f4f6f8] dark:bg-white/[0.035]">
+                    <img
+                        :src="`/storage/${selectedImageAction.image_path}`"
+                        alt="تصویر فعلی چک"
+                        class="max-h-52 w-full object-contain"
+                    />
+                </div>
+
+                <div
+                    class="mt-4 rounded-2xl bg-amber-50 p-4 text-xs leading-6 text-amber-700 dark:bg-amber-950/20 dark:text-amber-300"
+                >
+                    نسخه فعلی تصویر حتی پس از حذف یا جایگزینی در آرشیو
+                    تاریخی باقی می‌ماند و دلیل این تغییر نیز ثبت می‌شود.
+                </div>
+
+                <form
+                    class="mt-5"
+                    @submit.prevent="submitImageAction"
+                >
+                    <div v-if="imageActionMode === 'replace'">
+                        <label class="mb-2 block text-sm font-bold">
+                            تصویر جدید
+                        </label>
+
+                        <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            class="mh-input"
+                            @change="handleReplacementImage"
+                        />
+
+                        <p
+                            v-if="imageActionForm.errors.image"
+                            class="mt-2 text-xs font-bold text-red-500"
+                        >
+                            {{ imageActionForm.errors.image }}
+                        </p>
+                    </div>
+
+                    <div :class="imageActionMode === 'replace' ? 'mt-5' : ''">
+                        <label class="mb-2 block text-sm font-bold">
+                            دلیل
+                            {{
+                                imageActionMode === 'replace'
+                                    ? 'جایگزینی'
+                                    : 'حذف'
+                            }}
+                        </label>
+
+                        <textarea
+                            v-model="imageActionForm.reason"
+                            rows="3"
+                            maxlength="1000"
+                            class="mh-input resize-y leading-7"
+                            placeholder="مثلاً تصویر اشتباه ثبت شده بود..."
+                        />
+
+                        <p
+                            v-if="imageActionForm.errors.reason"
+                            class="mt-2 text-xs font-bold text-red-500"
+                        >
+                            {{ imageActionForm.errors.reason }}
+                        </p>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-2 gap-3">
+                        <button
+                            type="button"
+                            class="mh-secondary"
+                            :disabled="imageActionForm.processing"
+                            @click="closeImageAction"
+                        >
+                            انصراف
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="mh-primary"
+                            :disabled="
+                                imageActionForm.processing ||
+                                imageActionForm.reason.trim().length < 3 ||
+                                (
+                                    imageActionMode === 'replace' &&
+                                    !imageActionForm.image
+                                )
+                            "
+                        >
+                            {{
+                                imageActionForm.processing
+                                    ? 'در حال ثبت...'
+                                    : (
+                                        imageActionMode === 'replace'
+                                            ? 'تأیید جایگزینی'
+                                            : 'تأیید حذف'
+                                    )
                             }}
                         </button>
                     </div>

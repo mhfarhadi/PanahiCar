@@ -564,3 +564,182 @@ test('a mistakenly paid check can be safely reopened with an append only audit n
             ->count()
     )->toBe(2);
 });
+
+test('check images can be removed and replaced without destroying historical files', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    $buyerId = DB::table('contacts')->insertGetId([
+        'name' => 'خریدار تست آرشیو تصویر',
+        'mobile' => '09120000006',
+        'created_by' => $user->id,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $deviceId = DB::table('devices')->insertGetId([
+        'brand' => 'Samsung',
+        'model' => 'Galaxy S25',
+        'storage' => '256GB',
+        'status' => 'in_stock',
+        'created_by' => $user->id,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $saleDate = '2026-08-14';
+
+    $firstDueDate = Jalalian::fromCarbon(
+        \Carbon\Carbon::parse($saleDate)
+    )
+        ->addMonths(1)
+        ->toCarbon()
+        ->toDateString();
+
+    $this->mock(CurrencyRateService::class, function ($mock) use ($saleDate) {
+        $mock->shouldReceive('snapshotForDate')
+            ->once()
+            ->with('USD', $saleDate)
+            ->andReturn([
+                'rate' => 190_000,
+                'rate_date' => $saleDate,
+                'source' => 'test',
+            ]);
+    });
+
+    $this
+        ->actingAs($user)
+        ->post(route('sales.store', $deviceId), [
+            'buyer_id' => $buyerId,
+            'sale_type' => 'installment',
+            'sale_price' => 300_000_000,
+            'down_payment' => 100_000_000,
+            'monthly_profit_rate' => 6.5,
+            'installment_count' => 2,
+            'first_due_date' => $firstDueDate,
+            'sale_date' => $saleDate,
+        ])
+        ->assertRedirect(route('sales.index'));
+
+    $sale = DB::table('sales')
+        ->where('device_id', $deviceId)
+        ->first();
+
+    $installment = DB::table('installments')
+        ->where('sale_id', $sale->id)
+        ->first();
+
+    $firstImage = UploadedFile::fake()
+        ->image('first-check.jpg', 1000, 700)
+        ->size(400);
+
+    $secondImage = UploadedFile::fake()
+        ->image('second-check.jpg', 1000, 700)
+        ->size(400);
+
+    $this
+        ->actingAs($user)
+        ->post(
+            route('installments.check-details', $installment->id),
+            ['images' => [$firstImage, $secondImage]]
+        )
+        ->assertSessionHasNoErrors();
+
+    $images = DB::table('installment_images')
+        ->where('installment_id', $installment->id)
+        ->orderBy('id')
+        ->get();
+
+    expect($images)->toHaveCount(2);
+
+    $removedImage = $images[0];
+    $replacedImage = $images[1];
+
+    Storage::disk('public')->assertExists($removedImage->image_path);
+    Storage::disk('public')->assertExists($replacedImage->image_path);
+
+    $removeReason = 'این تصویر اشتباهی برای این چک بارگذاری شده بود.';
+
+    $this
+        ->actingAs($user)
+        ->from(route('installments.index'))
+        ->post(
+            route('installments.images.remove', [
+                'installment' => $installment->id,
+                'image' => $removedImage->id,
+            ]),
+            ['reason' => $removeReason]
+        )
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('installments.index'));
+
+    $archived = DB::table('installment_images')
+        ->where('id', $removedImage->id)
+        ->first();
+
+    expect($archived->removed_at)->not->toBeNull()
+        ->and((int) $archived->removed_by)->toBe($user->id)
+        ->and($archived->removal_reason)->toBe($removeReason);
+
+    // Historical evidence remains physically stored.
+    Storage::disk('public')->assertExists($removedImage->image_path);
+
+    $replacement = UploadedFile::fake()
+        ->image('replacement-check.jpg', 1000, 700)
+        ->size(450);
+
+    $replaceReason = 'تصویر واضح‌تر چک جایگزین شد.';
+
+    $this
+        ->actingAs($user)
+        ->from(route('installments.index'))
+        ->post(
+            route('installments.images.replace', [
+                'installment' => $installment->id,
+                'image' => $replacedImage->id,
+            ]),
+            [
+                'image' => $replacement,
+                'reason' => $replaceReason,
+            ]
+        )
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('installments.index'));
+
+    $oldReplaced = DB::table('installment_images')
+        ->where('id', $replacedImage->id)
+        ->first();
+
+    expect($oldReplaced->removed_at)->not->toBeNull()
+        ->and((int) $oldReplaced->removed_by)->toBe($user->id)
+        ->and($oldReplaced->removal_reason)->toBe($replaceReason);
+
+    Storage::disk('public')->assertExists($replacedImage->image_path);
+
+    $activeImages = DB::table('installment_images')
+        ->where('installment_id', $installment->id)
+        ->whereNull('removed_at')
+        ->get();
+
+    expect($activeImages)->toHaveCount(1)
+        ->and((int) $activeImages[0]->sort_order)
+        ->toBe((int) $replacedImage->sort_order);
+
+    Storage::disk('public')->assertExists($activeImages[0]->image_path);
+
+    $notes = DB::table('entity_notes')
+        ->where('entity_type', 'installment')
+        ->where('entity_id', $installment->id)
+        ->pluck('body')
+        ->all();
+
+    expect(collect($notes)->contains(
+        fn ($body) => str_contains($body, 'آرشیو')
+            && str_contains($body, $removeReason)
+    ))->toBeTrue()
+        ->and(collect($notes)->contains(
+            fn ($body) => str_contains($body, 'جایگزین شد')
+                && str_contains($body, $replaceReason)
+        ))->toBeTrue();
+});

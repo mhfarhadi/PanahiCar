@@ -105,6 +105,14 @@ Route::get('/sales/currency-rate', [SaleController::class, 'currencyRate'])
         ->whereNumber('installment')
         ->name('installments.check-details');
 
+    Route::post('/installments/{installment}/images/{image}/remove', [InstallmentController::class, 'removeImage'])
+        ->whereNumber(['installment', 'image'])
+        ->name('installments.images.remove');
+
+    Route::post('/installments/{installment}/images/{image}/replace', [InstallmentController::class, 'replaceImage'])
+        ->whereNumber(['installment', 'image'])
+        ->name('installments.images.replace');
+
     Route::post('/installments/{installment}/mark-paid', [InstallmentController::class, 'markPaid'])
         ->whereNumber('installment')
         ->name('installments.mark-paid');

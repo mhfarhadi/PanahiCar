@@ -226,6 +226,7 @@ class SaleController extends Controller
             ? collect()
             : DB::table('installment_images')
                 ->whereIn('installment_id', $installmentIds)
+                ->whereNull('removed_at')
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get([

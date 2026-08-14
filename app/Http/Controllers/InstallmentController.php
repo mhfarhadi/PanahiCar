@@ -6,6 +6,8 @@ use App\Services\EntityNoteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -142,6 +144,7 @@ class InstallmentController extends Controller
             ? collect()
             : DB::table('installment_images')
                 ->whereIn('installment_id', $installmentIds)
+                ->whereNull('removed_at')
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get([
@@ -252,6 +255,19 @@ class InstallmentController extends Controller
             ]);
 
         if ($request->hasFile('images')) {
+            $activeImageCount = DB::table('installment_images')
+                ->where('installment_id', $installment)
+                ->whereNull('removed_at')
+                ->count();
+
+            $incomingImageCount = count($request->file('images'));
+
+            if ($activeImageCount + $incomingImageCount > 6) {
+                throw ValidationException::withMessages([
+                    'images' => 'هر چک می‌تواند حداکثر ۶ تصویر فعال داشته باشد.',
+                ]);
+            }
+
             $sortOrder = (int) (
                 DB::table('installment_images')
                     ->where('installment_id', $installment)
@@ -287,6 +303,159 @@ class InstallmentController extends Controller
         return back()->with(
             'success',
             'اطلاعات چک با موفقیت ذخیره شد.'
+        );
+    }
+
+    public function removeImage(
+        Request $request,
+        int $installment,
+        int $image
+    ): RedirectResponse {
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'min:3', 'max:1000'],
+        ]);
+
+        $userId = $request->user()->id;
+
+        DB::transaction(function () use (
+            $installment,
+            $image,
+            $validated,
+            $userId
+        ) {
+            $installmentRow = DB::table('installments')
+                ->where('id', $installment)
+                ->lockForUpdate()
+                ->first();
+
+            abort_unless($installmentRow, 404);
+
+            $imageRow = DB::table('installment_images')
+                ->where('id', $image)
+                ->where('installment_id', $installment)
+                ->lockForUpdate()
+                ->first();
+
+            abort_unless($imageRow, 404);
+
+            if ($imageRow->removed_at) {
+                return;
+            }
+
+            DB::table('installment_images')
+                ->where('id', $image)
+                ->update([
+                    'removed_at' => now(),
+                    'removed_by' => $userId,
+                    'removal_reason' => trim($validated['reason']),
+                    'updated_at' => now(),
+                ]);
+
+            EntityNoteService::add(
+                'installment',
+                $installment,
+                sprintf(
+                    'تصویر چک از نمایش فعال حذف و در آرشیو نگه‌داری شد. شناسه تصویر: %d، فایل: %s، دلیل: %s',
+                    $imageRow->id,
+                    $imageRow->image_path,
+                    trim($validated['reason'])
+                ),
+                $userId
+            );
+        });
+
+        return back()->with(
+            'success',
+            'تصویر از چک حذف شد و نسخه تاریخی آن در آرشیو باقی ماند.'
+        );
+    }
+
+    public function replaceImage(
+        Request $request,
+        int $installment,
+        int $image
+    ): RedirectResponse {
+        $validated = $request->validate([
+            'image' => [
+                'required',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+            ],
+            'reason' => ['required', 'string', 'min:3', 'max:1000'],
+        ]);
+
+        $userId = $request->user()->id;
+
+        $newPath = $request->file('image')->store(
+            "installment-checks/{$installment}",
+            'public'
+        );
+
+        try {
+            DB::transaction(function () use (
+                $installment,
+                $image,
+                $validated,
+                $userId,
+                $newPath
+            ) {
+                $installmentRow = DB::table('installments')
+                    ->where('id', $installment)
+                    ->lockForUpdate()
+                    ->first();
+
+                abort_unless($installmentRow, 404);
+
+                $oldImage = DB::table('installment_images')
+                    ->where('id', $image)
+                    ->where('installment_id', $installment)
+                    ->lockForUpdate()
+                    ->first();
+
+                abort_unless($oldImage, 404);
+                abort_if($oldImage->removed_at, 409);
+
+                $newImageId = DB::table('installment_images')
+                    ->insertGetId([
+                        'installment_id' => $installment,
+                        'image_path' => $newPath,
+                        'sort_order' => $oldImage->sort_order,
+                        'uploaded_by' => $userId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                DB::table('installment_images')
+                    ->where('id', $oldImage->id)
+                    ->update([
+                        'removed_at' => now(),
+                        'removed_by' => $userId,
+                        'removal_reason' => trim($validated['reason']),
+                        'updated_at' => now(),
+                    ]);
+
+                EntityNoteService::add(
+                    'installment',
+                    $installment,
+                    sprintf(
+                        'تصویر چک جایگزین شد. تصویر قبلی #%d (%s) در آرشیو باقی ماند و تصویر جدید #%d ثبت شد. دلیل: %s',
+                        $oldImage->id,
+                        $oldImage->image_path,
+                        $newImageId,
+                        trim($validated['reason'])
+                    ),
+                    $userId
+                );
+            });
+        } catch (\Throwable $exception) {
+            Storage::disk('public')->delete($newPath);
+            throw $exception;
+        }
+
+        return back()->with(
+            'success',
+            'تصویر چک جایگزین شد و نسخه قبلی در آرشیو باقی ماند.'
         );
     }
 
