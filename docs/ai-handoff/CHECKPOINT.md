@@ -525,3 +525,20 @@ Check-management phase status:
 
 The installment check-management phase is considered complete for the current scope.
 
+## Global ambient ring styling — 2026-08-14
+
+Completed:
+
+- `aa7d6d0` — extended the Dashboard ambient-ring visual language across internal surfaces/pages.
+- The shared page/surface styling now uses the same two subtle outlined circles seen in Dashboard.
+- Previous radial-gradient attempt was replaced with actual clipped circular borders matching the Dashboard treatment.
+- Dark mode keeps the rings very subtle.
+- Change is visual only; no product or financial logic changed.
+
+Validation:
+
+- user manually confirmed the intended visual effect
+- `npm run build` passed
+- full test suite passed
+- `git diff --check` passed
+
