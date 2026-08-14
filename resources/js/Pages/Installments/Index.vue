@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -32,6 +33,7 @@ const props = defineProps({
 
 const search = ref(props.filters.search || '');
 const selectedInstallment = ref(null);
+const selectedPaidInstallment = ref(null);
 
 const money = (value) =>
     `${Number(value || 0).toLocaleString('fa-IR')} تومان`;
@@ -65,6 +67,70 @@ const normalizeDigits = (value) =>
     String(value ?? '')
         .replace(/[۰-۹]/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit))
         .replace(/[٠-٩]/g, (digit) => '٠١٢٣٤٥٦٧٨٩'.indexOf(digit));
+
+const now = new Date();
+
+const localToday = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+].join('-');
+
+const clearanceForm = useForm({
+    paid_at: '',
+});
+
+const syncPaidAt = (value) => {
+    if (!value) return;
+
+    if (typeof value.format === 'function') {
+        const date = value.clone ? value.clone() : value;
+
+        if (typeof date.locale === 'function') {
+            date.locale('en');
+        }
+
+        clearanceForm.paid_at = normalizeDigits(
+            date.format('YYYY-MM-DD'),
+        );
+
+        return;
+    }
+
+    clearanceForm.paid_at = normalizeDigits(String(value));
+};
+
+const openPaidModal = (item) => {
+    selectedPaidInstallment.value = item;
+    clearanceForm.clearErrors();
+    clearanceForm.paid_at = '';
+};
+
+const closePaidModal = () => {
+    if (clearanceForm.processing) return;
+
+    selectedPaidInstallment.value = null;
+    clearanceForm.reset();
+    clearanceForm.clearErrors();
+};
+
+const submitInstallmentPaid = () => {
+    if (!selectedPaidInstallment.value) return;
+
+    clearanceForm.post(
+        route(
+            'installments.mark-paid',
+            selectedPaidInstallment.value.id,
+        ),
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                selectedPaidInstallment.value = null;
+                clearanceForm.reset();
+            },
+        },
+    );
+};
 
 const tabs = [
     { label: 'همه', value: 'all' },
@@ -521,6 +587,15 @@ const submitCheckDetails = () => {
                                         }}
                                     </button>
 
+                                    <button
+                                        v-if="item.status !== 'paid'"
+                                        type="button"
+                                        class="rounded-xl bg-emerald-600 px-3 py-2 text-[10px] font-black text-white transition hover:bg-emerald-700"
+                                        @click="openPaidModal(item)"
+                                    >
+                                        ثبت پاس شدن
+                                    </button>
+
                                     <Link
                                         :href="route('sales.show', item.sale_id)"
                                         class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-400 shadow-[0_5px_14px_rgba(35,45,65,0.05)] transition hover:text-[#ff6570] dark:bg-white/5"
@@ -817,5 +892,116 @@ const submitCheckDetails = () => {
                 </form>
             </div>
         </div>
+
+        <!-- Mark paid modal -->
+        <div
+            v-if="selectedPaidInstallment"
+            class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm"
+            @click.self="closePaidModal"
+        >
+            <div
+                dir="rtl"
+                class="w-full max-w-md rounded-[30px] border border-white bg-[#fbfbfa] p-5 shadow-2xl dark:border-white/5 dark:bg-[#11151d] sm:p-6"
+            >
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="text-[11px] font-black text-emerald-600 dark:text-emerald-400">
+                            وصول چک
+                        </p>
+
+                        <h2 class="mt-1 text-xl font-black">
+                            ثبت پاس شدن چک
+                        </h2>
+
+                        <p class="mt-2 text-xs leading-6 text-slate-400">
+                            قسط
+                            {{ formatNumber(selectedPaidInstallment.installment_number) }}
+                            · {{ selectedPaidInstallment.buyer_name }}
+                            · سررسید
+                            {{ formatDate(selectedPaidInstallment.due_date) }}
+                        </p>
+
+                        <p class="mt-1 text-xs font-black">
+                            {{ money(selectedPaidInstallment.amount) }}
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f1f3f5] text-slate-500 dark:bg-white/5 dark:text-slate-300"
+                        @click="closePaidModal"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                <div class="mt-6">
+                    <label class="mb-2 block text-sm font-bold">
+                        تاریخ واقعی پاس شدن
+                    </label>
+
+                    <Vue3PersianDatetimePicker
+                        v-model="clearanceForm.paid_at"
+                        :initial-value="localToday"
+                        format="YYYY-MM-DD"
+                        display-format="jYYYY/jMM/jDD"
+                        type="date"
+                        convert-numbers
+                        auto-submit
+                        custom-input=".receivable-paid-at-input"
+                        @change="syncPaidAt"
+                    />
+
+                    <input
+                        type="text"
+                        class="receivable-paid-at-input mh-input text-center font-black"
+                        placeholder="تاریخ پاس شدن چک"
+                        readonly
+                    />
+
+                    <p
+                        v-if="clearanceForm.errors.paid_at"
+                        class="mt-2 text-xs font-bold text-red-500"
+                    >
+                        {{ clearanceForm.errors.paid_at }}
+                    </p>
+
+                    <div
+                        class="mt-4 rounded-2xl bg-amber-50 p-4 text-xs leading-6 text-amber-700 dark:bg-amber-950/20 dark:text-amber-300"
+                    >
+                        تاریخ واقعی وصول را وارد کنید. این تاریخ در سابقه
+                        پرداخت مشتری و محاسبه تأخیر چک استفاده می‌شود.
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-2 gap-3">
+                    <button
+                        type="button"
+                        class="mh-secondary"
+                        :disabled="clearanceForm.processing"
+                        @click="closePaidModal"
+                    >
+                        انصراف
+                    </button>
+
+                    <button
+                        type="button"
+                        class="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                        :disabled="
+                            clearanceForm.processing ||
+                            !clearanceForm.paid_at
+                        "
+                        @click="submitInstallmentPaid"
+                    >
+                        {{
+                            clearanceForm.processing
+                                ? 'در حال ثبت...'
+                                : 'تأیید پاس شدن'
+                        }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </AuthenticatedLayout>
 </template>

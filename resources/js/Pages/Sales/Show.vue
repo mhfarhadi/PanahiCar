@@ -197,6 +197,14 @@ const clearanceDelayDays = (installment) => {
 
     return Math.max(0, days);
 };
+
+const hasCheckDetails = (installment) =>
+    Boolean(
+        installment.bank_name ||
+        installment.check_number ||
+        installment.sayad_id ||
+        installment.images?.length,
+    );
 </script>
 
 <template>
@@ -641,81 +649,162 @@ const clearanceDelayDays = (installment) => {
                                 <div
                                     v-for="installment in installments"
                                     :key="installment.id"
-                                    class="grid gap-3 rounded-2xl border border-slate-100 p-4 dark:border-white/5 sm:grid-cols-[80px_1fr_1fr_1fr_auto] sm:items-center"
+                                    class="rounded-[22px] border border-slate-100 p-4 dark:border-white/5"
                                 >
-                                    <div>
-                                        <p class="text-xs text-slate-400">
-                                            قسط
-                                        </p>
-
-                                        <p class="mt-1 font-black">
-                                            {{ formatNumber(installment.installment_number) }}
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <p class="text-xs text-slate-400">
-                                            سررسید
-                                        </p>
-
-                                        <p class="mt-1 font-bold">
-                                            {{ formatDate(installment.due_date) }}
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <p class="text-xs text-slate-400">
-                                            مبلغ
-                                        </p>
-
-                                        <p class="mt-1 font-bold">
-                                            {{ formatMoney(installment.amount) }}
-                                            تومان
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <p class="text-xs text-slate-400">
-                                            پرداخت
-                                        </p>
-
-                                        <p class="mt-1 font-bold">
-                                            {{ formatMoney(installment.paid_amount) }}
-                                            تومان
-                                        </p>
-                                    </div>
-
-                                    <div class="flex flex-col items-start gap-2 sm:items-end">
-                                        <span
-                                            class="inline-flex rounded-xl px-3 py-1.5 text-xs font-black"
-                                            :class="installmentStatusClass(installment.status)"
-                                        >
-                                            {{ installment.status === 'paid' ? 'چک پاس شده' : installmentStatusLabel(installment.status) }}
-                                        </span>
-
-                                        <span
-                                            v-if="installment.status === 'paid' && installment.paid_at"
-                                            class="text-xs text-slate-400"
-                                        >
-                                            پاس‌شده در {{ formatDate(installment.paid_at) }}
-                                        </span>
-
-                                    <span
-                                        v-if="clearanceDelayDays(installment) > 0"
-                                        class="text-xs font-black text-red-600 dark:text-red-400"
+                                    <div
+                                        class="grid gap-3 sm:grid-cols-[80px_1fr_1fr_1fr_auto] sm:items-center"
                                     >
-                                        {{ formatNumber(clearanceDelayDays(installment)) }}
-                                        روز تأخیر در پاس شدن چک
-                                    </span>
+                                        <div>
+                                            <p class="text-xs text-slate-400">
+                                                قسط
+                                            </p>
 
-                                        <button
-                                            v-if="installment.status !== 'paid'"
-                                            type="button"
-                                            class="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white transition hover:bg-emerald-700"
-                                            @click="openPaidModal(installment)"
+                                            <p class="mt-1 font-black">
+                                                {{ formatNumber(installment.installment_number) }}
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p class="text-xs text-slate-400">
+                                                سررسید
+                                            </p>
+
+                                            <p class="mt-1 font-bold">
+                                                {{ formatDate(installment.due_date) }}
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p class="text-xs text-slate-400">
+                                                مبلغ
+                                            </p>
+
+                                            <p class="mt-1 font-bold">
+                                                {{ formatMoney(installment.amount) }}
+                                                تومان
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p class="text-xs text-slate-400">
+                                                پرداخت
+                                            </p>
+
+                                            <p class="mt-1 font-bold">
+                                                {{ formatMoney(installment.paid_amount) }}
+                                                تومان
+                                            </p>
+                                        </div>
+
+                                        <div class="flex flex-col items-start gap-2 sm:items-end">
+                                            <span
+                                                class="inline-flex rounded-xl px-3 py-1.5 text-xs font-black"
+                                                :class="installmentStatusClass(installment.status)"
+                                            >
+                                                {{ installment.status === 'paid' ? 'چک پاس شده' : installmentStatusLabel(installment.status) }}
+                                            </span>
+
+                                            <span
+                                                v-if="installment.status === 'paid' && installment.paid_at"
+                                                class="text-xs text-slate-400"
+                                            >
+                                                پاس‌شده در {{ formatDate(installment.paid_at) }}
+                                            </span>
+
+                                            <span
+                                                v-if="clearanceDelayDays(installment) > 0"
+                                                class="text-xs font-black text-red-600 dark:text-red-400"
+                                            >
+                                                {{ formatNumber(clearanceDelayDays(installment)) }}
+                                                روز تأخیر در پاس شدن چک
+                                            </span>
+
+                                            <button
+                                                v-if="installment.status !== 'paid'"
+                                                type="button"
+                                                class="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white transition hover:bg-emerald-700"
+                                                @click="openPaidModal(installment)"
+                                            >
+                                                ثبت پاس شدن چک
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        v-if="hasCheckDetails(installment)"
+                                        class="mt-4 rounded-[18px] bg-[#f7f8fa] p-4 dark:bg-white/[0.025]"
+                                    >
+                                        <div
+                                            class="grid gap-3 sm:grid-cols-3"
                                         >
-                                            ثبت پاس شدن چک
-                                        </button>
+                                            <div>
+                                                <p class="text-[10px] text-slate-400">
+                                                    بانک
+                                                </p>
+                                                <p class="mt-1 text-xs font-black">
+                                                    {{ installment.bank_name || '—' }}
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p class="text-[10px] text-slate-400">
+                                                    شماره چک
+                                                </p>
+                                                <p
+                                                    class="mt-1 text-xs font-black"
+                                                    dir="ltr"
+                                                >
+                                                    {{ installment.check_number || '—' }}
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p class="text-[10px] text-slate-400">
+                                                    شناسه صیاد
+                                                </p>
+                                                <p
+                                                    class="mt-1 break-all text-xs font-black"
+                                                    dir="ltr"
+                                                >
+                                                    {{ installment.sayad_id || '—' }}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            v-if="installment.images?.length"
+                                            class="mt-4"
+                                        >
+                                            <p class="mb-2 text-[10px] font-black text-slate-400">
+                                                تصاویر چک
+                                            </p>
+
+                                            <div
+                                                class="flex gap-2 overflow-x-auto pb-1"
+                                            >
+                                                <a
+                                                    v-for="image in installment.images"
+                                                    :key="image.id"
+                                                    :href="`/storage/${image.image_path}`"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="block shrink-0 overflow-hidden rounded-xl border border-slate-200/60 bg-white dark:border-white/5 dark:bg-white/5"
+                                                >
+                                                    <img
+                                                        :src="`/storage/${image.image_path}`"
+                                                        alt="تصویر چک"
+                                                        class="h-20 w-28 object-cover"
+                                                    />
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        v-else
+                                        class="mt-3 text-[11px] text-slate-400"
+                                    >
+                                        مشخصات فیزیکی چک هنوز ثبت نشده است.
                                     </div>
                                 </div>
                             </div>

@@ -214,8 +214,34 @@ class SaleController extends Controller
                 'paid_amount',
                 'status',
                 'paid_at',
+                'check_number',
+                'bank_name',
+                'sayad_id',
                 'notes',
             ]);
+
+        $installmentIds = $installments->pluck('id');
+
+        $imagesByInstallment = $installmentIds->isEmpty()
+            ? collect()
+            : DB::table('installment_images')
+                ->whereIn('installment_id', $installmentIds)
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get([
+                    'id',
+                    'installment_id',
+                    'image_path',
+                    'sort_order',
+                ])
+                ->groupBy('installment_id');
+
+        $installments = $installments->map(function ($installment) use ($imagesByInstallment) {
+            $installment->images = ($imagesByInstallment[$installment->id] ?? collect())
+                ->values();
+
+            return $installment;
+        });
 
         $currentRates = $currencyRateService->latest();
 
