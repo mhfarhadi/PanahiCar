@@ -395,3 +395,49 @@ Validation:
 - `npm run build` passed
 - `git diff --check` passed
 
+## Receivables workflow completion — 2026-08-14
+
+Completed:
+
+- `3688e9d` — completed the current check/receivables workflow.
+- Product rule confirmed:
+  - check metadata is NOT entered during installment sale creation
+  - sale creation only defines installment/check count and financial terms
+  - check metadata is entered later only from the dedicated “Checks & Receivables” page
+  - sale details are read-only for check metadata
+- Sale details now display previously registered check information:
+  - bank
+  - check number
+  - 16-digit Sayad ID
+  - check images
+- Checks & Receivables now allows marking an open check as paid directly from the list.
+- The direct mark-paid flow uses the existing `installments.mark-paid` backend endpoint and Persian date picker.
+- Existing financial values, installment amounts, due dates and mark-paid backend logic were not changed.
+
+Regression coverage:
+
+- added mark-paid regression coverage verifying:
+  - status becomes `paid`
+  - `paid_amount` becomes exactly the installment amount
+  - real `paid_at` date is stored
+  - another installment remains unchanged
+  - sale financial snapshot remains unchanged
+  - a repeated mark-paid request does not rewrite the original paid date
+
+Manual verification:
+
+- user verified check metadata and image registration from Checks & Receivables
+- user verified the registered check data appears correctly in sale details
+- user verified direct mark-paid from Checks & Receivables
+
+Validation:
+
+- `php artisan test` passed: 37 tests / 152 assertions
+- `npm run build` passed
+- `git diff --check` passed
+
+Next check-management work:
+
+- safe reversal/undo for a mistakenly marked-paid check
+- controlled check-image removal/replacement while preserving financial history
+
