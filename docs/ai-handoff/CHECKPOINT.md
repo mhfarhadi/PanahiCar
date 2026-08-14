@@ -441,3 +441,44 @@ Next check-management work:
 - safe reversal/undo for a mistakenly marked-paid check
 - controlled check-image removal/replacement while preserving financial history
 
+## Safe installment payment reversal — 2026-08-14
+
+Completed:
+
+- `aa8a4a7` — added safe correction for mistakenly marked-paid checks.
+- Paid checks on Checks & Receivables now expose an “اصلاح وصول” action.
+- Reversal requires a mandatory reason.
+- A successful reversal:
+  - changes the current installment status back to `pending`
+  - resets `paid_amount` to zero
+  - clears the current `paid_at`
+  - does not alter the installment amount, due date or sale financial values
+  - preserves bank, check number, Sayad ID and check images
+- Payment and reversal actions are audit-visible through append-only installment notes.
+  - marking a check paid records the paid date and amount
+  - reversing payment records the previous paid date, previous paid amount and correction reason
+- Repeating reversal on an already-open installment is a no-op and does not create duplicate audit history.
+- Existing repeated mark-paid behavior remains a no-op and does not rewrite the original paid date.
+
+UX clarification:
+
+- receivables action label `مشخصات` was changed to `مشخصات چک`
+- the ambiguous arrow-only sale link was replaced with `جزئیات فروش`
+- check metadata management remains exclusively on Checks & Receivables
+- Sale Details remains read-only for check metadata
+
+Manual verification:
+
+- user verified a paid check can be corrected and returns to the open list
+- user verified the previous payment and correction reason remain visible in check history
+
+Validation:
+
+- `php artisan test` passed: 38 tests / 183 assertions
+- `npm run build` passed
+- `git diff --check` passed
+
+Next check-management work:
+
+- controlled removal/replacement of check images
+
