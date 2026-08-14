@@ -194,17 +194,101 @@
         @apply mt-2 text-sm leading-7 text-slate-400;
     }
 
+    /*
+     * MayaHamrah ambient rings
+     * Same visual language as Dashboard:
+     * two very subtle outlined circles clipped by the page/card edge.
+     */
+    .mh-page {
+        @apply relative overflow-hidden;
+    }
+
+    .mh-page::before,
+    .mh-page::after {
+        content: '';
+        position: absolute;
+        border-radius: 9999px;
+        pointer-events: none;
+        z-index: 0;
+        border-style: solid;
+        border-width: 1px;
+    }
+
+    .mh-page::before {
+        width: 18rem;
+        height: 18rem;
+        left: -6rem;
+        top: -7rem;
+        border-color: rgba(246, 216, 141, 0.35);
+    }
+
+    .mh-page::after {
+        width: 13rem;
+        height: 13rem;
+        left: -3.5rem;
+        top: -4rem;
+        border-color: rgba(246, 216, 141, 0.30);
+    }
+
+    .mh-page > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .dark .mh-page::before,
+    .dark .mh-page::after {
+        border-color: rgba(252, 211, 77, 0.05);
+    }
+
     .mh-surface {
-        @apply rounded-[28px] border p-5 backdrop-blur-sm sm:p-6;
+        @apply relative isolate overflow-hidden rounded-[28px] border p-5 backdrop-blur-sm sm:p-6;
         border-color: rgba(255, 255, 255, 0.82);
         background-color: rgba(255, 255, 255, 0.76);
         box-shadow: 0 18px 60px rgba(40, 50, 70, 0.055);
+    }
+
+    .mh-surface::before,
+    .mh-surface::after {
+        content: '';
+        position: absolute;
+        border-radius: 9999px;
+        pointer-events: none;
+        z-index: 0;
+        border-style: solid;
+        border-width: 1px;
+    }
+
+    /* Exact feel of Dashboard "وضعیت کسب‌وکار" */
+    .mh-surface::before {
+        width: 13rem;
+        height: 13rem;
+        left: -5rem;
+        top: -6rem;
+        border-color: rgba(242, 213, 156, 0.30);
+    }
+
+    .mh-surface::after {
+        width: 9rem;
+        height: 9rem;
+        left: -2.5rem;
+        top: -3.5rem;
+        border-color: rgba(242, 213, 156, 0.25);
+    }
+
+    .mh-surface > * {
+        position: relative;
+        z-index: 1;
     }
 
     .dark .mh-surface {
         border-color: rgba(255, 255, 255, 0.05);
         background-color: rgba(255, 255, 255, 0.025);
         box-shadow: none;
+    }
+
+    .dark .mh-surface::before,
+    .dark .mh-surface::after {
+        border-color: rgba(252, 211, 77, 0.05);
     }
 
     .mh-soft-surface {
