@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 use Morilog\Jalali\Jalalian;
 
@@ -9,6 +8,7 @@ use App\Models\Device;
 use App\Models\Sale;
 use App\Services\EntityNoteService;
 use App\Services\CurrencyRateService;
+use App\Services\InstallmentCalculatorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -316,7 +316,12 @@ class SaleController extends Controller
     }
 
 
-    public function store(Request $request, Device $device, CurrencyRateService $currencyRateService): RedirectResponse
+    public function store(
+        Request $request,
+        Device $device,
+        CurrencyRateService $currencyRateService,
+        InstallmentCalculatorService $installmentCalculatorService
+    ): RedirectResponse
     {
         abort_unless($device->status === 'in_stock', 404);
 
@@ -373,11 +378,10 @@ class SaleController extends Controller
                 'source' => 'manual',
             ];
         }
-
-    $deferment = null;
+        $installmentCalculation = null;
 
         if (($validated['sale_type'] ?? null) === 'installment') {
-            $deferment = $this->calculateInstallmentDeferment(
+            $deferment = $installmentCalculatorService->calculateDeferment(
                 $validated['sale_date'],
                 $validated['first_due_date']
             );
@@ -387,9 +391,18 @@ class SaleController extends Controller
                     'first_due_date' => 'اولین سررسید نمی‌تواند قبل از یک ماه شمسی پس از تاریخ فروش باشد.',
                 ]);
             }
+
+            $installmentCalculation = $installmentCalculatorService->calculate(
+                salePrice: (int) $validated['sale_price'],
+                downPayment: (int) $validated['down_payment'],
+                monthlyProfitRate: (float) $validated['monthly_profit_rate'],
+                installmentCount: (int) $validated['installment_count'],
+                saleDate: $validated['sale_date'],
+                firstDueDate: $validated['first_due_date'],
+            );
         }
 
-        DB::transaction(function () use ($request, $device, $validated, $deferment, $currencySnapshot) {
+        DB::transaction(function () use ($request, $device, $validated, $installmentCalculation, $currencySnapshot) {
             $lockedDevice = Device::query()
                 ->whereKey($device->id)
                 ->lockForUpdate()
@@ -411,47 +424,17 @@ class SaleController extends Controller
             $firstDueDate = null;
 
             if ($isInstallment) {
-                $principal = $validated['sale_price'] - $validated['down_payment'];
-                $monthlyProfitRate = (float) $validated['monthly_profit_rate'];
-                $count = $validated['installment_count'];
-
-                $baseInstallmentProfit = (int) round(
-                    $principal * ($monthlyProfitRate / 100) * $count
-                );
-
-                $defermentMonths = $deferment['months'];
-                $defermentDays = $deferment['days'];
-                $standardFirstDueDate = $deferment['standard_first_due_date'];
-                $firstDueDate = $validated['first_due_date'];
-
-                $defermentEquivalentMonths =
-                    $defermentMonths + ($defermentDays / 30);
-
-                $defermentProfit = (int) round(
-                    $principal
-                    * ($monthlyProfitRate / 100)
-                    * $defermentEquivalentMonths
-                );
-
-                $calculatedInstallmentProfit =
-                    $baseInstallmentProfit + $defermentProfit;
-
-                $calculatedInstallmentTotal =
-                    $principal + $calculatedInstallmentProfit;
-
-                $installmentAmount = (int) (
-                    round(
-                        ($calculatedInstallmentTotal / $count) / 10_000
-                    ) * 10_000
-                );
-
-                $installmentTotal = $installmentAmount * $count;
-                $installmentProfit = max(
-                    0,
-                    $installmentTotal - $principal
-                );
-                $contractTotal =
-                    $validated['down_payment'] + $installmentTotal;
+                $principal = $installmentCalculation['principal'];
+                $monthlyProfitRate = (float) $installmentCalculation['monthly_profit_rate'];
+                $installmentProfit = $installmentCalculation['installment_profit'];
+                $installmentTotal = $installmentCalculation['installment_total'];
+                $defermentMonths = $installmentCalculation['deferment_months'];
+                $defermentDays = $installmentCalculation['deferment_days'];
+                $defermentProfit = $installmentCalculation['deferment_profit'];
+                $standardFirstDueDate = $installmentCalculation['standard_first_due_date'];
+                $firstDueDate = $installmentCalculation['first_due_date'];
+                $installmentAmount = $installmentCalculation['installment_amount'];
+                $contractTotal = $installmentCalculation['contract_total'];
             }
 
             $sale = new Sale();
@@ -486,26 +469,15 @@ class SaleController extends Controller
             );
 
             if ($isInstallment) {
-                $count = $validated['installment_count'];
-
-                $firstDueJalali = Jalalian::fromCarbon(
-                    Carbon::parse($validated['first_due_date'])
-                );
                 $timestamp = now();
-
                 $rows = [];
 
-                for ($i = 0; $i < $count; $i++) {
+                foreach ($installmentCalculation['installments'] as $installment) {
                     $rows[] = [
                         'sale_id' => $sale->id,
-                        'installment_number' => $i + 1,
-                        'due_date' => $i === 0
-                            ? $firstDueJalali->toCarbon()->toDateString()
-                            : $firstDueJalali
-                                ->addMonths($i)
-                                ->toCarbon()
-                                ->toDateString(),
-                        'amount' => $installmentAmount,
+                        'installment_number' => $installment['installment_number'],
+                        'due_date' => $installment['due_date'],
+                        'amount' => $installment['amount'],
                         'paid_amount' => 0,
                         'status' => 'pending',
                         'paid_at' => null,
@@ -527,50 +499,4 @@ class SaleController extends Controller
             ->with('success', 'فروش گوشی با موفقیت ثبت شد.');
     }
 
-    private function calculateInstallmentDeferment(
-        string $saleDate,
-        string $firstDueDate
-    ): array {
-        $saleJalali = Jalalian::fromCarbon(
-            Carbon::parse($saleDate)->startOfDay()
-        );
-
-        $standardJalali = $saleJalali->addMonths(1);
-        $standardCarbon = $standardJalali->toCarbon()->startOfDay();
-        $chosenCarbon = Carbon::parse($firstDueDate)->startOfDay();
-
-        if ($chosenCarbon->lt($standardCarbon)) {
-            return [
-                'is_before_standard' => true,
-                'standard_first_due_date' => $standardCarbon->toDateString(),
-                'months' => 0,
-                'days' => 0,
-            ];
-        }
-
-        $months = 0;
-        $cursorJalali = $standardJalali;
-
-        while (true) {
-            $nextJalali = $cursorJalali->addMonths(1);
-            $nextCarbon = $nextJalali->toCarbon()->startOfDay();
-
-            if ($nextCarbon->gt($chosenCarbon)) {
-                break;
-            }
-
-            $months++;
-            $cursorJalali = $nextJalali;
-        }
-
-        $cursorCarbon = $cursorJalali->toCarbon()->startOfDay();
-        $days = (int) floor($cursorCarbon->diffInDays($chosenCarbon));
-
-        return [
-            'is_before_standard' => false,
-            'standard_first_due_date' => $standardCarbon->toDateString(),
-            'months' => $months,
-            'days' => $days,
-        ];
-    }
 }

@@ -12,6 +12,7 @@ use App\Http\Controllers\AnnouncedDevicePurchaseController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\PriceEstimateController;
 use App\Http\Controllers\InstallmentController;
+use App\Http\Controllers\PublicInstallmentCalculatorController;
 use App\Http\Controllers\EntityNoteController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +26,19 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+Route::get('/features', fn () => Inertia::render('Features/Index'))
+    ->name('features.index');
+
+Route::get(
+    '/features/installments',
+    [PublicInstallmentCalculatorController::class, 'index']
+)->name('features.installments.index');
+
+Route::post(
+    '/features/installments/calculate',
+    [PublicInstallmentCalculatorController::class, 'calculate']
+)->name('features.installments.calculate');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])

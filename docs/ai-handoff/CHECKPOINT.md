@@ -542,3 +542,84 @@ Validation:
 - full test suite passed
 - `git diff --check` passed
 
+
+## Public installment calculator — 2026-08-14
+
+Implemented and manually verified, but public Features visual design is still provisional and must NOT be treated as final.
+
+Public routes:
+
+- `GET /features/installments`
+- `POST /features/installments/calculate`
+
+Architecture:
+
+- Added shared `InstallmentCalculatorService`.
+- Existing real sale installment calculations in `SaleController` now use the same shared service.
+- Public calculator and authenticated sale flow therefore share one backend financial source of truth.
+- Existing installment sale behavior remains unchanged.
+- Frontend public calculator does not duplicate the financial formula; calculation results come from backend.
+- Added CSRF token meta support for the public JSON POST endpoint.
+
+Regular installments:
+
+- preserves current MayaHamrah logic
+- principal = sale price - down payment
+- monthly linear profit
+- Jalali deferment calculation
+- first standard due date = one Jalali month after sale date
+- each generated check rounded to nearest 10,000 toman
+- totals and profit recalculated from actual rounded checks
+- reference case remains:
+  - sale price: 300,000,000
+  - down payment: 100,000,000
+  - monthly rate: 6.5%
+  - 3 installments
+  - each check: 79,670,000
+  - installment total: 239,010,000
+  - installment profit: 39,010,000
+  - contract total: 339,010,000
+
+Monthly-payment-cap mode:
+
+- user provides maximum desired check amount
+- system runs the exact existing installment calculation for counts 1 through 60
+- returns the smallest installment count whose real rounded check amount does not exceed the cap
+- no separate financial formula was introduced
+
+Custom / irregular checks — confirmed business rule:
+
+- customer states the actual amount they can pay on each chosen date
+- that stated check amount is NOT increased to include accrued profit
+- profit for each interval is calculated on the current carried balance
+- interval timing uses full Jalali months plus remaining days / 30
+- after each interval:
+  - accrued profit is added to the current balance
+  - the customer's stated check amount is then subtracted
+- therefore:
+  - new balance = previous balance + interval profit - payment
+- the next interval's profit is calculated on this new carried balance
+- first custom payment does NOT need to be one full month after sale; its actual interval is used
+- custom checks may have different dates and amounts
+- UI shows each interval's profit, time span and balance after payment
+
+Public calculator UX:
+
+- three modes:
+  - regular
+  - monthly payment cap
+  - custom / irregular checks
+- Jalali date pickers
+- displayed check dates are Jalali
+- fixed issue where selecting today's sale date required selecting another date first
+- after choosing sale date in regular/cap modes, first due date automatically becomes one Jalali month later
+- custom mode supports adding/removing checks with individual dates and amounts
+- user manually verified custom calculation logic and current UI behavior
+- current visual direction is acceptable temporarily only; final visual redesign decision is deferred until the end of the public Features phase
+
+Validation:
+
+- `npm run build` passed
+- targeted installment/public calculator tests passed: 16 tests / 173 assertions
+- full Laravel suite passed: 50 tests / 271 assertions
+- `git diff --check` passed
