@@ -298,3 +298,40 @@ test('it applies recency weighting when enough comparables are available', funct
         \Carbon\Carbon::setTestNow();
     }
 });
+
+
+test('it prefers comparable sales with the requested color', function () {
+    createEstimatorSale(
+        ['color' => 'Black'],
+        [
+            'sale_price' => 100_000_000,
+            'usd_rate' => 100_000,
+        ]
+    );
+
+    createEstimatorSale(
+        ['color' => 'White'],
+        [
+            'sale_price' => 200_000_000,
+            'usd_rate' => 100_000,
+        ]
+    );
+
+    $result = app(PriceEstimationService::class)->estimate(
+        'Apple',
+        'iPhone 15 Pro',
+        '256GB',
+        100_000,
+        null,
+        null,
+        null,
+        null,
+        'Black'
+    );
+
+    expect($result['available'])->toBeTrue()
+        ->and($result['specification_adjusted'])->toBeTrue()
+        ->and($result['estimate'])->toBe(100_000_000)
+        ->and($result['comparables'][0]->similarity_score)->toBe(100)
+        ->and($result['comparables'][1]->similarity_score)->toBe(0);
+});

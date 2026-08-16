@@ -11,3 +11,10 @@ test('public installment contract page is accessible without authentication', fu
         ->get(route('features.contracts.index'))
         ->assertOk();
 });
+
+
+test('public price estimate page is accessible without authentication', function () {
+    $this
+        ->get(route('features.price-estimates.index'))
+        ->assertOk();
+});

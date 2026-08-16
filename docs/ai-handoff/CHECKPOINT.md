@@ -784,3 +784,113 @@ Validation:
 - full Laravel suite passed: 51 tests / 272 assertions
 - `git diff --check` passed
 
+## Public price estimator — 2026-08-16
+
+Public Features tool #3, `برآورد قیمت`, was implemented as a public no-login estimator.
+
+Architecture / source of truth:
+
+- public estimator reuses the existing `PriceEstimationService`
+- no duplicate estimator formula was created
+- existing authenticated `/price-estimates` flow remains in place
+- public route:
+  - GET `/features/price-estimate`
+  - route name `features.price-estimates.index`
+- public controller:
+  - `app/Http/Controllers/PublicPriceEstimateController.php`
+- public page:
+  - `resources/js/Pages/Features/PriceEstimate/Index.vue`
+- Features landing-page estimator card now links to the public estimator
+
+Current estimator evidence / calculation rules:
+
+- estimator currently uses completed MayaHamrah sales as its evidence pool
+- exact comparable pool still requires:
+  - same brand
+  - same model
+  - same storage
+- historical sale price is normalized using:
+  - sale USD rate
+  - current USD rate
+- sparse comparable behavior remains conservative
+- recency weighting remains the existing `PriceEstimationService` behavior
+- specification matching influences comparable weighting rather than applying invented fixed price adjustments
+
+Color support added in this phase:
+
+- color is now a real estimator input
+- public estimator reuses existing:
+  - `color_options`
+  - `device_model_color_option`
+- selected model filters the available color list
+- displayed color labels reuse `colorLabel()` Persian labels
+- existing stored catalog value remains unchanged
+- color was added to `PriceEstimationService` similarity scoring
+- matching color receives stronger similarity than a non-matching color
+- no artificial fixed toman/percentage adjustment was assigned to any color
+- a regression test confirms requested color affects comparable weighting
+
+Other specification inputs retained:
+
+- condition grade
+- registration status
+- Apple/non-Samsung battery health percentage
+- Samsung battery condition
+
+Divar rule:
+
+- Divar remains external market context only
+- public estimator provides a link to search similar listings
+- Divar asking prices do NOT enter the MayaHamrah estimator formula
+- public UI explicitly states this separation
+
+Public estimator UX:
+
+- page is visually separate from the authenticated portal
+- current public Features visual direction remains provisional and is not final
+- page uses MayaHamrah `Vazirmatn Variable` typography
+- native browser `<select>` controls were replaced on this page with a custom `MayaSelect` component because Safari/macOS native option rendering did not reliably honor project typography
+- custom dropdown interaction was corrected for Safari:
+  - dropdown buttons are not wrapped in `<label>`
+  - option selection commits on pointer interaction
+  - brand → model → storage → color dependent selection was manually confirmed working
+- custom dropdown is currently introduced as:
+  - `resources/js/Components/MayaSelect.vue`
+
+Estimator backlog remains open:
+
+- outlier handling
+- better range presentation
+- multi-factor confidence
+- fallback memory decision
+- future integration of proprietary public `چی می‌خوام؟ / چیا می‌خوان؟` demand/price-expectation signals
+
+Important future estimator rule:
+
+- public wanted-device signals may later join the estimator evidence pool
+- this future integration must be designed explicitly and tested
+- Divar must remain display/context only and must never directly enter the estimator formula
+
+Validation:
+
+- user manually confirmed dependent custom dropdown selection works
+- `npm run build` passed
+- targeted public + estimator suite passed:
+  - 11 tests
+  - 36 assertions
+- full Laravel suite passed:
+  - 53 tests
+  - 278 assertions
+- `git diff --check` passed
+
+Files / areas changed in this phase:
+
+- `app/Http/Controllers/PublicPriceEstimateController.php`
+- `app/Services/PriceEstimationService.php`
+- `resources/js/Components/MayaSelect.vue`
+- `resources/js/Pages/Features/PriceEstimate/Index.vue`
+- `resources/js/Pages/Features/Index.vue`
+- `routes/web.php`
+- `tests/Feature/PriceEstimationServiceTest.php`
+- `tests/Feature/PublicFeaturesTest.php`
+

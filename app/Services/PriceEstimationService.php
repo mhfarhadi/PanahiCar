@@ -16,7 +16,8 @@ class PriceEstimationService
         ?string $conditionGrade = null,
         ?int $batteryHealth = null,
         ?string $batteryCondition = null,
-        ?string $registrationStatus = null
+        ?string $registrationStatus = null,
+        ?string $color = null
     ): array {
         if ($currentUsdRate <= 0) {
             return $this->emptyResult('current_usd_unavailable');
@@ -51,7 +52,8 @@ class PriceEstimationService
                 $conditionGrade,
                 $batteryHealth,
                 $batteryCondition,
-                $registrationStatus
+                $registrationStatus,
+                $color
             ) {
                 $sale->normalized_price = (int) round(
                     ((int) $sale->sale_price / (int) $sale->usd_rate)
@@ -63,7 +65,8 @@ class PriceEstimationService
                     $conditionGrade,
                     $batteryHealth,
                     $batteryCondition,
-                    $registrationStatus
+                    $registrationStatus,
+                    $color
                 );
 
                 $sale->recency_score = $this->recencyScore(
@@ -92,7 +95,8 @@ class PriceEstimationService
         $hasSpecificationInputs = $conditionGrade !== null
             || $batteryHealth !== null
             || $batteryCondition !== null
-            || $registrationStatus !== null;
+            || $registrationStatus !== null
+            || $color !== null;
 
         $count = $comparables->count();
 
@@ -135,7 +139,8 @@ class PriceEstimationService
         ?string $conditionGrade,
         ?int $batteryHealth,
         ?string $batteryCondition,
-        ?string $registrationStatus
+        ?string $registrationStatus,
+        ?string $color
     ): int {
         $distances = [];
 
@@ -182,6 +187,12 @@ class PriceEstimationService
 
         if ($registrationStatus !== null) {
             $distances[] = $sale->registration_status === $registrationStatus
+                ? 0
+                : 1;
+        }
+
+        if ($color !== null) {
+            $distances[] = $sale->color === $color
                 ? 0
                 : 1;
         }

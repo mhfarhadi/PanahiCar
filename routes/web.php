@@ -13,6 +13,7 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\PriceEstimateController;
 use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\PublicInstallmentCalculatorController;
+use App\Http\Controllers\PublicPriceEstimateController;
 use App\Http\Controllers\EntityNoteController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +68,11 @@ Route::post(
     '/features/installments/calculate',
     [PublicInstallmentCalculatorController::class, 'calculate']
 )->name('features.installments.calculate');
+
+Route::get(
+    '/features/price-estimate',
+    [PublicPriceEstimateController::class, 'index']
+)->name('features.price-estimates.index');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])

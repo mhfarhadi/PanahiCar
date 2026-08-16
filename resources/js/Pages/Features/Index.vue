@@ -20,6 +20,7 @@ const tools = [
         title: 'برآورد قیمت',
         description: 'برآورد قیمت براساس دیتاهای واقعی و آگهی‌های مشابه',
         accent: 'sky',
+        route: 'features.price-estimates.index',
         icon: 'M4 19V11M10 19V5M16 19v-9M3 19h18',
     },
     {
