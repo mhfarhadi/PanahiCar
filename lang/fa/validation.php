@@ -45,6 +45,32 @@ return [
         'purchase_date' => 'تاریخ خرید',
         'images' => 'تصاویر دستگاه',
         'images.*' => 'تصویر دستگاه',
+
+        // فروش و اقساط
+        'buyer_id' => 'خریدار',
+        'sale_type' => 'نوع فروش',
+        'sale_price' => 'قیمت فروش',
+        'down_payment' => 'پیش‌پرداخت',
+        'monthly_profit_rate' => 'نرخ سود ماهانه',
+        'installment_count' => 'تعداد اقساط',
+        'first_due_date' => 'تاریخ اولین سررسید',
+        'sale_date' => 'تاریخ فروش',
+        'usd_rate' => 'نرخ دلار',
+
+        // نوع ضمانت و طلای وثیقه
+        'guarantee_type' => 'نوع ضمانت',
+        'gold_rate_per_gram' => 'نرخ هر گرم طلای ۱۸ عیار',
+        'gold_received_weight' => 'وزن طلای دریافتی',
+        'gold_type' => 'نوع طلای دریافتی',
+        'gold_description' => 'توضیحات طلای دریافتی',
+
+        // چک و وصول اقساط
+        'check_number' => 'شماره چک',
+        'bank_name' => 'بانک',
+        'sayad_id' => 'شناسه صیاد',
+        'paid_at' => 'تاریخ وصول',
+        'reason' => 'دلیل',
+        'note' => 'یادداشت',
     ],
 
 ];

@@ -176,7 +176,7 @@ const tabs = [
     { label: 'باز', value: 'open' },
     { label: 'معوق', value: 'overdue' },
     { label: '۷ روز آینده', value: 'due_soon' },
-    { label: 'پاس‌شده', value: 'paid' },
+    { label: 'وصول‌شده', value: 'paid' },
 ];
 
 const bankOptions = [
@@ -240,7 +240,11 @@ const clearSearch = () => {
 };
 
 const statusLabel = (item) => {
-    if (item.status === 'paid') return 'چک پاس شده';
+    if (item.status === 'paid') {
+        return item.guarantee_type === 'gold'
+            ? 'پرداخت‌شده'
+            : 'چک پاس شده';
+    }
     if (item.is_overdue) return 'معوق';
     if (item.is_due_soon) return 'سررسید نزدیک';
     if (Number(item.paid_amount || 0) > 0) return 'پرداخت ناقص';
@@ -403,7 +407,7 @@ const submitImageAction = () => {
 </script>
 
 <template>
-    <Head title="چک‌ها و مطالبات | مایاهمراه" />
+    <Head title="اقساط و مطالبات | مایاهمراه" />
 
     <AuthenticatedLayout>
         <div
@@ -426,11 +430,11 @@ const submitImageAction = () => {
                         </p>
 
                         <h1 class="text-[26px] font-black tracking-tight sm:text-[30px]">
-                            چک‌ها و مطالبات
+                            اقساط و مطالبات
                         </h1>
 
                         <p class="mt-2 text-sm leading-7 text-slate-400">
-                            مدیریت سررسید، مشخصات و مدارک چک‌های فروش اقساطی
+                            مدیریت سررسید و وصول اقساط با ضمانت چک یا طلا
                         </p>
                     </div>
 
@@ -447,10 +451,10 @@ const submitImageAction = () => {
                         :href="route('installments.index', { status: 'open', search: filters.search || undefined })"
                         class="rounded-[24px] bg-[#eef4ff] p-5 transition hover:-translate-y-0.5 dark:bg-sky-950/20"
                     >
-                        <p class="text-[11px] font-black text-[#6685b9]">چک‌های باز</p>
+                        <p class="text-[11px] font-black text-[#6685b9]">اقساط باز</p>
                         <p class="mt-3 text-xl font-black">{{ money(summary.open_amount) }}</p>
                         <p class="mt-2 text-[11px] text-[#7d96bf]">
-                            {{ formatNumber(summary.open_count) }} چک
+                            {{ formatNumber(summary.open_count) }} قسط
                         </p>
                     </Link>
 
@@ -461,7 +465,7 @@ const submitImageAction = () => {
                         <p class="text-[11px] font-black text-[#d85e68]">معوق</p>
                         <p class="mt-3 text-xl font-black">{{ money(summary.overdue_amount) }}</p>
                         <p class="mt-2 text-[11px] text-[#df7d85]">
-                            {{ formatNumber(summary.overdue_count) }} چک
+                            {{ formatNumber(summary.overdue_count) }} قسط
                         </p>
                     </Link>
 
@@ -474,7 +478,7 @@ const submitImageAction = () => {
                         </p>
                         <p class="mt-3 text-xl font-black">{{ money(summary.due_soon_amount) }}</p>
                         <p class="mt-2 text-[11px] text-[#ca9740]">
-                            {{ formatNumber(summary.due_soon_count) }} چک
+                            {{ formatNumber(summary.due_soon_count) }} قسط
                         </p>
                     </Link>
 
@@ -482,10 +486,10 @@ const submitImageAction = () => {
                         :href="route('installments.index', { status: 'paid', search: filters.search || undefined })"
                         class="rounded-[24px] bg-[#edf8ef] p-5 transition hover:-translate-y-0.5 dark:bg-emerald-950/20"
                     >
-                        <p class="text-[11px] font-black text-[#4f9968]">پاس‌شده</p>
+                        <p class="text-[11px] font-black text-[#4f9968]">وصول‌شده</p>
                         <p class="mt-3 text-xl font-black">{{ money(summary.paid_amount) }}</p>
                         <p class="mt-2 text-[11px] text-[#6da47f]">
-                            {{ formatNumber(summary.paid_count) }} چک
+                            {{ formatNumber(summary.paid_count) }} قسط
                         </p>
                     </Link>
                 </div>
@@ -549,7 +553,7 @@ const submitImageAction = () => {
                     class="rounded-[30px] border border-white bg-white/75 p-4 shadow-[0_18px_60px_rgba(40,50,70,0.05)] backdrop-blur dark:border-white/5 dark:bg-white/[0.025] sm:p-6"
                 >
                     <div class="mb-5">
-                        <h2 class="text-base font-black">فهرست چک‌ها</h2>
+                        <h2 class="text-base font-black">فهرست اقساط</h2>
                         <p class="mt-1 text-xs text-slate-400">
                             {{ formatNumber(installments.length) }} نتیجه
                         </p>
@@ -610,32 +614,48 @@ const submitImageAction = () => {
                                 </div>
 
                                 <div>
-                                    <p class="text-[10px] text-slate-400">
-                                        مشخصات چک
-                                    </p>
+                                    <template v-if="item.guarantee_type === 'gold'">
+                                        <p class="text-[10px] text-slate-400">
+                                            نوع ضمانت
+                                        </p>
 
-                                    <template v-if="hasCheckDetails(item)">
-                                        <p class="mt-1 truncate text-xs font-black">
-                                            {{ item.bank_name || 'بانک نامشخص' }}
-                                            <span v-if="item.check_number">
-                                                · {{ item.check_number }}
-                                            </span>
+                                        <p class="mt-1 text-xs font-black text-amber-700 dark:text-amber-300">
+                                            ضمانت طلا
                                         </p>
 
                                         <p class="mt-1 text-[10px] text-slate-400">
-                                            <span v-if="item.sayad_id">
-                                                صیاد: {{ item.sayad_id }}
-                                            </span>
-                                            <span v-if="item.images?.length">
-                                                {{ item.sayad_id ? ' · ' : '' }}
-                                                {{ formatNumber(item.images.length) }} تصویر
-                                            </span>
+                                            این قسط چک ندارد
                                         </p>
                                     </template>
 
-                                    <p v-else class="mt-1 text-xs text-slate-400">
-                                        ثبت نشده
-                                    </p>
+                                    <template v-else>
+                                        <p class="text-[10px] text-slate-400">
+                                            مشخصات چک
+                                        </p>
+
+                                        <template v-if="hasCheckDetails(item)">
+                                            <p class="mt-1 truncate text-xs font-black">
+                                                {{ item.bank_name || 'بانک نامشخص' }}
+                                                <span v-if="item.check_number">
+                                                    · {{ item.check_number }}
+                                                </span>
+                                            </p>
+
+                                            <p class="mt-1 text-[10px] text-slate-400">
+                                                <span v-if="item.sayad_id">
+                                                    صیاد: {{ item.sayad_id }}
+                                                </span>
+                                                <span v-if="item.images?.length">
+                                                    {{ item.sayad_id ? ' · ' : '' }}
+                                                    {{ formatNumber(item.images.length) }} تصویر
+                                                </span>
+                                            </p>
+                                        </template>
+
+                                        <p v-else class="mt-1 text-xs text-slate-400">
+                                            ثبت نشده
+                                        </p>
+                                    </template>
                                 </div>
 
                                 <div class="flex flex-wrap items-center gap-2 xl:justify-end">
@@ -651,8 +671,12 @@ const submitImageAction = () => {
                                         <p class="mt-1 text-[10px] text-slate-400">
                                             {{
                                                 item.status === 'paid'
-                                                    ? `پاس‌شده در ${formatDate(item.paid_at)}`
-                                                    : 'مانده چک'
+                                                    ? `${
+                                                        item.guarantee_type === 'gold'
+                                                            ? 'پرداخت‌شده'
+                                                            : 'پاس‌شده'
+                                                    } در ${formatDate(item.paid_at)}`
+                                                    : 'مانده قسط'
                                             }}
                                         </p>
                                     </div>
@@ -665,6 +689,7 @@ const submitImageAction = () => {
                                     </span>
 
                                     <button
+                                        v-if="item.guarantee_type !== 'gold'"
                                         type="button"
                                         class="rounded-xl bg-[#fff0f1] px-3 py-2 text-[10px] font-black text-[#d85e68] transition hover:bg-[#ffe5e7] dark:bg-[#ff6d76]/10 dark:text-[#ff9299]"
                                         @click="openCheckModal(item)"
@@ -682,7 +707,11 @@ const submitImageAction = () => {
                                         class="rounded-xl bg-emerald-600 px-3 py-2 text-[10px] font-black text-white transition hover:bg-emerald-700"
                                         @click="openPaidModal(item)"
                                     >
-                                        ثبت پاس شدن
+                                        {{
+                                            item.guarantee_type === 'gold'
+                                                ? 'ثبت وصول قسط'
+                                                : 'ثبت پاس شدن'
+                                        }}
                                     </button>
 
                                     <button
@@ -712,7 +741,7 @@ const submitImageAction = () => {
                         class="rounded-[20px] bg-[#f7f8fa] px-5 py-12 text-center dark:bg-white/[0.025]"
                     >
                         <p class="text-sm font-black text-slate-500 dark:text-slate-300">
-                            چکی با این شرایط پیدا نشد.
+                            قسطی با این شرایط پیدا نشد.
                         </p>
                         <p class="mt-2 text-xs text-slate-400">
                             فیلتر یا عبارت جست‌وجو را تغییر دهید.

@@ -134,6 +134,9 @@ Route::middleware('auth')->group(function () {
 Route::get('/sales/currency-rate', [SaleController::class, 'currencyRate'])
     ->name('sales.currency-rate');
 
+Route::get('/sales/gold-rate', [SaleController::class, 'goldRate'])
+    ->name('sales.gold-rate');
+
     Route::get('/sales/{sale}', [SaleController::class, 'show'])
         ->whereNumber('sale')
         ->name('sales.show');

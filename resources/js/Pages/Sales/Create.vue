@@ -27,6 +27,11 @@ const localDate = [
 const form = useForm({
     buyer_id: '',
     sale_type: 'cash',
+    guarantee_type: 'check',
+    gold_rate_per_gram: '',
+    gold_received_weight: '',
+    gold_type: '',
+    gold_description: '',
     sale_price: '',
     down_payment: '',
     monthly_profit_rate: '6.5',
@@ -43,6 +48,11 @@ const currencyRateLoading = ref(false);
 const currencyRateFound = ref(false);
 const currencyRateSource = ref(null);
 const currencyRateError = ref('');
+
+const goldRateLoading = ref(false);
+const goldRateFound = ref(false);
+const goldRateSource = ref(null);
+const goldRateError = ref('');
 
 const loadCurrencyRate = async (date) => {
     if (!date) {
@@ -92,6 +102,68 @@ watch(
     () => form.sale_date,
     (date) => {
         loadCurrencyRate(date);
+    },
+    { immediate: true }
+);
+
+const loadGoldRate = async (date) => {
+    if (form.sale_type !== 'installment' || form.guarantee_type !== 'gold') {
+        form.gold_rate_per_gram = '';
+        goldRateFound.value = false;
+        goldRateSource.value = null;
+        goldRateError.value = '';
+        return;
+    }
+
+    if (!date) {
+        return;
+    }
+
+    goldRateLoading.value = true;
+    goldRateError.value = '';
+
+    try {
+        const response = await fetch(
+            route('sales.gold-rate', { date }),
+            {
+                headers: {
+                    Accept: 'application/json',
+                },
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error('Gold rate request failed');
+        }
+
+        const data = await response.json();
+
+        goldRateFound.value = Boolean(data.found);
+        goldRateSource.value = data.source ?? null;
+
+        form.gold_rate_per_gram =
+            data.found && data.rate_per_gram
+                ? String(data.rate_per_gram)
+                : '';
+    } catch (error) {
+        goldRateFound.value = false;
+        goldRateSource.value = null;
+        form.gold_rate_per_gram = '';
+        goldRateError.value =
+            'دریافت نرخ طلا انجام نشد؛ نرخ هر گرم طلای ۱۸ عیار را دستی وارد کنید.';
+    } finally {
+        goldRateLoading.value = false;
+    }
+};
+
+watch(
+    [
+        () => form.sale_date,
+        () => form.sale_type,
+        () => form.guarantee_type,
+    ],
+    ([date]) => {
+        loadGoldRate(date);
     },
     { immediate: true }
 );
@@ -149,6 +221,26 @@ const handleUsdRate = (event) => {
     form.usd_rate = normalizeDigits(event.target.value)
         .replace(/\D/g, '')
         .slice(0, 9);
+};
+
+const handleGoldRate = (event) => {
+    form.gold_rate_per_gram = normalizeDigits(event.target.value)
+        .replace(/\D/g, '')
+        .slice(0, 10);
+};
+
+const handleGoldReceivedWeight = (event) => {
+    let normalized = normalizeDigits(event.target.value)
+        .replace(/٫/g, '.')
+        .replace(/,/g, '.')
+        .replace(/[^\d.]/g, '');
+
+    const parts = normalized.split('.');
+    const whole = parts.shift() ?? '';
+    const decimal = (parts.join('') || '').slice(0, 4);
+
+    form.gold_received_weight =
+        decimal.length ? `${whole}.${decimal}` : whole;
 };
 
 const handleDownPayment = (event) => {
@@ -415,6 +507,39 @@ const contractTotal = computed(() => {
     return Number(form.down_payment || 0) + installmentTotal.value;
 });
 
+const goldCoverageProfit = computed(() => {
+    if (
+        form.sale_type !== 'installment' ||
+        form.guarantee_type !== 'gold'
+    ) {
+        return 0;
+    }
+
+    return Math.round(
+        installmentPrincipal.value *
+        (monthlyProfitRate.value / 100) *
+        2
+    );
+});
+
+const goldCoverageAmount = computed(
+    () => installmentPrincipal.value + goldCoverageProfit.value
+);
+
+const goldRequiredWeight = computed(() => {
+    const rate = Number(form.gold_rate_per_gram || 0);
+
+    if (!rate || !goldCoverageAmount.value) return 0;
+
+    return goldCoverageAmount.value / rate;
+});
+
+const formatWeight = (value) =>
+    Number(value || 0).toLocaleString('fa-IR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 4,
+    });
+
 const profit = computed(() => {
     const sale = Number(form.sale_price || 0);
     const purchase = Number(props.device.purchase_price || 0);
@@ -616,6 +741,57 @@ const submit = () => {
                         </div>
 
                         <template v-if="form.sale_type === 'installment'">
+                            <div class="sm:col-span-2">
+                                <label class="mb-2 block text-sm font-bold">
+                                    نوع ضمانت *
+                                </label>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        class="rounded-2xl border px-4 py-4 text-right transition"
+                                        :class="
+                                            form.guarantee_type === 'check'
+                                                ? 'border-[#ff6d76] bg-[#fff0f1] text-[#d85e68] ring-2 ring-[#ff6d76]/15 dark:bg-[#ff6d76]/10 dark:text-[#ff9299]'
+                                                : 'border-slate-200/60 bg-[#f7f8fa] text-slate-600 dark:border-white/10 dark:bg-white/[0.025] dark:text-slate-300'
+                                        "
+                                        @click="form.guarantee_type = 'check'"
+                                    >
+                                        <span class="block font-black">
+                                            ضمانت چک
+                                        </span>
+                                        <span class="mt-1 block text-xs opacity-70">
+                                            مشخصات چک‌ها بعداً در بخش مطالبات ثبت می‌شود
+                                        </span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="rounded-2xl border px-4 py-4 text-right transition"
+                                        :class="
+                                            form.guarantee_type === 'gold'
+                                                ? 'border-amber-400 bg-amber-50 text-amber-800 ring-2 ring-amber-400/15 dark:border-amber-400/30 dark:bg-amber-950/20 dark:text-amber-300'
+                                                : 'border-slate-200/60 bg-[#f7f8fa] text-slate-600 dark:border-white/10 dark:bg-white/[0.025] dark:text-slate-300'
+                                        "
+                                        @click="form.guarantee_type = 'gold'"
+                                    >
+                                        <span class="block font-black">
+                                            ضمانت طلا
+                                        </span>
+                                        <span class="mt-1 block text-xs opacity-70">
+                                            وثیقه طلا به‌جای چک، با پوشش دو ماه سود
+                                        </span>
+                                    </button>
+                                </div>
+
+                                <p
+                                    v-if="form.errors.guarantee_type"
+                                    class="mt-2 text-xs font-bold text-red-500"
+                                >
+                                    {{ form.errors.guarantee_type }}
+                                </p>
+                            </div>
+
                             <div>
                                 <label class="mb-2 block text-sm font-bold">
                                     پیش‌پرداخت *
@@ -764,7 +940,7 @@ const submit = () => {
                                         v-if="defermentBreakdown.invalid"
                                         class="mt-2 text-sm font-black text-red-600 dark:text-red-400"
                                     >
-                                        اولین چک باید حداقل یک ماه شمسی بعد از تاریخ فروش باشد.
+                                        اولین قسط باید حداقل یک ماه شمسی بعد از تاریخ فروش باشد.
                                     </p>
 
                                     <template
@@ -801,6 +977,206 @@ const submit = () => {
                             </div>
 
                             <div
+                                v-if="form.guarantee_type === 'gold'"
+                                class="sm:col-span-2 rounded-[26px] border border-amber-200/70 bg-amber-50/70 p-5 dark:border-amber-400/10 dark:bg-amber-950/15"
+                            >
+                                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <p class="text-sm font-black text-amber-800 dark:text-amber-300">
+                                            محاسبه ضمانت طلا
+                                        </p>
+                                        <p class="mt-1 text-xs leading-6 text-amber-700/70 dark:text-amber-300/70">
+                                            اصل مانده بدهی + سود دو ماه با نرخ همین قرارداد
+                                        </p>
+                                    </div>
+
+                                    <span
+                                        class="w-fit rounded-full bg-white px-3 py-1.5 text-[10px] font-black text-amber-700 shadow-sm dark:bg-white/5 dark:text-amber-300"
+                                    >
+                                        مبنا: طلای ۱۸ عیار
+                                    </span>
+                                </div>
+
+                                <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                    <div class="rounded-2xl bg-white/80 p-4 dark:bg-white/[0.035]">
+                                        <p class="text-[10px] text-slate-400">
+                                            اصل مانده بدهی
+                                        </p>
+                                        <p class="mt-1 font-black">
+                                            {{ formatMoney(installmentPrincipal) }} تومان
+                                        </p>
+                                    </div>
+
+                                    <div class="rounded-2xl bg-white/80 p-4 dark:bg-white/[0.035]">
+                                        <p class="text-[10px] text-slate-400">
+                                            پوشش دو ماه سود
+                                        </p>
+                                        <p class="mt-1 font-black text-amber-700 dark:text-amber-300">
+                                            +{{ formatMoney(goldCoverageProfit) }} تومان
+                                        </p>
+                                    </div>
+
+                                    <div class="rounded-2xl bg-white/80 p-4 dark:bg-white/[0.035]">
+                                        <p class="text-[10px] text-slate-400">
+                                            مبلغ تحت پوشش
+                                        </p>
+                                        <p class="mt-1 font-black">
+                                            {{ formatMoney(goldCoverageAmount) }} تومان
+                                        </p>
+                                    </div>
+
+                                    <div class="rounded-2xl bg-amber-500 p-4 text-white">
+                                        <p class="text-[10px] font-bold opacity-80">
+                                            حداقل وزن لازم
+                                        </p>
+                                        <p class="mt-1 text-lg font-black">
+                                            {{ formatWeight(goldRequiredWeight) }} گرم
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <label class="mb-2 block text-sm font-bold">
+                                            نرخ هر گرم طلای ۱۸ عیار *
+                                        </label>
+
+                                        <div class="relative">
+                                            <input
+                                                :value="formatPrice(form.gold_rate_per_gram)"
+                                                type="text"
+                                                inputmode="numeric"
+                                                :readonly="goldRateFound || goldRateLoading"
+                                                :placeholder="
+                                                    goldRateLoading
+                                                        ? 'در حال دریافت نرخ...'
+                                                        : goldRateFound
+                                                            ? ''
+                                                            : 'نرخ هر گرم را دستی وارد کنید'
+                                                "
+                                                class="w-full rounded-2xl border-amber-200 bg-white pl-16 focus:border-amber-500 focus:ring-amber-500/20 read-only:cursor-default dark:border-amber-400/10 dark:bg-white/[0.035]"
+                                                @input="handleGoldRate"
+                                            />
+
+                                            <span
+                                                class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400"
+                                            >
+                                                تومان
+                                            </span>
+                                        </div>
+
+                                        <p
+                                            v-if="goldRateLoading"
+                                            class="mt-2 text-xs font-bold text-slate-400"
+                                        >
+                                            در حال دریافت نرخ طلای این تاریخ...
+                                        </p>
+
+                                        <p
+                                            v-else-if="goldRateFound"
+                                            class="mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400"
+                                        >
+                                            نرخ طلای ۱۸ عیار · منبع: نوسان
+                                        </p>
+
+                                        <p
+                                            v-else
+                                            class="mt-2 text-xs font-bold text-amber-700 dark:text-amber-300"
+                                        >
+                                            نرخ خودکار در دسترس نیست؛ نرخ همان روز را دستی وارد کنید.
+                                        </p>
+
+                                        <p
+                                            v-if="goldRateError"
+                                            class="mt-2 text-xs font-bold text-red-500"
+                                        >
+                                            {{ goldRateError }}
+                                        </p>
+
+                                        <p
+                                            v-if="form.errors.gold_rate_per_gram"
+                                            class="mt-2 text-xs font-bold text-red-500"
+                                        >
+                                            {{ form.errors.gold_rate_per_gram }}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label class="mb-2 block text-sm font-bold">
+                                            وزن واقعی طلای تحویلی *
+                                        </label>
+
+                                        <div class="relative">
+                                            <input
+                                                :value="toPersianDigits(form.gold_received_weight)"
+                                                type="text"
+                                                inputmode="decimal"
+                                                placeholder="مثلاً ۶"
+                                                class="w-full rounded-2xl border-amber-200 bg-white pl-14 focus:border-amber-500 focus:ring-amber-500/20 dark:border-amber-400/10 dark:bg-white/[0.035]"
+                                                @input="handleGoldReceivedWeight"
+                                            />
+
+                                            <span
+                                                class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400"
+                                            >
+                                                گرم
+                                            </span>
+                                        </div>
+
+                                        <p class="mt-2 text-xs text-slate-400">
+                                            باید حداقل
+                                            <strong class="text-amber-700 dark:text-amber-300">
+                                                {{ formatWeight(goldRequiredWeight) }} گرم
+                                            </strong>
+                                            باشد.
+                                        </p>
+
+                                        <p
+                                            v-if="form.errors.gold_received_weight"
+                                            class="mt-2 text-xs font-bold text-red-500"
+                                        >
+                                            {{ form.errors.gold_received_weight }}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label class="mb-2 block text-sm font-bold">
+                                            نوع طلای دریافتی *
+                                        </label>
+
+                                        <input
+                                            v-model="form.gold_type"
+                                            type="text"
+                                            maxlength="100"
+                                            placeholder="مثلاً دستبند، النگو، زنجیر..."
+                                            class="w-full rounded-2xl border-amber-200 bg-white focus:border-amber-500 focus:ring-amber-500/20 dark:border-amber-400/10 dark:bg-white/[0.035]"
+                                        />
+
+                                        <p
+                                            v-if="form.errors.gold_type"
+                                            class="mt-2 text-xs font-bold text-red-500"
+                                        >
+                                            {{ form.errors.gold_type }}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label class="mb-2 block text-sm font-bold">
+                                            توضیحات طلای تحویلی
+                                        </label>
+
+                                        <input
+                                            v-model="form.gold_description"
+                                            type="text"
+                                            maxlength="10000"
+                                            placeholder="مثلاً تعداد قطعات، مشخصات ظاهری یا توضیح تکمیلی"
+                                            class="w-full rounded-2xl border-amber-200 bg-white focus:border-amber-500 focus:ring-amber-500/20 dark:border-amber-400/10 dark:bg-white/[0.035]"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
                                 class="sm:col-span-2 grid gap-3 rounded-2xl bg-[#fff0f1] p-4 dark:bg-[#ff6d76]/[0.08] sm:grid-cols-2 lg:grid-cols-6"
                             >
                                 <div>
@@ -823,7 +1199,7 @@ const submit = () => {
 
                                 <div>
                                     <p class="text-xs text-slate-500 dark:text-slate-400">
-                                        مبلغ هر چک
+                                        مبلغ هر قسط
                                     </p>
                                     <p class="mt-1 font-black text-[#d85e68] dark:text-[#ff9299]">
                                         {{ formatMoney(installmentAmount) }} تومان

@@ -8,6 +8,8 @@ use App\Models\Device;
 use App\Models\Sale;
 use App\Services\EntityNoteService;
 use App\Services\CurrencyRateService;
+use App\Services\GoldCollateralService;
+use App\Services\GoldRateService;
 use App\Services\InstallmentCalculatorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -158,12 +160,14 @@ class SaleController extends Controller
             ->join('devices as d', 'd.id', '=', 's.device_id')
             ->join('contacts as c', 'c.id', '=', 's.buyer_id')
             ->leftJoin('purchases as p', 'p.device_id', '=', 'd.id')
+            ->leftJoin('sale_gold_collaterals as g', 'g.sale_id', '=', 's.id')
             ->where('s.id', $sale->id)
             ->select([
                 's.id',
                 's.device_id',
                 's.buyer_id',
                 's.sale_type',
+                's.guarantee_type',
                 's.sale_price',
                 's.down_payment',
                 's.monthly_profit_rate',
@@ -184,6 +188,20 @@ class SaleController extends Controller
                 'c.mobile as buyer_mobile',
                 'c.contact_type as buyer_contact_type',
                 'p.purchase_price',
+                'g.base_principal as gold_base_principal',
+                'g.coverage_months as gold_coverage_months',
+                'g.monthly_profit_rate as gold_monthly_profit_rate',
+                'g.coverage_profit as gold_coverage_profit',
+                'g.coverage_amount as gold_coverage_amount',
+                'g.gold_rate_item',
+                'g.gold_rate_per_gram',
+                'g.gold_rate_date',
+                'g.gold_rate_source',
+                'g.gold_karat',
+                'g.required_weight as gold_required_weight',
+                'g.received_weight as gold_received_weight',
+                'g.gold_type',
+                'g.description as gold_description',
             ])
             ->first();
 
@@ -316,18 +334,88 @@ class SaleController extends Controller
     }
 
 
+    public function goldRate(Request $request, GoldRateService $goldRateService)
+    {
+        $validated = $request->validate([
+            'date' => ['required', 'date'],
+        ]);
+
+        $snapshot = $goldRateService->snapshotForDate($validated['date']);
+
+        if (! $snapshot) {
+            return response()->json([
+                'found' => false,
+                'rate_per_gram' => null,
+                'rate_date' => $validated['date'],
+                'source' => null,
+            ]);
+        }
+
+        return response()->json([
+            'found' => true,
+            'rate_per_gram' => $snapshot['rate_per_gram'],
+            'rate_date' => $snapshot['rate_date'],
+            'source' => $snapshot['source'],
+        ]);
+    }
+
     public function store(
         Request $request,
         Device $device,
         CurrencyRateService $currencyRateService,
-        InstallmentCalculatorService $installmentCalculatorService
+        InstallmentCalculatorService $installmentCalculatorService,
+        GoldRateService $goldRateService,
+        GoldCollateralService $goldCollateralService
     ): RedirectResponse
     {
         abort_unless($device->status === 'in_stock', 404);
 
+        if (
+            $request->input('sale_type') === 'installment'
+            && ! $request->filled('guarantee_type')
+        ) {
+            $request->merge(['guarantee_type' => 'check']);
+        }
+
         $validated = $request->validate([
             'buyer_id' => ['required', 'exists:contacts,id'],
             'sale_type' => ['required', 'in:cash,installment'],
+
+            'guarantee_type' => [
+                'exclude_unless:sale_type,installment',
+                'required',
+                'in:check,gold',
+            ],
+
+            'gold_rate_per_gram' => [
+                'exclude_unless:guarantee_type,gold',
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+
+            'gold_received_weight' => [
+                'exclude_unless:guarantee_type,gold',
+                'required',
+                'numeric',
+                'min:0.0001',
+                'max:100000',
+            ],
+
+            'gold_type' => [
+                'exclude_unless:guarantee_type,gold',
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'gold_description' => [
+                'exclude_unless:guarantee_type,gold',
+                'nullable',
+                'string',
+                'max:10000',
+            ],
+
             'sale_price' => ['required', 'integer', 'min:0'],
 
             'down_payment' => [
@@ -402,7 +490,60 @@ class SaleController extends Controller
             );
         }
 
-        DB::transaction(function () use ($request, $device, $validated, $installmentCalculation, $currencySnapshot) {
+        $goldSnapshot = null;
+        $goldCalculation = null;
+
+        if (
+            ($validated['sale_type'] ?? null) === 'installment'
+            && ($validated['guarantee_type'] ?? null) === 'gold'
+        ) {
+            $goldSnapshot = $goldRateService->snapshotForDate(
+                $validated['sale_date']
+            );
+
+            if (! $goldSnapshot && ! empty($validated['gold_rate_per_gram'])) {
+                $goldSnapshot = [
+                    'rate_per_gram' => (int) $validated['gold_rate_per_gram'],
+                    'rate_date' => $validated['sale_date'],
+                    'source' => 'manual',
+                ];
+            }
+
+            if (! $goldSnapshot) {
+                throw ValidationException::withMessages([
+                    'gold_rate_per_gram' => 'نرخ طلای ۱۸ عیار این تاریخ در دسترس نیست؛ نرخ هر گرم را دستی وارد کنید.',
+                ]);
+            }
+
+            $goldCalculation = $goldCollateralService->calculate(
+                salePrice: (int) $validated['sale_price'],
+                downPayment: (int) $validated['down_payment'],
+                monthlyProfitRate: (float) $validated['monthly_profit_rate'],
+                goldRatePerGram: (int) $goldSnapshot['rate_per_gram'],
+            );
+
+            if (
+                (float) $validated['gold_received_weight']
+                < (float) $goldCalculation['required_weight']
+            ) {
+                throw ValidationException::withMessages([
+                    'gold_received_weight' => sprintf(
+                        'وزن طلای دریافتی کمتر از پوشش لازم است. حداقل وزن لازم %.4f گرم است.',
+                        $goldCalculation['required_weight']
+                    ),
+                ]);
+            }
+        }
+
+        DB::transaction(function () use (
+            $request,
+            $device,
+            $validated,
+            $installmentCalculation,
+            $currencySnapshot,
+            $goldSnapshot,
+            $goldCalculation
+        ) {
             $lockedDevice = Device::query()
                 ->whereKey($device->id)
                 ->lockForUpdate()
@@ -441,6 +582,9 @@ class SaleController extends Controller
             $sale->device_id = $lockedDevice->id;
             $sale->buyer_id = $validated['buyer_id'];
             $sale->sale_type = $validated['sale_type'];
+            $sale->guarantee_type = $isInstallment
+                ? $validated['guarantee_type']
+                : null;
             $sale->sale_price = $validated['sale_price'];
             $sale->down_payment = $isInstallment
                 ? $validated['down_payment']
@@ -467,6 +611,38 @@ class SaleController extends Controller
                 $validated['notes'] ?? null,
                 $request->user()->id
             );
+
+            if (
+                $isInstallment
+                && $validated['guarantee_type'] === 'gold'
+                && $goldSnapshot
+                && $goldCalculation
+            ) {
+                DB::table('sale_gold_collaterals')->insert([
+                    'sale_id' => $sale->id,
+                    'base_principal' => $goldCalculation['base_principal'],
+                    'coverage_months' => $goldCalculation['coverage_months'],
+                    'monthly_profit_rate' => $goldCalculation['monthly_profit_rate'],
+                    'coverage_profit' => $goldCalculation['coverage_profit'],
+                    'coverage_amount' => $goldCalculation['coverage_amount'],
+                    'gold_rate_item' => GoldRateService::ITEM,
+                    'gold_rate_per_gram' => $goldSnapshot['rate_per_gram'],
+                    'gold_rate_date' => $goldSnapshot['rate_date'] ?? $validated['sale_date'],
+                    'gold_rate_source' => $goldSnapshot['source'] ?? null,
+                    'gold_karat' => 18,
+                    'required_weight' => $goldCalculation['required_weight'],
+                    'received_weight' => round(
+                        (float) $validated['gold_received_weight'],
+                        4
+                    ),
+                    'gold_type' => trim($validated['gold_type']),
+                    'description' => trim(
+                        (string) ($validated['gold_description'] ?? '')
+                    ) ?: null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             if ($isInstallment) {
                 $timestamp = now();

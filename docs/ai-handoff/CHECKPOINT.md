@@ -894,3 +894,171 @@ Files / areas changed in this phase:
 - `tests/Feature/PriceEstimationServiceTest.php`
 - `tests/Feature/PublicFeaturesTest.php`
 
+
+## Internal installment guarantee type — check vs gold — 2026-08-16
+
+The authenticated/internal sale workflow now explicitly distinguishes the collateral mechanism for installment sales.
+
+Confirmed product rule:
+
+- installment schedule and debt accounting are independent from guarantee type
+- an installment sale has exactly one guarantee type:
+  - `check`
+  - `gold`
+- check and gold guarantees are alternatives, not simultaneous
+- cash sales have no guarantee type
+- existing historical installment sales are preserved as check-backed for backward compatibility
+- financial installment calculation, installment amounts, due dates and paid-state mechanics were not changed
+
+Database / persistence:
+
+- `sales.guarantee_type` was added
+- existing installment sales are backfilled to `check`
+- cash sales keep `guarantee_type = null`
+- gold collateral is stored once per sale in `sale_gold_collaterals`
+- stored gold collateral snapshot includes:
+  - original financed principal
+  - coverage months
+  - monthly contract profit rate
+  - calculated two-month coverage profit
+  - total collateral coverage amount
+  - gold rate item
+  - gold rate per gram
+  - gold rate date/source
+  - gold karat
+  - calculated required weight
+  - actual received weight
+  - type/description of received gold
+- `gold_rates` archives gold price snapshots
+
+Confirmed gold collateral formula for the current version:
+
+- principal / financed balance:
+  - sale price − cash down payment
+- collateral coverage:
+  - principal + two months of profit at the same monthly profit rate used by that sale
+- formula:
+  - `coverage profit = principal × monthly profit rate × 2`
+  - `coverage amount = principal + coverage profit`
+  - `required gold weight = coverage amount ÷ 18k gold price per gram`
+- no additional arbitrary fixed gram buffer is applied after this formula
+- actual received gold weight is stored separately and must be at least the calculated required weight
+
+Example confirmed during implementation:
+
+- sale price: 140,000,000 toman
+- down payment: 40,000,000 toman
+- financed principal: 100,000,000 toman
+- monthly profit rate: 6.5%
+- two-month coverage profit: 13,000,000 toman
+- collateral coverage amount: 113,000,000 toman
+- with 18k rate 19,052,130 toman/gram:
+  - required weight ≈ 5.9311 grams
+- a received weight of 6 grams is valid
+
+Gold price source:
+
+- Navasan item `18ayar` is used as the current reference for 18-karat gold price per gram
+- `gerami` is not used; it represents gram coin pricing
+- `bub_18ayar` / `bub_gerami` are not used; they are bubble values
+- a dedicated `GoldRateService` was added
+- current and historical Navasan snapshots can be archived
+- when an automatic rate for the sale date is unavailable, the internal sale flow supports a manual per-gram rate
+- the sale preserves the rate snapshot used at contract time so later market-price changes do not rewrite historical collateral calculations
+
+Internal sale form:
+
+- installment sale now requires choosing:
+  - ضمانت چک
+  - ضمانت طلا
+- check-backed sale keeps the existing later check-registration workflow
+- gold-backed sale shows:
+  - financed principal
+  - two-month profit coverage
+  - total amount under collateral coverage
+  - current 18k gold rate
+  - calculated minimum required gold weight
+  - actual received gold weight
+  - received gold type
+  - optional received-gold description
+- gold collateral weight lighter than the calculated minimum is rejected server-side
+
+Receivables / installments:
+
+- financial receivables continue to come from the same `installments` rows for both guarantee types
+- terminology was generalized from check-only wording toward installment/receivable wording
+- gold-backed installments are shown in the receivables list with `ضمانت طلا`
+- gold-backed installments do not show a check-registration button
+- backend also rejects attempts to register or modify check details/images for a gold-backed installment
+- this protection is server-side and does not rely only on hidden UI controls
+- check-backed sales retain existing:
+  - check number
+  - bank
+  - Sayad ID
+  - check images
+  - image replacement/removal audit history
+
+Installment payment / reversal wording:
+
+- paid-state and financial behavior remain unchanged
+- for check-backed installments, check-oriented wording is retained where appropriate
+- for gold-backed installments, payment is described as installment/payment collection rather than “check clearance”
+- audit notes generated for gold-backed payment/reversal use gold/installment-specific wording
+
+Sale details:
+
+- installment sale details now display guarantee type
+- gold-backed sale details display the stored gold collateral snapshot, including:
+  - base principal
+  - two-month coverage profit
+  - required weight
+  - actual received weight
+  - received gold type
+  - gold rate and source/date
+  - optional description
+
+Dashboard:
+
+- receivables calculations remain installment-based and unchanged financially
+- check-specific dashboard wording was generalized to installments/receivables
+- upcoming installment data now includes the sale guarantee type
+
+Persian validation labels:
+
+- Laravel application locale was already `fa`
+- missing `attributes` mappings caused messages such as `buyer id` to appear inside otherwise Persian validation text
+- Persian validation attribute labels were added for sale, installment, check and gold-collateral fields
+- manually confirmed example now displays `خریدار` instead of `buyer id`
+
+Files / areas changed in this phase:
+
+- `app/Http/Controllers/DashboardController.php`
+- `app/Http/Controllers/InstallmentController.php`
+- `app/Http/Controllers/SaleController.php`
+- `app/Services/GoldCollateralService.php`
+- `app/Services/GoldRateService.php`
+- `database/migrations/2026_08_16_120000_add_installment_guarantees_and_gold_collateral.php`
+- `lang/fa/validation.php`
+- `resources/js/Pages/Dashboard.vue`
+- `resources/js/Pages/Installments/Index.vue`
+- `resources/js/Pages/Sales/Create.vue`
+- `resources/js/Pages/Sales/Show.vue`
+- `routes/web.php`
+- `tests/Feature/GoldInstallmentGuaranteeTest.php`
+- `tests/Unit/GoldCollateralServiceTest.php`
+
+Validation completed during implementation:
+
+- migration ran successfully
+- targeted legacy check workflow remained green
+- gold collateral formula unit test passed
+- gold-backed sale creation test passed
+- insufficient gold collateral rejection test passed
+- server-side block on check registration for gold-backed sales passed
+- user manually tested an actual installment sale with gold guarantee and confirmed calculation/form behavior is correct
+- user manually confirmed Persian validation field names are correct
+- production Vite build passed
+- full suite before the final Persian-label adjustment passed:
+  - 56 tests
+  - 306 assertions
+- final full-suite verification is run immediately after this checkpoint update

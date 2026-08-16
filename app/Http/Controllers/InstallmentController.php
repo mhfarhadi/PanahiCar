@@ -129,6 +129,7 @@ class InstallmentController extends Controller
                 'i.bank_name',
                 'i.sayad_id',
                 's.sale_date',
+                's.guarantee_type',
                 'c.id as buyer_id',
                 'c.name as buyer_name',
                 'c.mobile as buyer_mobile',
@@ -217,6 +218,8 @@ class InstallmentController extends Controller
         Request $request,
         int $installment
     ): RedirectResponse {
+        $this->assertCheckGuarantee($installment);
+
         $request->merge([
             'check_number' => $this->nullableNormalizedDigits(
                 $request->input('check_number')
@@ -238,12 +241,6 @@ class InstallmentController extends Controller
             ],
             'note' => ['nullable', 'string', 'max:10000'],
         ]);
-
-        $row = DB::table('installments')
-            ->where('id', $installment)
-            ->first();
-
-        abort_unless($row, 404);
 
         DB::table('installments')
             ->where('id', $installment)
@@ -311,6 +308,8 @@ class InstallmentController extends Controller
         int $installment,
         int $image
     ): RedirectResponse {
+        $this->assertCheckGuarantee($installment);
+
         $validated = $request->validate([
             'reason' => ['required', 'string', 'min:3', 'max:1000'],
         ]);
@@ -375,6 +374,8 @@ class InstallmentController extends Controller
         int $installment,
         int $image
     ): RedirectResponse {
+        $this->assertCheckGuarantee($installment);
+
         $validated = $request->validate([
             'image' => [
                 'required',
@@ -468,10 +469,14 @@ class InstallmentController extends Controller
         $userId = $request->user()->id;
 
         DB::transaction(function () use ($installment, $validated, $userId) {
-            $row = DB::table('installments')
-                ->where('id', $installment)
+            $row = DB::table('installments as i')
+                ->join('sales as s', 's.id', '=', 'i.sale_id')
+                ->where('i.id', $installment)
                 ->lockForUpdate()
-                ->first();
+                ->first([
+                    'i.*',
+                    's.guarantee_type',
+                ]);
 
             abort_unless($row, 404);
 
@@ -488,19 +493,28 @@ class InstallmentController extends Controller
                     'updated_at' => now(),
                 ]);
 
+            $isGoldGuarantee =
+                ($row->guarantee_type ?? 'check') === 'gold';
+
             EntityNoteService::add(
                 'installment',
                 $installment,
-                sprintf(
-                    'وصول چک ثبت شد. تاریخ پاس شدن: %s، مبلغ وصول: %s تومان.',
-                    $validated['paid_at'],
-                    number_format((int) $row->amount)
-                ),
+                $isGoldGuarantee
+                    ? sprintf(
+                        'پرداخت قسط با ضمانت طلا ثبت شد. تاریخ پرداخت: %s، مبلغ وصول: %s تومان.',
+                        $validated['paid_at'],
+                        number_format((int) $row->amount)
+                    )
+                    : sprintf(
+                        'وصول چک ثبت شد. تاریخ پاس شدن: %s، مبلغ وصول: %s تومان.',
+                        $validated['paid_at'],
+                        number_format((int) $row->amount)
+                    ),
                 $userId
             );
         });
 
-        return back()->with('success', 'پاس شدن چک با موفقیت ثبت شد.');
+        return back()->with('success', 'وصول قسط با موفقیت ثبت شد.');
     }
 
     public function reversePaid(Request $request, int $installment): RedirectResponse
@@ -512,10 +526,14 @@ class InstallmentController extends Controller
         $userId = $request->user()->id;
 
         DB::transaction(function () use ($installment, $validated, $userId) {
-            $row = DB::table('installments')
-                ->where('id', $installment)
+            $row = DB::table('installments as i')
+                ->join('sales as s', 's.id', '=', 'i.sale_id')
+                ->where('i.id', $installment)
                 ->lockForUpdate()
-                ->first();
+                ->first([
+                    'i.*',
+                    's.guarantee_type',
+                ]);
 
             abort_unless($row, 404);
 
@@ -535,23 +553,52 @@ class InstallmentController extends Controller
                     'updated_at' => now(),
                 ]);
 
+            $isGoldGuarantee =
+                ($row->guarantee_type ?? 'check') === 'gold';
+
             EntityNoteService::add(
                 'installment',
                 $installment,
-                sprintf(
-                    'اصلاح وصول چک: ثبت پاس شدن لغو شد. تاریخ وصول قبلی: %s، مبلغ وصول قبلی: %s تومان. دلیل اصلاح: %s',
-                    $previousPaidAt ?: 'نامشخص',
-                    number_format($previousPaidAmount),
-                    trim($validated['reason'])
-                ),
+                $isGoldGuarantee
+                    ? sprintf(
+                        'اصلاح وصول قسط با ضمانت طلا: ثبت پرداخت لغو شد. تاریخ وصول قبلی: %s، مبلغ وصول قبلی: %s تومان. دلیل اصلاح: %s',
+                        $previousPaidAt ?: 'نامشخص',
+                        number_format($previousPaidAmount),
+                        trim($validated['reason'])
+                    )
+                    : sprintf(
+                        'اصلاح وصول چک: ثبت پاس شدن لغو شد. تاریخ وصول قبلی: %s، مبلغ وصول قبلی: %s تومان. دلیل اصلاح: %s',
+                        $previousPaidAt ?: 'نامشخص',
+                        number_format($previousPaidAmount),
+                        trim($validated['reason'])
+                    ),
                 $userId
             );
         });
 
         return back()->with(
             'success',
-            'ثبت پاس شدن چک با حفظ سابقه اصلاح شد.'
+            'ثبت وصول قسط با حفظ سابقه اصلاح شد.'
         );
+    }
+
+    private function assertCheckGuarantee(int $installment): void
+    {
+        $row = DB::table('installments as i')
+            ->join('sales as s', 's.id', '=', 'i.sale_id')
+            ->where('i.id', $installment)
+            ->first([
+                'i.id',
+                's.guarantee_type',
+            ]);
+
+        abort_unless($row, 404);
+
+        if (($row->guarantee_type ?? 'check') !== 'check') {
+            throw ValidationException::withMessages([
+                'check_number' => 'این فروش با ضمانت طلا ثبت شده و امکان ثبت یا تغییر اطلاعات چک ندارد.',
+            ]);
+        }
     }
 
     private function normalizeDigits(?string $value): string

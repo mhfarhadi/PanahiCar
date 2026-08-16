@@ -152,7 +152,7 @@ const stats = computed(() => [
         label: 'مطالبات اقساطی',
         value: money(props.receivables.total_amount),
         href: route('installments.index'),
-        note: `${props.receivables.total_count.toLocaleString('fa-IR')} چک باز`,
+        note: `${props.receivables.total_count.toLocaleString('fa-IR')} قسط باز`,
         card: 'bg-[#edf8ef] dark:bg-[#17271d]',
         accent: 'text-[#4e9c69] dark:text-emerald-300',
         ring: 'conic-gradient(#65b77d 0deg 295deg, rgba(101,183,125,.18) 295deg 360deg)',
@@ -447,7 +447,7 @@ const stats = computed(() => [
                         >
                             <div>
                                 <h2 class="text-base font-black">
-                                    چک‌ها و مطالبات
+                                    اقساط و مطالبات
                                 </h2>
                                 <p class="mt-1 text-xs text-slate-400">
                                     نزدیک‌ترین تعهدات وصول‌نشده
@@ -457,7 +457,7 @@ const stats = computed(() => [
                             <div
                                 class="w-fit rounded-full bg-[#f4f6f8] px-3 py-1.5 text-[10px] font-black text-slate-500 dark:bg-white/5 dark:text-slate-300"
                             >
-                                {{ receivables.total_count.toLocaleString('fa-IR') }} چک باز
+                                {{ receivables.total_count.toLocaleString('fa-IR') }} قسط باز
                             </div>
                         </div>
 
@@ -472,7 +472,7 @@ const stats = computed(() => [
                                     {{ money(receivables.overdue_amount) }}
                                 </p>
                                 <p class="mt-1 text-[10px] text-[#de7780]">
-                                    {{ receivables.overdue_count.toLocaleString('fa-IR') }} چک
+                                    {{ receivables.overdue_count.toLocaleString('fa-IR') }} قسط
                                 </p>
                             </div>
 
@@ -486,7 +486,7 @@ const stats = computed(() => [
                                     {{ money(receivables.due_soon_amount) }}
                                 </p>
                                 <p class="mt-1 text-[10px] text-[#c89642]">
-                                    {{ receivables.due_soon_count.toLocaleString('fa-IR') }} چک
+                                    {{ receivables.due_soon_count.toLocaleString('fa-IR') }} قسط
                                 </p>
                             </div>
 
@@ -500,7 +500,7 @@ const stats = computed(() => [
                                     {{ money(receivables.total_amount) }}
                                 </p>
                                 <p class="mt-1 text-[10px] text-[#7894c3]">
-                                    {{ receivables.total_count.toLocaleString('fa-IR') }} چک
+                                    {{ receivables.total_count.toLocaleString('fa-IR') }} قسط
                                 </p>
                             </div>
                         </div>
@@ -516,7 +516,7 @@ const stats = computed(() => [
                                 :href="route('installments.index')"
                                 class="text-[10px] font-black text-[#ff6570]"
                             >
-                                همه چک‌ها ←
+                                همه اقساط ←
                             </Link>
                         </div>
 
@@ -567,7 +567,7 @@ const stats = computed(() => [
                             v-else
                             class="mt-3 rounded-[18px] bg-[#f7f8fa] p-5 text-center text-xs text-slate-400 dark:bg-white/[0.025]"
                         >
-                            هیچ چک وصول‌نشده‌ای وجود ندارد.
+                            هیچ قسط وصول‌نشده‌ای وجود ندارد.
                         </div>
                     </div>
 

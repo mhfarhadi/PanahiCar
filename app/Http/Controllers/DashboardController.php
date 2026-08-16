@@ -90,6 +90,7 @@ class DashboardController extends Controller
                 'i.due_date',
                 'i.amount',
                 'i.paid_amount',
+                's.guarantee_type',
                 'c.name as buyer_name',
                 'd.brand',
                 'd.model',

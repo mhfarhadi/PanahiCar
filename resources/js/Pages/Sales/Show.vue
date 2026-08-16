@@ -80,6 +80,10 @@ const isInstallment = computed(
     () => props.sale.sale_type === 'installment',
 );
 
+const isGoldGuarantee = computed(
+    () => isInstallment.value && props.sale.guarantee_type === 'gold',
+);
+
 const totalInstallments = computed(() => props.installments.length);
 
 const installmentsTotal = computed(() =>
@@ -325,6 +329,26 @@ const hasCheckDetails = (installment) =>
                                 </div>
 
                                 <div
+                                    v-if="isInstallment"
+                                    class="flex items-center justify-between gap-4"
+                                >
+                                    <span class="text-slate-400">
+                                        نوع ضمانت
+                                    </span>
+
+                                    <span
+                                        class="font-black"
+                                        :class="
+                                            isGoldGuarantee
+                                                ? 'text-amber-700 dark:text-amber-300'
+                                                : 'text-[#d85e68] dark:text-[#ff9299]'
+                                        "
+                                    >
+                                        {{ isGoldGuarantee ? 'ضمانت طلا' : 'ضمانت چک' }}
+                                    </span>
+                                </div>
+
+                                <div
                                     v-if="sale.imei"
                                     class="flex items-center justify-between gap-4"
                                 >
@@ -518,6 +542,89 @@ const hasCheckDetails = (installment) =>
                                 </div>
                             </template>
 
+                            <div
+                                v-if="isGoldGuarantee"
+                                class="mt-5 rounded-[26px] border border-amber-200/70 bg-amber-50/70 p-5 dark:border-amber-400/10 dark:bg-amber-950/15"
+                            >
+                                <div class="flex flex-wrap items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-sm font-black text-amber-800 dark:text-amber-300">
+                                            ضمانت طلا
+                                        </p>
+
+                                        <p class="mt-1 text-xs leading-6 text-amber-700/70 dark:text-amber-300/70">
+                                            پوشش اصل مانده بدهی + سود دو ماه قرارداد
+                                        </p>
+                                    </div>
+
+                                    <span class="rounded-full bg-white px-3 py-1.5 text-[10px] font-black text-amber-700 dark:bg-white/5 dark:text-amber-300">
+                                        {{ sale.gold_karat || 18 }} عیار
+                                    </span>
+                                </div>
+
+                                <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                    <div class="rounded-2xl bg-white/80 p-4 dark:bg-white/[0.035]">
+                                        <p class="text-[10px] text-slate-400">اصل مانده</p>
+                                        <p class="mt-1 font-black">
+                                            {{ formatMoney(sale.gold_base_principal) }}
+                                            <span class="text-xs">تومان</span>
+                                        </p>
+                                    </div>
+
+                                    <div class="rounded-2xl bg-white/80 p-4 dark:bg-white/[0.035]">
+                                        <p class="text-[10px] text-slate-400">پوشش دو ماه سود</p>
+                                        <p class="mt-1 font-black text-amber-700 dark:text-amber-300">
+                                            +{{ formatMoney(sale.gold_coverage_profit) }}
+                                            <span class="text-xs">تومان</span>
+                                        </p>
+                                    </div>
+
+                                    <div class="rounded-2xl bg-white/80 p-4 dark:bg-white/[0.035]">
+                                        <p class="text-[10px] text-slate-400">حداقل وزن لازم</p>
+                                        <p class="mt-1 font-black">
+                                            {{ Number(sale.gold_required_weight || 0).toLocaleString('fa-IR', { maximumFractionDigits: 4 }) }}
+                                            گرم
+                                        </p>
+                                    </div>
+
+                                    <div class="rounded-2xl bg-amber-500 p-4 text-white">
+                                        <p class="text-[10px] font-bold opacity-80">وزن واقعی دریافتی</p>
+                                        <p class="mt-1 text-lg font-black">
+                                            {{ Number(sale.gold_received_weight || 0).toLocaleString('fa-IR', { maximumFractionDigits: 4 }) }}
+                                            گرم
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                                    <div class="rounded-2xl bg-white/80 p-4 dark:bg-white/[0.035]">
+                                        <p class="text-[10px] text-slate-400">نوع طلای تحویلی</p>
+                                        <p class="mt-1 text-sm font-black">
+                                            {{ sale.gold_type || '—' }}
+                                        </p>
+                                    </div>
+
+                                    <div class="rounded-2xl bg-white/80 p-4 dark:bg-white/[0.035]">
+                                        <p class="text-[10px] text-slate-400">نرخ مبنای هر گرم</p>
+                                        <p class="mt-1 text-sm font-black">
+                                            {{ formatMoney(sale.gold_rate_per_gram) }}
+                                            تومان
+                                        </p>
+                                        <p class="mt-1 text-[10px] text-slate-400">
+                                            {{ formatDate(sale.gold_rate_date || sale.sale_date) }}
+                                            · {{ sale.gold_rate_source === 'manual' ? 'ثبت دستی' : 'نوسان' }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div
+                                    v-if="sale.gold_description"
+                                    class="mt-3 rounded-2xl bg-white/80 p-4 text-sm leading-7 text-slate-600 dark:bg-white/[0.035] dark:text-slate-300"
+                                >
+                                    {{ sale.gold_description }}
+                                </div>
+                            </div>
+
                             <!-- نرخ ارز؛ اطلاعات کمکی -->
                             <div
                                 v-if="sale.usd_rate"
@@ -701,14 +808,14 @@ const hasCheckDetails = (installment) =>
                                                 class="inline-flex rounded-xl px-3 py-1.5 text-xs font-black"
                                                 :class="installmentStatusClass(installment.status)"
                                             >
-                                                {{ installment.status === 'paid' ? 'چک پاس شده' : installmentStatusLabel(installment.status) }}
+                                                {{ installment.status === 'paid' ? (isGoldGuarantee ? 'پرداخت‌شده' : 'چک پاس شده') : installmentStatusLabel(installment.status) }}
                                             </span>
 
                                             <span
                                                 v-if="installment.status === 'paid' && installment.paid_at"
                                                 class="text-xs text-slate-400"
                                             >
-                                                پاس‌شده در {{ formatDate(installment.paid_at) }}
+                                                {{ isGoldGuarantee ? 'پرداخت‌شده' : 'پاس‌شده' }} در {{ formatDate(installment.paid_at) }}
                                             </span>
 
                                             <span
@@ -716,7 +823,7 @@ const hasCheckDetails = (installment) =>
                                                 class="text-xs font-black text-red-600 dark:text-red-400"
                                             >
                                                 {{ formatNumber(clearanceDelayDays(installment)) }}
-                                                روز تأخیر در پاس شدن چک
+                                                {{ isGoldGuarantee ? 'روز تأخیر در پرداخت قسط' : 'روز تأخیر در پاس شدن چک' }}
                                             </span>
 
                                             <button
@@ -725,13 +832,13 @@ const hasCheckDetails = (installment) =>
                                                 class="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white transition hover:bg-emerald-700"
                                                 @click="openPaidModal(installment)"
                                             >
-                                                ثبت پاس شدن چک
+                                                {{ isGoldGuarantee ? 'ثبت وصول قسط' : 'ثبت پاس شدن چک' }}
                                             </button>
                                         </div>
                                     </div>
 
                                     <div
-                                        v-if="hasCheckDetails(installment)"
+                                        v-if="!isGoldGuarantee && hasCheckDetails(installment)"
                                         class="mt-4 rounded-[18px] bg-[#f7f8fa] p-4 dark:bg-white/[0.025]"
                                     >
                                         <div
@@ -801,10 +908,17 @@ const hasCheckDetails = (installment) =>
                                     </div>
 
                                     <div
-                                        v-else
+                                        v-else-if="!isGoldGuarantee"
                                         class="mt-3 text-[11px] text-slate-400"
                                     >
                                         مشخصات فیزیکی چک هنوز ثبت نشده است.
+                                    </div>
+
+                                    <div
+                                        v-else
+                                        class="mt-3 inline-flex rounded-full bg-amber-50 px-3 py-1.5 text-[10px] font-black text-amber-700 dark:bg-amber-950/20 dark:text-amber-300"
+                                    >
+                                        ضمانت این قسط: طلا
                                     </div>
                                 </div>
                             </div>
@@ -830,7 +944,7 @@ const hasCheckDetails = (installment) =>
                         </p>
 
                         <h2 class="mt-1 text-xl font-black">
-                            تاریخ پاس شدن چک
+                            {{ isGoldGuarantee ? 'تاریخ وصول قسط' : 'تاریخ پاس شدن چک' }}
                         </h2>
 
                         <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
@@ -852,7 +966,7 @@ const hasCheckDetails = (installment) =>
 
                 <div class="mt-6">
                     <label class="mb-2 block text-sm font-bold">
-                        چک چه تاریخی پاس شد؟
+                        {{ isGoldGuarantee ? 'قسط چه تاریخی پرداخت شد؟' : 'چک چه تاریخی پاس شد؟' }}
                     </label>
 
                     <Vue3PersianDatetimePicker
@@ -870,7 +984,7 @@ const hasCheckDetails = (installment) =>
                     <input
                         type="text"
                         class="check-paid-at-input w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] text-center font-black focus:border-emerald-500 focus:ring-emerald-500 dark:border-white/10 dark:bg-white/[0.025]"
-                        placeholder="تاریخ پاس شدن چک"
+                        :placeholder="isGoldGuarantee ? 'تاریخ وصول قسط' : 'تاریخ پاس شدن چک'"
                         readonly
                     />
 
@@ -882,7 +996,7 @@ const hasCheckDetails = (installment) =>
                     </p>
 
                     <p class="mt-3 text-xs leading-6 text-slate-400">
-                        تاریخ واقعی وصول چک را وارد کنید؛ این تاریخ برای محاسبه خوش‌حسابی مشتری استفاده خواهد شد.
+                        {{ isGoldGuarantee ? 'تاریخ واقعی پرداخت قسط را وارد کنید؛ این تاریخ در سابقه پرداخت مشتری ثبت می‌شود.' : 'تاریخ واقعی وصول چک را وارد کنید؛ این تاریخ برای محاسبه خوش‌حسابی مشتری استفاده خواهد شد.' }}
                     </p>
                 </div>
 
@@ -908,7 +1022,7 @@ const hasCheckDetails = (installment) =>
                         {{
                             clearanceForm.processing
                                 ? 'در حال ثبت...'
-                                : 'تأیید پاس شدن چک'
+                                : isGoldGuarantee ? 'تأیید وصول قسط' : 'تأیید پاس شدن چک'
                         }}
                     </button>
                 </div>
