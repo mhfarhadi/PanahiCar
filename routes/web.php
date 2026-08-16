@@ -14,6 +14,7 @@ use App\Http\Controllers\PriceEstimateController;
 use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\PublicInstallmentCalculatorController;
 use App\Http\Controllers\PublicPriceEstimateController;
+use App\Http\Controllers\PublicGoldCollateralController;
 use App\Http\Controllers\EntityNoteController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -73,6 +74,16 @@ Route::get(
     '/features/price-estimate',
     [PublicPriceEstimateController::class, 'index']
 )->name('features.price-estimates.index');
+
+Route::get(
+    '/features/gold-collateral',
+    [PublicGoldCollateralController::class, 'index']
+)->name('features.gold-collateral.index');
+
+Route::post(
+    '/features/gold-collateral/calculate',
+    [PublicGoldCollateralController::class, 'calculate']
+)->name('features.gold-collateral.calculate');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])

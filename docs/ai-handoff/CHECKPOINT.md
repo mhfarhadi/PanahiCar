@@ -1062,3 +1062,106 @@ Validation completed during implementation:
   - 56 tests
   - 306 assertions
 - final full-suite verification is run immediately after this checkpoint update
+
+## Public gold collateral tool — 2026-08-16
+
+Public Features tool #4, `ضمانت طلا`, was implemented and manually verified.
+
+Architecture / source of truth:
+
+- public gold tool reuses the same internal financial services
+- no duplicate collateral formula was created
+- collateral calculation comes from:
+  - `GoldCollateralService`
+- live 18k gold pricing comes from:
+  - `GoldRateService`
+- installment amounts and due dates come from:
+  - `InstallmentCalculatorService`
+
+Public routes:
+
+- GET `/features/gold-collateral`
+  - route name `features.gold-collateral.index`
+- POST `/features/gold-collateral/calculate`
+  - route name `features.gold-collateral.calculate`
+- the `ضمانت طلا` card on `/features` now links to the live public tool
+
+Confirmed collateral formula:
+
+- financed principal:
+  - sale price − cash down payment
+- coverage profit:
+  - principal × monthly contract profit rate × 2 months
+- collateral coverage:
+  - principal + two-month coverage profit
+- required gold weight:
+  - collateral coverage ÷ current 18k gold price per gram
+- gold price source remains Navasan `18ayar`
+- the public tool uses the same formula as authenticated/internal gold-backed sales
+
+Installment behavior:
+
+- user enters:
+  - sale price
+  - cash down payment
+  - monthly profit rate
+  - installment count
+  - sale date
+  - first due date
+- first due date follows the same Jalali one-month minimum rule as the internal/public installment calculator
+- output includes:
+  - base financed principal
+  - two-month collateral profit
+  - total collateral coverage
+  - required 18k gold weight
+  - live/current gold rate
+  - installment amount
+  - total installments
+  - total installment profit
+  - full installment due-date schedule
+
+Reference scenario manually confirmed:
+
+- sale price: 140,000,000 toman
+- down payment: 40,000,000 toman
+- financed principal: 100,000,000 toman
+- monthly rate: 6.5%
+- two-month collateral profit: 13,000,000 toman
+- collateral coverage: 113,000,000 toman
+- with the tested Navasan 18k rate, required weight displayed at approximately 5.9311 grams
+- user manually confirmed calculations and page behavior are correct
+
+Public UX / visual direction:
+
+- the page is intentionally distinct from the authenticated portal
+- visual composition is tailored specifically to the gold-collateral concept rather than reusing a generic form/card layout
+- key visual elements include:
+  - gold-rate orbit / circular live-rate focal point
+  - prominent required-weight result
+  - explicit collateral-coverage breakdown
+  - separate installment schedule section
+  - contextual explanation of why two months of profit are included
+- user explicitly praised this page as highly appropriate and visually strong
+- future public tools should continue this design approach:
+  - each tool should have a distinct visual personality appropriate to its subject
+  - avoid repetitive generic AI/Tailwind card layouts
+  - keep the overall public Features family coherent
+  - prioritize premium, modern, app-like mobile presentation
+
+Files / areas changed:
+
+- `app/Http/Controllers/PublicGoldCollateralController.php`
+- `resources/js/Pages/Features/GoldCollateral/Index.vue`
+- `resources/js/Pages/Features/Index.vue`
+- `routes/web.php`
+- `tests/Feature/PublicGoldCollateralTest.php`
+- `tests/Feature/PublicFeaturesTest.php`
+
+Validation completed:
+
+- targeted public gold collateral tests passed
+- public Features accessibility test passed
+- shared `GoldCollateralService` unit test passed
+- production Vite build passed
+- `git diff --check` passed
+- user manually verified the live public page and confirmed both calculation and visual design are correct

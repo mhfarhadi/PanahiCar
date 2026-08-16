@@ -25,8 +25,9 @@ const tools = [
     },
     {
         title: 'ضمانت طلا',
-        description: 'محاسبه وزن تقریبی طلا برای ضمانت اقساط',
+        description: 'محاسبه وزن طلا، پوشش ضمانت و برنامه اقساط',
         accent: 'yellow',
+        route: 'features.gold-collateral.index',
         icon: 'm7 9 2-5h6l2 5 3 9H4l3-9Zm1 4h8',
     },
     {

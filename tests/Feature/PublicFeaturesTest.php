@@ -18,3 +18,9 @@ test('public price estimate page is accessible without authentication', function
         ->get(route('features.price-estimates.index'))
         ->assertOk();
 });
+
+test('public gold collateral calculator is accessible without authentication', function () {
+    $this
+        ->get(route('features.gold-collateral.index'))
+        ->assertOk();
+});
