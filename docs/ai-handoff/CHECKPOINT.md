@@ -1510,3 +1510,151 @@ Planned direction:
 - bootstrap rows shown transparently as provisional market samples
 - bootstrap rows must never expose fake callable phone numbers
 - visual direction should feel like a live market pulse / demand board, complementary to the radar/request identity of «چی می‌خوام؟»
+
+## Public «چیا می‌خوان؟» market demand board — completed (2026-08-16)
+
+Public tool #6 is implemented and manually approved.
+
+### Routes
+- `GET /features/wanted-market`
+  - route name: `features.wanted-market.index`
+- `GET /features/wanted-market/{requestId}/contact`
+  - route name: `features.wanted-market.contact`
+- public/no-login access
+
+### Data source
+- reads directly from `wanted_device_requests`
+- no duplicate demand table was introduced
+- feed is ordered newest-first
+- pagination uses 18 requests per page
+- search supports:
+  - brand
+  - model
+  - storage
+  - color
+  - requester name
+  - description
+- filters support:
+  - brand
+  - organic demand only
+  - bootstrap market samples only
+
+### Privacy / contact reveal
+Organic requester mobile numbers are **not included in initial Inertia page props**.
+
+Contact flow:
+- organic requests expose only `can_reveal_contact = true`
+- user must explicitly click «نمایش شماره»
+- dedicated contact endpoint then returns:
+  - requester name
+  - mobile
+- revealed mobile becomes a callable `tel:` action
+
+Bootstrap rows:
+- never expose their synthetic bootstrap phone identifiers
+- contact endpoint rejects bootstrap rows
+- UI identifies them as provisional/reference market samples instead of real colleagues
+
+This privacy behavior is enforced server-side and covered by tests.
+
+### Organic vs bootstrap presentation
+Organic rows:
+- labeled `درخواست واقعی`
+- requester contact can be explicitly revealed
+
+Bootstrap rows:
+- labeled `نمونه‌ی بازار`
+- shown transparently as provisional/reference evidence
+- source such as Divar/Sheypoor may be displayed
+- no fake callable contact is presented
+
+### Market-board UX
+Visual direction is intentionally different from generic cards.
+
+Identity:
+- `Maya Market Pulse`
+- live market / radar / signal composition
+- dark pulse panel with demand counts
+- timeline-like demand stream
+- each request appears as a market signal rather than a generic card
+
+Hero copy approved as:
+- `تو بازار دنبال چی می‌گردن؟`
+
+Board communicates clearly:
+- displayed values are colleague buy ceilings / demand-side signals
+- they are **not sale prices**
+
+Summary metrics:
+- total signals
+- organic requests
+- bootstrap samples
+- requests from the last 24 hours
+
+### Request interaction
+Each demand row is interactive.
+
+Clicking a row:
+- expands an inline detail panel
+- clicking again closes it
+- keyboard Enter/Space also toggles it
+- details include:
+  - device/model/storage
+  - color
+  - condition
+  - registration
+  - battery
+  - maximum buy price
+  - organic vs sample state
+
+Contact remains a separate explicit action inside the expanded request.
+
+### Responsive behavior
+Desktop:
+- market-stream/table hybrid layout
+- expanded detail remains inline with the selected demand row
+- price and contact actions remain clearly separated
+
+Mobile:
+- rows collapse into a vertical demand timeline
+- price receives a prominent dark treatment
+- expanded details switch to a compact two-column specification grid
+- contact controls become full-width
+- overall market-pulse identity remains intact
+
+User manually reviewed and approved the final desktop/mobile experience.
+
+### Features index
+The existing `چیا می‌خوان؟` public Features card now links to:
+- `features.wanted-market.index`
+
+### Files / areas changed
+- `app/Http/Controllers/PublicWantedMarketController.php`
+- `resources/js/Pages/Features/WantedMarket/Index.vue`
+- `resources/js/Pages/Features/Index.vue`
+- `routes/web.php`
+- `tests/Feature/PublicFeaturesTest.php`
+
+### Automated coverage
+Public Features tests now also verify:
+- wanted market page is public
+- organic mobile is absent from initial page output
+- organic contact is revealed only through explicit endpoint
+- bootstrap rows cannot reveal contact data
+
+Latest targeted validation:
+- `PublicFeaturesTest`: 9 passed / 14 assertions
+- production Vite build passed
+- `git diff --check` passed
+
+### Public Features status
+Completed public tools:
+1. ماشین حساب اقساط
+2. فرم قرارداد فروش
+3. برآورد قیمت
+4. ضمانت طلا
+5. چی می‌خوام؟
+6. چیا می‌خوان؟
+
+Remaining planned public tool:
+7. پرینتر چک

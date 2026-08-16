@@ -16,6 +16,7 @@ use App\Http\Controllers\PublicInstallmentCalculatorController;
 use App\Http\Controllers\PublicPriceEstimateController;
 use App\Http\Controllers\PublicGoldCollateralController;
 use App\Http\Controllers\PublicWantedDeviceController;
+use App\Http\Controllers\PublicWantedMarketController;
 use App\Http\Controllers\EntityNoteController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -95,6 +96,17 @@ Route::post(
     '/features/wanted',
     [PublicWantedDeviceController::class, 'store']
 )->name('features.wanted.store');
+
+Route::get(
+    '/features/wanted-market',
+    [PublicWantedMarketController::class, 'index']
+)->name('features.wanted-market.index');
+
+Route::get(
+    '/features/wanted-market/{requestId}/contact',
+    [PublicWantedMarketController::class, 'contact']
+)->whereNumber('requestId')
+    ->name('features.wanted-market.contact');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])

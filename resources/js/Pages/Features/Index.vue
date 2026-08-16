@@ -41,6 +41,7 @@ const tools = [
         title: 'چیا می‌خوان؟',
         description: 'نمایش نیازهای ثبت‌شده بازار همکارها',
         accent: 'mint',
+        route: 'features.wanted-market.index',
         icon: 'M4 8h16l-1-4H5L4 8Zm1 0v12h14V8M9 20v-6h6v6',
     },
     {
