@@ -35,6 +35,9 @@ Route::get('/', function () {
 Route::get('/features', fn () => Inertia::render('Features/Index'))
     ->name('features.index');
 
+Route::get('/features/check-printer', fn () => Inertia::render('Features/CheckPrinter/Index'))
+    ->name('features.check-printer.index');
+
 Route::get('/features/contracts', function () {
     return Inertia::render('Features/Contracts/Index', [
         'catalog' => [

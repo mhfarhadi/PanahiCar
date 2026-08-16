@@ -37,6 +37,12 @@ test('public wanted market page is accessible without authentication', function 
         ->assertOk();
 });
 
+test('public check printer page is accessible without authentication', function () {
+    $this
+        ->get(route('features.check-printer.index'))
+        ->assertOk();
+});
+
 test('wanted market feed does not expose organic mobile numbers in initial page props', function () {
     $id = \Illuminate\Support\Facades\DB::table('wanted_device_requests')
         ->insertGetId([

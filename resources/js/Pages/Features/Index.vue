@@ -48,6 +48,7 @@ const tools = [
         title: 'پرینتر چک',
         description: 'آماده‌سازی چاپ مستقیم روی برگه چک',
         accent: 'peach',
+        route: 'features.check-printer.index',
         icon: 'M7 9V4h10v5M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7v-7Z',
     },
 ];
@@ -58,18 +59,21 @@ const highlightCards = [
         subtitle: 'ثبت نیازمندی همکارها',
         meta: 'درخواست خرید',
         tone: 'lavender',
+        route: 'features.wanted.index',
     },
     {
         title: 'چیا می‌خوان؟',
         subtitle: 'مشاهده تقاضای بازار',
         meta: 'بازار همکارها',
         tone: 'yellow',
+        route: 'features.wanted-market.index',
     },
     {
         title: 'پرینتر چک',
         subtitle: 'چاپ دقیق اطلاعات چک',
         meta: 'چاپ و خروجی',
         tone: 'peach',
+        route: 'features.check-printer.index',
     },
 ];
 </script>
@@ -247,9 +251,10 @@ const highlightCards = [
                         </div>
 
                         <div class="highlight-stack">
-                            <article
+                            <Link
                                 v-for="card in highlightCards"
                                 :key="card.title"
+                                :href="route(card.route)"
                                 class="highlight-item"
                                 :class="card.tone"
                             >
@@ -261,7 +266,7 @@ const highlightCards = [
                                     <strong>{{ card.title }}</strong>
                                     <small>{{ card.subtitle }}</small>
                                 </div>
-                            </article>
+                            </Link>
                         </div>
 
                         <div class="footer-strip">

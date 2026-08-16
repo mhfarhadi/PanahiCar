@@ -1658,3 +1658,81 @@ Completed public tools:
 
 Remaining planned public tool:
 7. پرینتر چک
+
+## Public check printer — initial implementation (2026-08-16)
+
+Public Features tool #7, `پرینتر چک`, now has an initial public implementation.
+
+### Route
+- `GET /features/check-printer`
+- route name:
+  - `features.check-printer.index`
+- accessible without authentication
+
+### Features index
+- the main `پرینتر چک` tool card now links to the live public page
+- the three quick-access cards on the public Features landing page are now clickable:
+  - `چی می‌خوام؟`
+  - `چیا می‌خوان؟`
+  - `پرینتر چک`
+
+### Current check-printer behavior
+- supports preparing multiple checks in one session
+- user can enter per check:
+  - bank
+  - check number
+  - 16-digit Sayad ID
+  - payee
+  - amount
+  - due date
+- existing MayaHamrah bank list is reused
+- amount-to-Persian-words conversion is implemented client-side
+- all check amounts are now explicitly handled/displayed in **rial**, not toman
+- preview provides a safe cheque-like Sayad visual mock
+- preview intentionally does not reproduce real bank branding or security artwork
+- print output is separated from screen UI using the same general hard print-mode approach already used by the public contract tool
+- current print layout uses a generic layout only; no bank-specific coordinate claims are made
+
+### Important deferred work
+The current check-printer implementation is intentionally **not final**.
+
+Known issues / final-stage work:
+- Persian date picker is still not behaving correctly on this page:
+  - date selection does not reliably commit
+  - picker can remain open after selection
+  - this must be fixed before final approval
+- exact physical positioning must be calibrated against real Sayad check sheets
+- bank-specific templates / offsets are not implemented yet
+- X/Y printer calibration controls still need to be designed
+- final placement of Sayad ID, signature area, amount, payee and date must be validated against real physical checks
+- final print test must be performed first on ordinary paper and then against real check stock
+- the current visual mock is only for user orientation and must not be treated as an authoritative bank template
+
+### Validation completed for current initial version
+- production Vite build passed
+- `PublicFeaturesTest` passed:
+  - 10 tests
+  - 15 assertions
+- full Laravel suite passed:
+  - 80 tests
+  - 389 assertions
+- `git diff --check` passed
+
+### Files / areas changed
+- `resources/js/Pages/Features/CheckPrinter/Index.vue`
+- `resources/js/Pages/Features/Index.vue`
+- `routes/web.php`
+- `tests/Feature/PublicFeaturesTest.php`
+
+### Public Features status
+All seven planned public tools now have an implementation:
+
+1. ماشین حساب اقساط
+2. فرم قرارداد فروش
+3. برآورد قیمت
+4. ضمانت طلا
+5. چی می‌خوام؟
+6. چیا می‌خوان؟
+7. پرینتر چک
+
+However, tool #7 remains **provisional** until its date picker and physical print calibration are completed.
