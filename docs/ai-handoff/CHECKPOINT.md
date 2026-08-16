@@ -1165,3 +1165,63 @@ Validation completed:
 - production Vite build passed
 - `git diff --check` passed
 - user manually verified the live public page and confirmed both calculation and visual design are correct
+
+## Public «چی می‌خوام؟» wanted-device request tool — completed (2026-08-16)
+
+Public tool #5 is implemented and manually approved.
+
+### Routes
+- `GET /features/wanted` → `features.wanted.index`
+- `POST /features/wanted` → `features.wanted.store`
+- Publicly accessible without authentication.
+
+### Data model
+- New independent table: `wanted_device_requests`.
+- Public wanted requests do **not** create fake `devices` records.
+- Public submissions do **not** automatically create/reuse internal `contacts`.
+- Requester name/mobile are stored as snapshots on the request itself.
+- Structured demand fields are kept compatible with MayaHamrah's existing device/catalog vocabulary:
+  - brand
+  - model
+  - storage
+  - color
+  - condition grade
+  - registration status
+  - Apple-style battery health percentage
+  - Samsung battery condition
+  - maximum/target buying price
+  - free-form description
+- Brand/model/storage/color relationships are server-side validated against the existing catalog/pivot tables.
+- Persian/Arabic mobile digits are normalized before persistence.
+- These requests are intended to become the data source for public tool #6 «چیا می‌خوان؟».
+- Their real colleague price expectations are also future estimator evidence; Divar asking prices remain display/context only and must not directly enter the estimator formula.
+
+### UI / visual behavior
+- Tool has its own premium request/radar visual identity and is intentionally different from generic internal portal cards.
+- Uses existing Safari-safe `MayaSelect`.
+- Brand → model → storage → color selections are dependent on the existing catalog.
+- Live phone preview reacts to:
+  - Apple / Samsung / other brand identity.
+  - selected device color, including frame/glow/surface treatment.
+  - condition grade:
+    - A+ «در حد نو» → strong animated polish/shine.
+    - A «بسیار تمیز» → softer shine.
+    - B «تمیز» → light wear/scratches.
+    - C «خط و خش‌دار» → visibly stronger scratches/scuffs without misrepresenting it as a broken device.
+  - battery selection:
+    - Apple/non-Samsung percentage is shown in an iPhone-style top-right battery badge.
+    - battery percentage is intentionally displayed with English digits, e.g. `79%`.
+    - Samsung battery condition is represented in the same live battery badge.
+- Samsung receives a small dedicated visual mark; Apple uses the Apple mark.
+- User manually reviewed and explicitly approved the final visual behavior.
+
+### Validation / tests
+- Dedicated `PublicWantedDeviceTest`.
+- Covers:
+  - unauthenticated public access.
+  - successful structured public submission.
+  - Persian mobile normalization.
+  - no unintended internal contact creation.
+  - rejection of storage not attached to selected model.
+- Public Features access test includes the wanted tool.
+- Targeted tests and production build passed before final approval.

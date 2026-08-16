@@ -34,6 +34,7 @@ const tools = [
         title: 'چی می‌خوام؟',
         description: 'ثبت نیازمندی همکارها و درخواست خرید',
         accent: 'pink',
+        route: 'features.wanted.index',
         icon: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 8v8M8 12h8',
     },
     {

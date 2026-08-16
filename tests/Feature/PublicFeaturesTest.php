@@ -24,3 +24,9 @@ test('public gold collateral calculator is accessible without authentication', f
         ->get(route('features.gold-collateral.index'))
         ->assertOk();
 });
+
+test('public wanted device page is accessible without authentication', function () {
+    $this
+        ->get(route('features.wanted.index'))
+        ->assertOk();
+});
