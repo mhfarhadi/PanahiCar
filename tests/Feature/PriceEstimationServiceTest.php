@@ -335,3 +335,190 @@ test('it prefers comparable sales with the requested color', function () {
         ->and($result['comparables'][0]->similarity_score)->toBe(100)
         ->and($result['comparables'][1]->similarity_score)->toBe(0);
 });
+
+test('it exposes colleague demand as a separate suggested purchase price without changing sale value', function () {
+    createEstimatorSale(
+        [],
+        [
+            'sale_price' => 90_000_000,
+            'usd_rate' => 100_000,
+        ]
+    );
+
+    foreach ([79_000_000, 80_000_000, 80_000_000, 81_000_000, 82_000_000] as $index => $price) {
+        DB::table('wanted_device_requests')->insert([
+            'requester_name' => 'Demand '.$index,
+            'requester_mobile' => '0912555000'.($index + 1),
+            'brand' => 'Apple',
+            'model' => 'iPhone 15 Pro',
+            'storage' => '256GB',
+            'color' => null,
+            'condition_grade' => null,
+            'registration_status' => null,
+            'battery_health' => null,
+            'battery_condition' => null,
+            'max_price' => $price,
+            'usd_rate' => 100_000,
+            'usd_rate_date' => now()->toDateString(),
+            'usd_rate_source' => 'test',
+            'description' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    $result = app(PriceEstimationService::class)->estimate(
+        'Apple',
+        'iPhone 15 Pro',
+        '256GB',
+        100_000
+    );
+
+    expect($result['estimate'])->toBe(90_000_000)
+        ->and($result['suggested_purchase_price'])->toBe(80_000_000)
+        ->and($result['demand_signal']['available'])->toBeTrue()
+        ->and($result['demand_signal']['unique_demand_count'])->toBe(5)
+        ->and($result['demand_signal']['confidence'])->toBe('medium');
+});
+
+test('it can expose colleague purchase demand even when completed sale evidence is unavailable', function () {
+    foreach ([69_000_000, 70_000_000, 70_000_000, 71_000_000, 72_000_000] as $index => $price) {
+        DB::table('wanted_device_requests')->insert([
+            'requester_name' => 'Demand only '.$index,
+            'requester_mobile' => '0912666000'.($index + 1),
+            'brand' => 'Apple',
+            'model' => 'iPhone Demand Only',
+            'storage' => '128GB',
+            'color' => null,
+            'condition_grade' => 'A',
+            'registration_status' => 'registered',
+            'battery_health' => 90,
+            'battery_condition' => null,
+            'max_price' => $price,
+            'usd_rate' => 100_000,
+            'usd_rate_date' => now()->toDateString(),
+            'usd_rate_source' => 'test',
+            'description' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    $result = app(PriceEstimationService::class)->estimate(
+        'Apple',
+        'iPhone Demand Only',
+        '128GB',
+        100_000,
+        'A',
+        90,
+        null,
+        'registered'
+    );
+
+    expect($result['available'])->toBeFalse()
+        ->and($result['reason'])->toBe('no_exact_comparables')
+        ->and($result['suggested_purchase_price'])->toBe(70_000_000)
+        ->and($result['demand_signal']['available'])->toBeTrue()
+        ->and($result['demand_signal']['unique_demand_count'])->toBe(5);
+});
+
+test('colleague demand weighting prefers requests matching the requested device condition', function () {
+    foreach (range(1, 5) as $index) {
+        DB::table('wanted_device_requests')->insert([
+            'requester_name' => 'Pristine '.$index,
+            'requester_mobile' => '0912777000'.$index,
+            'brand' => 'Apple',
+            'model' => 'iPhone Condition',
+            'storage' => '128GB',
+            'color' => null,
+            'condition_grade' => 'A+',
+            'registration_status' => null,
+            'battery_health' => null,
+            'battery_condition' => null,
+            'max_price' => 80_000_000,
+            'usd_rate' => 100_000,
+            'usd_rate_date' => now()->toDateString(),
+            'usd_rate_source' => 'test',
+            'description' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('wanted_device_requests')->insert([
+            'requester_name' => 'Worn '.$index,
+            'requester_mobile' => '0912888000'.$index,
+            'brand' => 'Apple',
+            'model' => 'iPhone Condition',
+            'storage' => '128GB',
+            'color' => null,
+            'condition_grade' => 'C',
+            'registration_status' => null,
+            'battery_health' => null,
+            'battery_condition' => null,
+            'max_price' => 65_000_000,
+            'usd_rate' => 100_000,
+            'usd_rate_date' => now()->toDateString(),
+            'usd_rate_source' => 'test',
+            'description' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    $signal = app(\App\Services\WantedMarketSignalService::class)
+        ->demandSummary(
+            'Apple',
+            'iPhone Condition',
+            '128GB',
+            100_000,
+            'C'
+        );
+
+    expect($signal['available'])->toBeTrue()
+        ->and($signal['reference_price'])->toBe(65_000_000)
+        ->and($signal['unique_demand_count'])->toBe(5)
+        ->and($signal['specification_adjusted'])->toBeTrue();
+});
+
+test('bootstrap market demand is provisional and never manufactures medium confidence', function () {
+    foreach ([78_000_000, 79_000_000, 80_000_000, 81_000_000, 82_000_000] as $index => $price) {
+        DB::table('wanted_device_requests')->insert([
+            'requester_name' => 'Bootstrap demand '.$index,
+            'requester_mobile' => '0000003000'.($index + 1),
+            'origin' => 'bootstrap_market',
+            'market_reference_source' => $index % 2 === 0
+                ? 'divar'
+                : 'sheypoor',
+            'brand' => 'Apple',
+            'model' => 'iPhone Bootstrap',
+            'storage' => '128GB',
+            'color' => null,
+            'condition_grade' => null,
+            'registration_status' => null,
+            'battery_health' => null,
+            'battery_condition' => null,
+            'max_price' => $price,
+            'usd_rate' => 100_000,
+            'usd_rate_date' => now()->toDateString(),
+            'usd_rate_source' => 'bootstrap:test',
+            'description' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    $signal = app(\App\Services\WantedMarketSignalService::class)
+        ->demandSummary(
+            'Apple',
+            'iPhone Bootstrap',
+            '128GB',
+            100_000
+        );
+
+    expect($signal['available'])->toBeTrue()
+        ->and($signal['reference_price'])->toBe(80_000_000)
+        ->and($signal['organic_demand_count'])->toBe(0)
+        ->and($signal['bootstrap_demand_count'])->toBe(5)
+        ->and($signal['provisional'])->toBeTrue()
+        ->and($signal['confidence'])->toBe('low');
+});

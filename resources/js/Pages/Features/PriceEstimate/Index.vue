@@ -283,12 +283,13 @@ const divarSearchUrl = computed(() => {
                     <p class="eyebrow">بر پایه داده واقعی مایاهمراه</p>
 
                     <h2>
-                        قیمت گوشی را با سابقه فروش واقعی مقایسه کن
+                        ارزش فروش و کف خرید بازار را کنار هم ببین
                     </h2>
 
                     <p>
-                        فروش‌های هم‌مدل و هم‌حافظه با نرخ دلار امروز
-                        هم‌تراز می‌شوند و مشخصات نزدیک‌تر وزن بیشتری می‌گیرند.
+                        فروش‌های واقعی مایاهمراه با نرخ دلار امروز هم‌تراز
+                        می‌شوند و تقاضای «چی می‌خوام؟» هم به‌صورت یک لنگر
+                        مستقل، هدف خرید همکاران را نشان می‌دهد.
                     </p>
                 </section>
 
@@ -495,13 +496,108 @@ const divarSearchUrl = computed(() => {
                 </section>
 
                 <section
+                    v-if="
+                        estimate &&
+                        estimate.demand_signal &&
+                        estimate.demand_signal.available
+                    "
+                    class="demand-card"
+                    :class="{
+                        'demand-card-provisional':
+                            estimate.demand_signal.provisional
+                    }"
+                >
+                    <div class="demand-orbit" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                        <i></i>
+                    </div>
+
+                    <div class="demand-copy">
+                        <span class="demand-eyebrow">
+                            {{
+                                estimate.demand_signal.provisional
+                                    ? 'سیگنال اولیه بازار'
+                                    : 'تقاضای واقعی همکاران'
+                            }}
+                        </span>
+
+                        <strong>
+                            هدف خرید:
+                            {{ formatMoney(estimate.suggested_purchase_price) }}
+                            <small>تومان</small>
+                        </strong>
+
+                        <p v-if="estimate.demand_signal.provisional">
+                            این عدد فعلاً با داده‌ی اولیه‌ی بازار ساخته شده
+                            تا سیستم خالی نباشد. با شکل‌گیری حداقل چند تقاضای
+                            واقعی، اثر داده‌های اولیه کنار می‌رود.
+                        </p>
+
+                        <p v-else>
+                            مرکز مقاوم سقف خرید همکاران برای همین مدل و حافظه،
+                            با درنظرگرفتن تازگی و نزدیکی مشخصات.
+                        </p>
+                    </div>
+
+                    <div class="demand-meta">
+                        <div>
+                            <span>تقاضای واقعی</span>
+                            <b>
+                                {{
+                                    Number(
+                                        estimate.demand_signal
+                                            .organic_demand_count || 0
+                                    ).toLocaleString('fa-IR')
+                                }}
+                            </b>
+                        </div>
+
+                        <div>
+                            <span>اعتماد</span>
+                            <b>
+                                {{
+                                    confidenceLabel(
+                                        estimate.demand_signal.confidence
+                                    )
+                                }}
+                            </b>
+                        </div>
+
+                        <div>
+                            <span>پنجره داده</span>
+                            <b>
+                                {{
+                                    Number(
+                                        estimate.demand_signal.lookback_days
+                                    ).toLocaleString('fa-IR')
+                                }}
+                                روز
+                            </b>
+                        </div>
+                    </div>
+                </section>
+
+                <section
                     v-else-if="estimate && !estimate.available"
                     class="empty-card"
                 >
-                    <strong>هنوز داده کافی نداریم</strong>
+                    <strong>
+                        {{
+                            estimate.demand_signal &&
+                            estimate.demand_signal.available
+                                ? 'هنوز فروش واقعی مشابه نداریم'
+                                : 'هنوز داده کافی نداریم'
+                        }}
+                    </strong>
+
                     <p>
-                        برای همین مدل و حافظه فروش ثبت‌شده کافی در مایاهمراه
-                        وجود ندارد.
+                        {{
+                            estimate.demand_signal &&
+                            estimate.demand_signal.available
+                                ? 'سیگنال هدف خرید بالا نمایش داده شده؛ با ثبت فروش‌های واقعی، ارزش بازار فروش هم به آن اضافه می‌شود.'
+                                : 'برای همین مدل و حافظه هنوز فروش یا تقاضای قابل استفاده کافی در مایاهمراه وجود ندارد.'
+                        }}
                     </p>
                 </section>
 
@@ -634,6 +730,7 @@ const divarSearchUrl = computed(() => {
 .estimate-card,
 .quality-card,
 .comparable-card,
+.demand-card,
 .empty-card,
 .market-card {
     border: 1px solid rgba(255,255,255,.9);
@@ -898,6 +995,182 @@ select:disabled {
     display: block;
 }
 
+.demand-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) auto;
+    gap: 24px;
+    align-items: center;
+    margin-top: 18px;
+    overflow: hidden;
+    border-radius: 28px;
+    padding: 24px;
+    background:
+        radial-gradient(
+            circle at 8% 50%,
+            rgba(126, 101, 197, .15),
+            transparent 28%
+        ),
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.92),
+            rgba(240,237,250,.9)
+        );
+}
+
+.demand-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        110deg,
+        transparent 34%,
+        rgba(255,255,255,.55) 50%,
+        transparent 66%
+    );
+    transform: translateX(-120%);
+    animation: demand-scan 7s ease-in-out infinite;
+}
+
+.demand-card-provisional {
+    background:
+        radial-gradient(
+            circle at 8% 50%,
+            rgba(202, 155, 75, .14),
+            transparent 28%
+        ),
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.94),
+            rgba(250,245,233,.92)
+        );
+}
+
+.demand-copy {
+    position: relative;
+    z-index: 2;
+    padding-right: 88px;
+}
+
+.demand-eyebrow {
+    color: #725ab0;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.demand-card-provisional .demand-eyebrow {
+    color: #9b6a24;
+}
+
+.demand-copy > strong {
+    display: block;
+    margin-top: 7px;
+    color: #28223a;
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 950;
+}
+
+.demand-copy > strong small {
+    color: #756d84;
+    font-size: 12px;
+}
+
+.demand-copy p {
+    max-width: 650px;
+    margin: 8px 0 0;
+    color: #746e7c;
+    font-size: 11px;
+    line-height: 1.95;
+}
+
+.demand-meta {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    min-width: 190px;
+    gap: 7px;
+}
+
+.demand-meta > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 9px 11px;
+    border: 1px solid rgba(116, 90, 176, .1);
+    border-radius: 12px;
+    background: rgba(255,255,255,.55);
+}
+
+.demand-meta span {
+    color: #827b8b;
+    font-size: 10px;
+}
+
+.demand-meta b {
+    color: #433858;
+    font-size: 11px;
+}
+
+.demand-orbit {
+    position: absolute;
+    z-index: 1;
+    right: 22px;
+    top: 50%;
+    width: 54px;
+    height: 54px;
+    transform: translateY(-50%);
+}
+
+.demand-orbit span {
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(113, 89, 174, .24);
+    border-radius: 50%;
+    animation: demand-pulse 2.8s ease-out infinite;
+}
+
+.demand-orbit span:nth-child(2) {
+    inset: 10px;
+    animation-delay: .6s;
+}
+
+.demand-orbit i {
+    position: absolute;
+    inset: 22px;
+    border-radius: 50%;
+    background: #765bb8;
+    box-shadow: 0 0 16px rgba(118,91,184,.42);
+}
+
+.demand-card-provisional .demand-orbit i {
+    background: #bd863b;
+    box-shadow: 0 0 16px rgba(189,134,59,.35);
+}
+
+@keyframes demand-pulse {
+    0% {
+        opacity: .85;
+        transform: scale(.72);
+    }
+    75%,
+    100% {
+        opacity: 0;
+        transform: scale(1.35);
+    }
+}
+
+@keyframes demand-scan {
+    0%,
+    58% {
+        transform: translateX(-120%);
+    }
+    82%,
+    100% {
+        transform: translateX(120%);
+    }
+}
+
 .empty-card,
 .market-card {
     margin-top: 18px;
@@ -959,8 +1232,17 @@ select:disabled {
 
     .fields-grid,
     .secondary-fields,
-    .results {
+    .results,
+    .demand-card {
         grid-template-columns: 1fr;
+    }
+
+    .demand-copy {
+        padding-right: 74px;
+    }
+
+    .demand-meta {
+        min-width: 0;
     }
 
     .comparable-card {

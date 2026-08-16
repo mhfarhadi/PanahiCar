@@ -214,7 +214,7 @@ const divarSearchUrl = computed(() => {
                         </h1>
 
                         <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                            بر اساس فروش‌های واقعی ثبت‌شده و تعدیل قیمت با نرخ دلار
+                            ارزش فروش واقعی + سیگنال مستقل کف خرید همکاران
                         </p>
                     </div>
 
@@ -506,8 +506,99 @@ const divarSearchUrl = computed(() => {
                     <div
                         class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-300"
                     >
-                        این نسخه هنوز اثر وضعیت ظاهری، سلامت باتری و رجیستری را در قیمت تعدیل نمی‌کند؛
+                        وضعیت ظاهری، سلامت باتری و رجیستری در شباهت نمونه‌ها لحاظ می‌شوند؛
                         بنابراین نتیجه فعلاً یک برآورد پایه و شفاف از سوابق فروش است.
+                    </div>
+                </div>
+
+                <div
+                    v-if="
+                        estimate &&
+                        estimate.demand_signal &&
+                        estimate.demand_signal.available
+                    "
+                    class="relative mt-5 overflow-hidden rounded-[30px] border border-violet-200/70 bg-gradient-to-l from-violet-50 via-white to-white p-5 shadow-sm dark:border-violet-900/40 dark:from-violet-950/20 dark:via-white/[0.035] dark:to-white/[0.035] sm:p-6"
+                >
+                    <div class="absolute -right-12 -top-16 h-44 w-44 rounded-full border border-violet-300/30"></div>
+                    <div class="absolute -right-4 -top-8 h-28 w-28 rounded-full border border-violet-300/30"></div>
+
+                    <div class="relative grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <p class="text-xs font-black text-violet-600 dark:text-violet-300">
+                                    {{
+                                        estimate.demand_signal.provisional
+                                            ? 'سیگنال اولیه بازار'
+                                            : 'کف خرید همکاران'
+                                    }}
+                                </p>
+
+                                <span
+                                    v-if="estimate.demand_signal.provisional"
+                                    class="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-black text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+                                >
+                                    موقت
+                                </span>
+                            </div>
+
+                            <p class="mt-2 text-3xl font-black text-slate-900 dark:text-white">
+                                {{ formatMoney(estimate.suggested_purchase_price) }}
+                                <span class="text-sm text-slate-500 dark:text-slate-400">
+                                    تومان
+                                </span>
+                            </p>
+
+                            <p class="mt-3 max-w-2xl text-xs leading-6 text-slate-500 dark:text-slate-400">
+                                {{
+                                    estimate.demand_signal.provisional
+                                        ? 'فعلاً از داده‌های اولیه‌ی بازار برای خالی نبودن سیستم استفاده شده؛ این داده‌ها ضدتقلب یا اعتماد واقعی را بالا نمی‌برند و با ورود تقاضای واقعی کنار می‌روند.'
+                                        : 'این عدد از سقف خرید همکاران واقعی، با وزن‌دهی به تازگی و نزدیکی مشخصات محاسبه شده و مستقل از ارزش فروش است.'
+                                }}
+                            </p>
+                        </div>
+
+                        <div class="grid min-w-[220px] grid-cols-3 gap-2 lg:grid-cols-1">
+                            <div class="rounded-2xl bg-white/70 p-3 dark:bg-white/[0.045]">
+                                <p class="text-[10px] font-bold text-slate-400">
+                                    تقاضای واقعی
+                                </p>
+                                <p class="mt-1 text-sm font-black">
+                                    {{
+                                        Number(
+                                            estimate.demand_signal
+                                                .organic_demand_count || 0
+                                        ).toLocaleString('fa-IR')
+                                    }}
+                                </p>
+                            </div>
+
+                            <div class="rounded-2xl bg-white/70 p-3 dark:bg-white/[0.045]">
+                                <p class="text-[10px] font-bold text-slate-400">
+                                    اعتماد
+                                </p>
+                                <p class="mt-1 text-sm font-black">
+                                    {{
+                                        confidenceLabel(
+                                            estimate.demand_signal.confidence
+                                        )
+                                    }}
+                                </p>
+                            </div>
+
+                            <div class="rounded-2xl bg-white/70 p-3 dark:bg-white/[0.045]">
+                                <p class="text-[10px] font-bold text-slate-400">
+                                    بازه داده
+                                </p>
+                                <p class="mt-1 text-sm font-black">
+                                    {{
+                                        Number(
+                                            estimate.demand_signal.lookback_days
+                                        ).toLocaleString('fa-IR')
+                                    }}
+                                    روز
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -516,11 +607,21 @@ const divarSearchUrl = computed(() => {
                     class="mt-5 rounded-[30px] border border-slate-200/60 bg-white p-8 text-center shadow-sm dark:border-white/5 dark:bg-white/[0.035]"
                 >
                     <p class="text-lg font-black">
-                        داده کافی برای برآورد نداریم
+                        {{
+                            estimate.demand_signal &&
+                            estimate.demand_signal.available
+                                ? 'هنوز فروش واقعی مشابه نداریم'
+                                : 'داده کافی برای برآورد نداریم'
+                        }}
                     </p>
 
                     <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                        هنوز فروش ثبت‌شده‌ای برای همین مدل و حافظه وجود ندارد.
+                        {{
+                            estimate.demand_signal &&
+                            estimate.demand_signal.available
+                                ? 'سیگنال هدف خرید همکاران بالا در دسترس است؛ با اولین فروش‌های واقعی، ارزش بازار فروش هم جداگانه نمایش داده می‌شود.'
+                                : 'هنوز فروش یا تقاضای قابل استفاده‌ای برای همین مدل و حافظه وجود ندارد.'
+                        }}
                     </p>
                 </div>
 

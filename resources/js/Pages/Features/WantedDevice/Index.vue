@@ -18,6 +18,7 @@ const loading = ref(false);
 const submitted = ref(null);
 const errors = ref({});
 const generalError = ref('');
+const marketFeedback = ref(null);
 
 const form = ref({
     requester_name: '',
@@ -87,6 +88,18 @@ const availableColors = computed(() => {
 
 const isSamsung = computed(() => form.value.brand === 'Samsung');
 const isApple = computed(() => form.value.brand === 'Apple');
+
+const specificationsComplete = computed(() =>
+    Boolean(
+        form.value.condition_grade &&
+        form.value.registration_status &&
+        (
+            isSamsung.value
+                ? form.value.battery_condition
+                : form.value.battery_health !== ''
+        )
+    )
+);
 
 const phoneColorThemes = {
     Black: {
@@ -415,7 +428,6 @@ const colorOptions = computed(() => [
 ]);
 
 const conditionOptions = [
-    { value: '', label: 'تمیزی مهم نیست' },
     { value: 'A+', label: 'در حد نو' },
     { value: 'A', label: 'بسیار تمیز' },
     { value: 'B', label: 'تمیز' },
@@ -423,13 +435,11 @@ const conditionOptions = [
 ];
 
 const registrationOptions = [
-    { value: '', label: 'رجیستری مهم نیست' },
     { value: 'registered', label: 'رجیستر شده' },
     { value: 'unregistered', label: 'رجیستر نشده' },
 ];
 
 const samsungBatteryOptions = [
-    { value: '', label: 'باتری مهم نیست' },
     ...samsungBatteryConditionOptions.map((item) => ({
         value: item.value,
         label: item.label,
@@ -478,9 +488,12 @@ const setPrice = (event) => {
 };
 
 const setMobile = (event) => {
-    form.value.requester_mobile = normalizeDigits(event.target.value)
+    const normalized = normalizeDigits(event.target.value)
         .replace(/[^\d+\-()\s]/g, '')
         .slice(0, 20);
+
+    form.value.requester_mobile = toPersianDigits(normalized);
+    event.target.value = form.value.requester_mobile;
 };
 
 const setBatteryHealth = (event) => {
@@ -537,10 +550,52 @@ const specificationSummary = computed(() => {
 });
 
 const submit = async () => {
+    if (!specificationsComplete.value) {
+        errors.value = {
+            ...errors.value,
+            ...(!form.value.condition_grade
+                ? {
+                    condition_grade: [
+                        'وضعیت ظاهری رو انتخاب کن؛ این یکی برای تشخیص قیمت مهمه.',
+                    ],
+                }
+                : {}),
+            ...(!form.value.registration_status
+                ? {
+                    registration_status: [
+                        'رجیستری باید مشخص باشه؛ ثبت‌شده یا نشده.',
+                    ],
+                }
+                : {}),
+            ...(
+                isSamsung.value && !form.value.battery_condition
+                    ? {
+                        battery_condition: [
+                            'وضعیت باتری رو هم مشخص کن تا قیمت درست سنجیده بشه.',
+                        ],
+                    }
+                    : {}
+            ),
+            ...(
+                !isSamsung.value &&
+                form.value.battery_health === ''
+                    ? {
+                        battery_health: [
+                            'سلامت باتری رو وارد کن؛ بدون اون قیمت دقیق درنمیاد.',
+                        ],
+                    }
+                    : {}
+            ),
+        };
+
+        return;
+    }
+
     loading.value = true;
     submitted.value = null;
     errors.value = {};
     generalError.value = '';
+    marketFeedback.value = null;
 
     try {
         const response = await fetch(
@@ -574,8 +629,23 @@ const submit = async () => {
 
         if (response.status === 422) {
             errors.value = data.errors ?? {};
-            generalError.value =
-                data.message ?? 'اطلاعات واردشده معتبر نیست.';
+            marketFeedback.value = data.market_feedback ?? null;
+
+            generalError.value = marketFeedback.value
+                ? ''
+                : data.message ?? 'اطلاعات واردشده معتبر نیست.';
+
+            if (marketFeedback.value) {
+                requestAnimationFrame(() => {
+                    document
+                        .querySelector('.market-feedback-card')
+                        ?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center',
+                        });
+                });
+            }
+
             return;
         }
 
@@ -751,14 +821,167 @@ const submit = async () => {
                             </div>
                         </div>
 
+                        <div
+                            class="mobile-live-preview"
+                            :style="phonePreviewStyle"
+                        >
+                            <div class="mobile-preview-head">
+                                <div>
+                                    <small>پیش‌نمایش زنده</small>
+                                    <strong>
+                                        {{
+                                            form.model ||
+                                            'گوشی موردنظر'
+                                        }}
+                                    </strong>
+                                </div>
+
+                                <span class="mobile-live-badge">
+                                    LIVE
+                                </span>
+                            </div>
+
+                            <div class="mobile-phone-scene">
+                                <div class="mobile-phone-aura" />
+
+                                <div
+                                    class="mobile-phone-shape"
+                                    :class="conditionClass"
+                                >
+                                    <div class="mobile-phone-island" />
+
+                                    <div class="mobile-phone-screen">
+                                        <div
+                                            v-if="form.brand"
+                                            class="mobile-brand-mark"
+                                            :class="{
+                                                apple: isApple,
+                                                samsung: isSamsung,
+                                            }"
+                                        >
+                                            <template v-if="isApple">
+                                                <span></span>
+                                            </template>
+
+                                            <template v-else-if="isSamsung">
+                                                <strong>
+                                                    SAMSUNG
+                                                </strong>
+                                            </template>
+
+                                            <template v-else>
+                                                <strong>
+                                                    {{ form.brand }}
+                                                </strong>
+                                            </template>
+                                        </div>
+
+                                        <div class="mobile-phone-copy">
+                                            <small>
+                                                {{
+                                                    form.brand ||
+                                                    'Brand'
+                                                }}
+                                            </small>
+
+                                            <strong>
+                                                {{
+                                                    form.model ||
+                                                    'مدل گوشی'
+                                                }}
+                                            </strong>
+
+                                            <span>
+                                                {{
+                                                    form.storage ||
+                                                    'حافظه'
+                                                }}
+                                            </span>
+                                        </div>
+
+                                        <div
+                                            class="mobile-condition-layer"
+                                            aria-hidden="true"
+                                        >
+                                            <i
+                                                class="mobile-scratch scratch-a"
+                                            />
+                                            <i
+                                                class="mobile-scratch scratch-b"
+                                            />
+                                            <i
+                                                class="mobile-scratch scratch-c"
+                                            />
+
+                                            <span
+                                                class="mobile-polish"
+                                            />
+
+                                            <span
+                                                class="mobile-shine"
+                                            >
+                                                ✦
+                                            </span>
+                                        </div>
+
+                                        <div
+                                            v-if="batteryPreviewVisible"
+                                            class="mobile-battery"
+                                            :class="`battery-${batteryPreviewLevel}`"
+                                        >
+                                            <span class="mobile-battery-icon">
+                                                <i />
+                                            </span>
+
+                                            <strong>
+                                                {{ batteryPreviewText }}
+                                            </strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mobile-preview-meta">
+                                    <span>
+                                        <i
+                                            class="mobile-color-dot"
+                                        />
+                                        {{
+                                            form.color
+                                                ? colorLabel(form.color)
+                                                : 'رنگ'
+                                        }}
+                                    </span>
+
+                                    <span
+                                        :class="conditionClass"
+                                    >
+                                        {{
+                                            conditionPreviewLabel
+                                        }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <small class="mobile-preview-hint">
+                                رنگ، تمیزی و باتری رو تغییر بده؛
+                                گوشی همون لحظه واکنش نشون می‌ده.
+                            </small>
+                        </div>
+
                         <div class="specification-band">
                             <div class="field">
                                 <span>وضعیت ظاهری</span>
                                 <MayaSelect
                                     v-model="form.condition_grade"
                                     :options="conditionOptions"
-                                    placeholder="تمیزی مهم نیست"
+                                    placeholder="انتخاب وضعیت ظاهری"
                                 />
+                                <small
+                                    v-if="fieldError('condition_grade')"
+                                    class="error"
+                                >
+                                    {{ fieldError('condition_grade') }}
+                                </small>
                             </div>
 
                             <div class="field">
@@ -766,8 +989,14 @@ const submit = async () => {
                                 <MayaSelect
                                     v-model="form.registration_status"
                                     :options="registrationOptions"
-                                    placeholder="رجیستری مهم نیست"
+                                    placeholder="انتخاب رجیستری"
                                 />
+                                <small
+                                    v-if="fieldError('registration_status')"
+                                    class="error"
+                                >
+                                    {{ fieldError('registration_status') }}
+                                </small>
                             </div>
 
                             <div v-if="isSamsung" class="field">
@@ -775,8 +1004,14 @@ const submit = async () => {
                                 <MayaSelect
                                     v-model="form.battery_condition"
                                     :options="samsungBatteryOptions"
-                                    placeholder="باتری مهم نیست"
+                                    placeholder="انتخاب وضعیت باتری"
                                 />
+                                <small
+                                    v-if="fieldError('battery_condition')"
+                                    class="error"
+                                >
+                                    {{ fieldError('battery_condition') }}
+                                </small>
                             </div>
 
                             <label v-else class="field">
@@ -821,9 +1056,92 @@ const submit = async () => {
                                 <span>تومان</span>
                             </label>
 
-                            <small v-if="fieldError('max_price')" class="error price-error">
+                            <small
+                                v-if="fieldError('max_price') && !marketFeedback"
+                                class="error price-error"
+                            >
                                 {{ fieldError('max_price') }}
                             </small>
+
+                            <Transition name="market-feedback">
+                                <div
+                                    v-if="marketFeedback"
+                                    class="market-feedback-card"
+                                >
+                                    <div class="market-feedback-icon">
+                                        <span>!</span>
+                                    </div>
+
+                                    <div class="market-feedback-content">
+                                        <small class="market-feedback-label">
+                                            مایا بازار رو چک کرد
+                                        </small>
+
+                                        <h3>
+                                            {{ marketFeedback.headline }}
+                                        </h3>
+
+                                        <p>
+                                            {{ marketFeedback.body }}
+                                        </p>
+
+                                        <div class="market-feedback-stats">
+                                            <div>
+                                                <span>قیمت شما</span>
+                                                <strong>
+                                                    {{
+                                                        formatMoney(
+                                                            marketFeedback.candidate_price
+                                                        )
+                                                    }}
+                                                </strong>
+                                                <small>تومان</small>
+                                            </div>
+
+                                            <div
+                                                v-if="
+                                                    marketFeedback.demand_reference_price
+                                                "
+                                            >
+                                                <span>
+                                                    مرجع بازار
+                                                </span>
+                                                <strong>
+                                                    {{
+                                                        formatMoney(
+                                                            marketFeedback.demand_reference_price
+                                                        )
+                                                    }}
+                                                </strong>
+                                                <small>تومان</small>
+                                            </div>
+
+                                            <div
+                                                v-if="
+                                                    marketFeedback.sale_reference_price
+                                                "
+                                            >
+                                                <span>
+                                                    فروش مشابه
+                                                </span>
+                                                <strong>
+                                                    {{
+                                                        formatMoney(
+                                                            marketFeedback.sale_reference_price
+                                                        )
+                                                    }}
+                                                </strong>
+                                                <small>تومان</small>
+                                            </div>
+                                        </div>
+
+                                        <div class="market-feedback-final">
+                                            پس این درخواست رو ثبت نمی‌کنم.
+                                            یه عدد واقعی‌تر بزن 😉
+                                        </div>
+                                    </div>
+                                </div>
+                            </Transition>
                         </div>
 
                         <div class="contact-zone">
@@ -904,6 +1222,7 @@ const submit = async () => {
                                 !form.brand ||
                                 !form.model ||
                                 !form.storage ||
+                                !specificationsComplete ||
                                 !form.max_price ||
                                 !form.requester_name ||
                                 !form.requester_mobile
@@ -1068,6 +1387,223 @@ const submit = async () => {
 </template>
 
 <style scoped>
+.market-feedback-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr);
+    gap: 16px;
+    margin-top: 18px;
+    padding: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(199, 67, 93, .28);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at 5% 15%, rgba(255, 103, 131, .22), transparent 32%),
+        linear-gradient(135deg, #fff1f4 0%, #fff8f2 58%, #fff 100%);
+    box-shadow:
+        0 18px 46px rgba(139, 43, 66, .15),
+        inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.market-feedback-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        110deg,
+        transparent 32%,
+        rgba(255,255,255,.72) 50%,
+        transparent 68%
+    );
+    transform: translateX(-130%);
+    animation: market-feedback-scan 1.8s ease-out .15s 1;
+}
+
+.market-feedback-icon {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    width: 54px;
+    height: 54px;
+    place-items: center;
+    border-radius: 18px;
+    background: #c7435d;
+    color: white;
+    box-shadow: 0 10px 24px rgba(199, 67, 93, .28);
+}
+
+.market-feedback-icon span {
+    font-size: 25px;
+    font-weight: 950;
+}
+
+.market-feedback-content {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+}
+
+.market-feedback-label {
+    color: #bd4058;
+    font-size: 10px;
+    font-weight: 950;
+}
+
+.market-feedback-content h3 {
+    margin: 5px 0 0;
+    color: #382027;
+    font-size: 18px;
+    line-height: 1.8;
+    font-weight: 950;
+}
+
+.market-feedback-content > p {
+    margin: 8px 0 0;
+    color: #755960;
+    font-size: 12px;
+    line-height: 2.05;
+    font-weight: 650;
+}
+
+.market-feedback-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.market-feedback-stats > div {
+    padding: 10px 12px;
+    border: 1px solid rgba(190, 70, 94, .1);
+    border-radius: 15px;
+    background: rgba(255,255,255,.72);
+}
+
+.market-feedback-stats span,
+.market-feedback-stats small {
+    display: block;
+    color: #92747c;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.market-feedback-stats strong {
+    display: block;
+    margin-top: 3px;
+    color: #41282f;
+    font-size: 14px;
+    font-weight: 950;
+}
+
+.market-feedback-final {
+    margin-top: 14px;
+    padding: 10px 13px;
+    border-radius: 13px;
+    background: rgba(199, 67, 93, .09);
+    color: #a4384e;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.market-feedback-enter-active {
+    animation: market-feedback-in .45s cubic-bezier(.2,.8,.2,1);
+}
+
+.market-feedback-leave-active {
+    transition: opacity .18s ease, transform .18s ease;
+}
+
+.market-feedback-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+@keyframes market-feedback-in {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(.97);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes market-feedback-scan {
+    from { transform: translateX(-130%); }
+    to { transform: translateX(130%); }
+}
+
+@media (min-width: 641px) {
+    .market-feedback-card {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .market-feedback-content {
+        min-width: 0;
+    }
+
+    .market-feedback-stats {
+        grid-template-columns:
+            repeat(auto-fit, minmax(150px, 1fr));
+        width: 100%;
+        min-width: 0;
+    }
+
+    .market-feedback-stats > div {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .market-feedback-stats strong {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        font-size: clamp(12px, 1.35vw, 14px);
+    }
+}
+
+@media (max-width: 640px) {
+    .market-feedback-card {
+        grid-template-columns: 42px minmax(0, 1fr);
+        gap: 11px;
+        padding: 15px;
+        border-radius: 20px;
+    }
+
+    .market-feedback-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 13px;
+    }
+
+    .market-feedback-icon span {
+        font-size: 18px;
+    }
+
+    .market-feedback-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .market-feedback-stats > div {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .market-feedback-stats strong {
+        margin-top: 0;
+    }
+}
+
+.mobile-live-preview {
+    display: none;
+}
+
 .wanted-page {
     min-height: 100dvh;
     padding: 24px;
@@ -2439,6 +2975,518 @@ const submit = async () => {
 }
 
 @media (max-width: 640px) {
+    .mobile-live-preview {
+        position: sticky;
+        z-index: 18;
+        top: 8px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 9px;
+        margin: 14px 0;
+        padding: 12px 13px 11px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, .72);
+        border-radius: 22px;
+        background:
+            radial-gradient(
+                circle at 82% 14%,
+                var(--phone-soft),
+                transparent 32%
+            ),
+            linear-gradient(
+                135deg,
+                rgba(255,255,255,.91),
+                rgba(247,241,249,.94)
+            );
+        box-shadow:
+            0 12px 32px rgba(65, 47, 71, .14),
+            inset 0 1px 0 rgba(255,255,255,.9);
+        backdrop-filter: blur(18px);
+    }
+
+    .mobile-preview-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .mobile-preview-head > div {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+    }
+
+    .mobile-preview-head small {
+        color: #8b7c90;
+        font-size: 8px;
+        font-weight: 850;
+    }
+
+    .mobile-preview-head strong {
+        max-width: 190px;
+        margin-top: 1px;
+        overflow: hidden;
+        color: #312735;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        font-weight: 950;
+    }
+
+    .mobile-live-badge {
+        flex: 0 0 auto;
+        padding: 5px 7px;
+        border-radius: 999px;
+        background: #dff7ee;
+        color: #278166;
+        font-size: 7px;
+        font-weight: 950;
+        letter-spacing: .08em;
+    }
+
+    .mobile-phone-scene {
+        position: relative;
+        display: grid;
+        grid-template-columns: 82px minmax(0, 1fr);
+        min-height: 118px;
+        align-items: center;
+        gap: 12px;
+        isolation: isolate;
+    }
+
+    .mobile-phone-aura {
+        position: absolute;
+        z-index: -1;
+        right: -10px;
+        width: 118px;
+        height: 118px;
+        border-radius: 999px;
+        background:
+            radial-gradient(
+                circle,
+                var(--phone-soft),
+                var(--phone-glow) 38%,
+                transparent 72%
+            );
+        filter: blur(8px);
+        transition: background 420ms ease;
+    }
+
+    .mobile-phone-shape {
+        position: relative;
+        justify-self: center;
+        width: 64px;
+        aspect-ratio: .55;
+        padding: 3px;
+        border: 1px solid
+            color-mix(
+                in srgb,
+                var(--phone-edge) 72%,
+                #fff 28%
+            );
+        border-radius: 14px;
+        background:
+            linear-gradient(
+                145deg,
+                color-mix(
+                    in srgb,
+                    var(--phone-frame) 82%,
+                    #fff 18%
+                ),
+                var(--phone-frame) 55%,
+                var(--phone-edge)
+            );
+        box-shadow:
+            0 12px 24px var(--phone-glow),
+            inset 0 1px 0 rgba(255,255,255,.34);
+        transform: rotate(-1deg);
+        transition:
+            background 420ms ease,
+            border-color 420ms ease,
+            box-shadow 420ms ease,
+            filter 320ms ease,
+            transform 320ms ease;
+    }
+
+    .mobile-phone-screen {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 11px;
+        background:
+            radial-gradient(
+                circle at 50% 22%,
+                var(--phone-soft),
+                transparent 31%
+            ),
+            linear-gradient(
+                160deg,
+                var(--phone-screen-a),
+                var(--phone-screen-b)
+            );
+        text-align: center;
+        transition: background 420ms ease;
+    }
+
+    .mobile-phone-island {
+        position: absolute;
+        z-index: 8;
+        top: 5px;
+        left: 50%;
+        width: 21px;
+        height: 5px;
+        transform: translateX(-50%);
+        border-radius: 999px;
+        background: #171219;
+    }
+
+    .mobile-brand-mark {
+        position: absolute;
+        z-index: 5;
+        top: 17px;
+        left: 50%;
+        max-width: 50px;
+        transform: translateX(-50%);
+        color:
+            color-mix(
+                in srgb,
+                var(--phone-edge) 82%,
+                #111 18%
+            );
+    }
+
+    .mobile-brand-mark.apple span {
+        font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            'Segoe UI',
+            sans-serif;
+        font-size: 13px;
+    }
+
+    .mobile-brand-mark.samsung strong,
+    .mobile-brand-mark:not(.apple):not(.samsung) strong {
+        display: block;
+        max-width: 48px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-family: Arial, sans-serif;
+        font-size: 4px;
+        font-weight: 950;
+    }
+
+    .mobile-phone-copy {
+        position: relative;
+        z-index: 4;
+        display: flex;
+        max-width: 90%;
+        flex-direction: column;
+        align-items: center;
+        transform: translateY(6px);
+    }
+
+    .mobile-phone-copy small {
+        color: #806f86;
+        font-size: 4px;
+    }
+
+    .mobile-phone-copy strong {
+        max-width: 52px;
+        margin-top: 1px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 6px;
+        font-weight: 950;
+    }
+
+    .mobile-phone-copy span {
+        color: #846e89;
+        font-size: 4px;
+    }
+
+    .mobile-condition-layer {
+        position: absolute;
+        z-index: 6;
+        inset: 0;
+        pointer-events: none;
+    }
+
+    .mobile-scratch {
+        position: absolute;
+        width: 1px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.84);
+        opacity: 0;
+        transition: opacity 260ms ease;
+    }
+
+    .mobile-scratch.scratch-a {
+        top: 35%;
+        right: 20%;
+        height: 15px;
+        transform: rotate(24deg);
+    }
+
+    .mobile-scratch.scratch-b {
+        top: 58%;
+        left: 25%;
+        height: 11px;
+        transform: rotate(-32deg);
+    }
+
+    .mobile-scratch.scratch-c {
+        bottom: 15%;
+        right: 35%;
+        height: 9px;
+        transform: rotate(42deg);
+    }
+
+    .mobile-polish {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        background:
+            linear-gradient(
+                120deg,
+                transparent 18%,
+                rgba(255,255,255,.35) 34%,
+                transparent 49%
+            );
+    }
+
+    .mobile-shine {
+        position: absolute;
+        top: 21%;
+        right: 15%;
+        opacity: 0;
+        color: #fff;
+        font-size: 10px;
+        text-shadow:
+            0 0 7px rgba(255,255,255,.95),
+            0 0 12px var(--phone-soft);
+    }
+
+    .mobile-phone-shape.condition-pristine {
+        filter: saturate(1.08) brightness(1.055);
+        box-shadow:
+            0 13px 26px var(--phone-glow),
+            0 0 16px var(--phone-soft);
+    }
+
+    .mobile-phone-shape.condition-pristine
+    .mobile-polish {
+        opacity: 1;
+        animation: mobile-phone-polish 2.8s ease-in-out infinite;
+    }
+
+    .mobile-phone-shape.condition-pristine
+    .mobile-shine {
+        opacity: 1;
+        animation: mobile-phone-shine 2.1s ease-in-out infinite;
+    }
+
+    .mobile-phone-shape.condition-excellent
+    .scratch-a {
+        opacity: .08;
+    }
+
+    .mobile-phone-shape.condition-excellent
+    .mobile-polish {
+        opacity: .42;
+    }
+
+    .mobile-phone-shape.condition-clean
+    .mobile-scratch {
+        opacity: .28;
+    }
+
+    .mobile-phone-shape.condition-worn {
+        filter: saturate(.86) brightness(.96);
+        transform: rotate(-2deg);
+    }
+
+    .mobile-phone-shape.condition-worn
+    .mobile-scratch {
+        opacity: .62;
+    }
+
+    .mobile-phone-shape.condition-worn
+    .scratch-b {
+        opacity: .82;
+    }
+
+    .mobile-battery {
+        position: absolute;
+        z-index: 10;
+        top: 17px;
+        right: 3px;
+        display: inline-flex;
+        min-height: 12px;
+        align-items: center;
+        gap: 2px;
+        padding: 2px 3px;
+        border-radius: 999px;
+        background: rgba(25,22,28,.82);
+        color: #fff;
+        backdrop-filter: blur(5px);
+    }
+
+    .mobile-battery strong {
+        font-size: 3.5px;
+        font-weight: 950;
+        white-space: nowrap;
+    }
+
+    .mobile-battery-icon {
+        position: relative;
+        display: block;
+        width: 8px;
+        height: 4px;
+        padding: .5px;
+        border: .7px solid currentColor;
+        border-radius: 1px;
+    }
+
+    .mobile-battery-icon::after {
+        content: '';
+        position: absolute;
+        top: 1px;
+        right: -2px;
+        width: 1px;
+        height: 2px;
+        background: currentColor;
+    }
+
+    .mobile-battery-icon i {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: #79e1b5;
+    }
+
+    .mobile-battery.battery-medium
+    .mobile-battery-icon i {
+        width: 74%;
+        background: #d8d96d;
+    }
+
+    .mobile-battery.battery-low
+    .mobile-battery-icon i {
+        width: 48%;
+        background: #e5ad62;
+    }
+
+    .mobile-battery.battery-critical
+    .mobile-battery-icon i {
+        width: 24%;
+        background: #e36d78;
+    }
+
+    .mobile-preview-meta {
+        display: flex;
+        min-width: 0;
+        flex-wrap: wrap;
+        align-content: center;
+        gap: 6px;
+    }
+
+    .mobile-preview-meta > span {
+        display: inline-flex;
+        min-height: 24px;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 8px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.72);
+        color: #6b5c70;
+        font-size: 7px;
+        font-weight: 850;
+    }
+
+    .mobile-color-dot {
+        width: 7px;
+        height: 7px;
+        border: 1px solid rgba(31,26,34,.15);
+        border-radius: 999px;
+        background: var(--phone-frame);
+        box-shadow: 0 0 0 2px var(--phone-soft);
+    }
+
+    .mobile-preview-meta
+    .condition-pristine {
+        background: rgba(110,224,178,.18);
+        color: #28745b;
+    }
+
+    .mobile-preview-meta
+    .condition-excellent {
+        background: rgba(139,213,194,.15);
+        color: #3e7569;
+    }
+
+    .mobile-preview-meta
+    .condition-clean {
+        background: rgba(239,201,106,.16);
+        color: #85681f;
+    }
+
+    .mobile-preview-meta
+    .condition-worn {
+        background: rgba(231,127,133,.14);
+        color: #9a474d;
+    }
+
+    .mobile-preview-hint {
+        display: block;
+        color: #8a7a8f;
+        font-size: 7px;
+        line-height: 1.7;
+        font-weight: 750;
+    }
+
+    /*
+     * The full desktop preview would otherwise appear again
+     * after the form on mobile. Keep the experience focused:
+     * one live preview, exactly where the user is editing specs.
+     */
+    .workspace > .preview-card {
+        display: none;
+    }
+
+    @keyframes mobile-phone-polish {
+        0%,
+        100% {
+            transform: translateX(-42%);
+            opacity: .18;
+        }
+
+        55% {
+            transform: translateX(42%);
+            opacity: .75;
+        }
+    }
+
+    @keyframes mobile-phone-shine {
+        0%,
+        100% {
+            transform: scale(.7);
+            opacity: .3;
+        }
+
+        50% {
+            transform: scale(1.15);
+            opacity: 1;
+        }
+    }
+
     .wanted-page {
         padding: 0;
         background: #f2edf5;

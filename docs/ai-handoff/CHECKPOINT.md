@@ -1225,3 +1225,288 @@ Public tool #5 is implemented and manually approved.
   - rejection of storage not attached to selected model.
 - Public Features access test includes the wanted tool.
 - Targeted tests and production build passed before final approval.
+
+## Wanted-market demand intelligence + smart price guard — completed (2026-08-16)
+
+The public «چی می‌خوام؟» tool has been upgraded from a simple request form into a robust demand-data source for MayaHamrah's pricing intelligence.
+
+### Product meaning / pricing architecture
+- `max_price` is treated as a real colleague buy bid / buy-side liquidity signal, not as a sale asking price.
+- Wanted demand remains separate from completed-sale evidence.
+- Estimator architecture now keeps distinct anchors:
+  - colleague demand / suggested purchase anchor
+  - real completed-sale / transaction anchor
+- Wanted bids are never simply averaged with sales.
+- Demand volume matters: many independent buyers around a price are stronger evidence than one or two isolated bids.
+
+### Currency snapshot
+New migration:
+- `database/migrations/2026_08_16_124000_add_currency_snapshot_to_wanted_device_requests.php`
+
+Wanted requests now store:
+- `usd_rate`
+- `usd_rate_date`
+- `usd_rate_source`
+
+Purpose:
+- preserve the exchange-rate context at request time
+- allow historical demand prices to be normalized to current market conditions
+- keep demand evidence comparable with existing purchase/sale currency snapshots
+
+### Demand provenance
+New migration:
+- `database/migrations/2026_08_16_125000_add_origin_to_wanted_device_requests.php`
+
+Fields:
+- `origin`, default `organic`
+- `market_reference_source`
+
+Known origins:
+- `organic`
+- `bootstrap_market`
+
+Bootstrap rows remain clearly distinguishable from real colleague demand.
+
+### WantedMarketSignalService
+New service:
+- `app/Services/WantedMarketSignalService.php`
+
+Core behavior:
+- exact brand/model/storage matching for estimator demand
+- 45-day demand lookback
+- historical USD normalization
+- fresh raw-price fallback only for recent rows lacking a snapshot
+- one mobile contributes only its latest effective opinion
+- specification similarity includes:
+  - condition grade
+  - battery health / Samsung battery condition
+  - registration
+  - color
+- recency weighting
+- source weighting:
+  - organic demand has full authority
+  - bootstrap market samples have reduced weight
+- robust aggregation uses weighted median and MAD-style outlier bounds rather than simple average
+- organic consensus requires at least 5 unique organic buyers
+- bootstrap rows cannot manufacture organic consensus
+- bootstrap evidence retires once sufficient organic demand exists
+
+Demand summary exposes:
+- reference price
+- market range
+- robust bounds
+- organic / bootstrap / unique demand counts
+- provisional state
+- organic consensus state
+- confidence
+- specification-adjusted state
+
+### Same-model / other-storage sanity fallback
+`WantedMarketSignalService` also provides a model-level sanity reference across other storage variants of the same exact model.
+
+Important:
+- this fallback is **not** used as the estimator's actual exact-storage price
+- it exists only as a gross sanity check when the requested storage has little or no direct evidence
+- eligible other-storage evidence must have either:
+  - bootstrap provenance, or
+  - at least 3 unique organic colleagues for that storage
+
+This closes cases such as an absurd `iPhone 15 Pro 512GB` bid when 512GB itself has no history but 256GB of the exact same model has strong market evidence.
+
+### WantedPriceGuardService
+New service:
+- `app/Services/WantedPriceGuardService.php`
+
+Submission behavior:
+1. Check exact organic demand consensus.
+2. If enough organic evidence exists, use robust demand bounds.
+3. If exact demand is sparse, use provisional exact-storage evidence when available.
+4. If exact storage has no usable anchor, use same-model / other-storage evidence only for extreme-sanity checking.
+5. Completed-sale evidence may independently corroborate an extreme bid.
+6. Reject grossly absurd prices **before insert**.
+7. Rejected attempts never contaminate the wanted-demand dataset.
+
+Bootstrap/external market samples:
+- remain provisional
+- have reduced weight
+- cannot create organic consensus
+- may reject only grossly absurd values outside a deliberately widened sanity corridor
+
+Confirmed live example:
+- Apple
+- iPhone 15 Pro
+- 512GB
+- Natural Titanium
+- condition C
+- registered
+- battery 88
+- candidate price: 1,000,000 toman
+
+Result:
+- rejected before insert
+- guard source: provisional extreme sanity
+- model-level reference from other storage variants: approximately 122,000,000 toman
+- widened lower sanity bound: approximately 43,920,000 toman
+
+User manually confirmed the public UI correctly rejects and explains this case.
+
+### Bootstrap market samples
+New seeder:
+- `database/seeders/WantedMarketBootstrapSeeder.php`
+
+Behavior:
+- rerunnable
+- replaces only `bootstrap_market` rows
+- creates 20 provisional market-reference wanted rows
+- samples cover common Apple and Samsung models
+- provenance references Divar / Sheypoor market context
+- bootstrap rows are **not fake completed sales**
+- bootstrap rows do **not** represent callable colleagues
+- no real personal phone numbers are used
+
+Divar / Sheypoor principle remains:
+- public asking prices are contextual/provisional evidence only
+- they do not become real transaction evidence
+- they are not blended into completed-sale history
+
+### Mandatory specification quality
+Public wanted submissions now require price-relevant specification evidence:
+- condition grade is required
+- registration status is required
+- Apple/non-Samsung battery health is required
+- Samsung battery condition is required
+
+Removed ambiguous defaults:
+- no «تمیزی مهم نیست»
+- no «رجیستری مهم نیست»
+- no «باتری مهم نیست»
+
+Reason:
+- these attributes materially affect market-price comparison
+- weak/default specifications created loopholes for poor price validation
+
+Color remains optional.
+
+### Mobile number behavior
+- visible mobile input uses Persian digits for the user experience
+- server still normalizes and stores canonical Latin digits
+- canonical storage is intentional for:
+  - deduplication
+  - contact behavior
+  - future demand-feed actions
+
+### Smart market feedback UI
+When a submitted price is rejected:
+- backend returns structured `market_feedback`
+- public UI shows an immediate intelligent market-analysis card near the price field
+- feedback includes, when available:
+  - candidate price
+  - demand reference
+  - completed-sale reference
+  - contextual explanation of why the price was rejected
+- copy is intentionally conversational and colleague-friendly rather than formal
+- rejected request explicitly says it will not be registered
+
+Desktop:
+- feedback card spans the full price section width
+- price/reference frames remain contained and responsive
+
+Mobile:
+- feedback layout remains compact and stacked
+
+### Mobile live device preview
+Desktop preview remains unchanged and sticky in its original right-side layout.
+
+Mobile now has a dedicated live preview placed directly in the device/specification flow:
+- visible while entering specification data
+- reacts instantly to:
+  - color
+  - condition
+  - battery
+  - brand/model/storage
+- compact sticky presentation keeps the visual feedback in view while editing
+- full desktop preview is hidden on mobile to avoid duplicate previews
+
+User explicitly approved the resulting mobile experience.
+
+### Price estimator integration
+`PriceEstimationService` now consumes `WantedMarketSignalService`.
+
+Estimator keeps sale and demand evidence separate:
+- completed-sale estimate stays transaction-based
+- `demand_signal` is returned separately
+- `suggested_purchase_price` comes from the demand reference
+- demand is never averaged into completed-sale pricing
+
+Public and internal estimator UIs now expose:
+- colleague demand signal
+- organic demand count
+- confidence
+- provisional/real-demand distinction
+- purchase-side reference even when completed-sale history is unavailable
+
+Specification similarity already accounts for:
+- condition
+- battery
+- registration
+
+Any stale UI wording claiming otherwise has been corrected.
+
+### Public form flow
+Reviewed and intentionally kept unchanged because dependency order is already logical:
+
+- brand
+- model
+- storage
+- color
+- condition
+- registration
+- battery
+- maximum buy price
+- requester/contact information
+
+Dependency resets are correct:
+- changing brand clears model/storage/color/battery fields
+- changing model clears storage/color
+- model depends on brand
+- storage/color depend on model
+
+User approved the current order and requested no unnecessary rearrangement.
+
+### Validation / verification
+Relevant automated coverage now includes:
+- gross organic-demand outlier rejection
+- repeated same-mobile demand does not create false consensus
+- immutable USD snapshot behavior
+- bootstrap does not reject plausible aggressive bids
+- provisional demand + completed sale can reject gross outliers
+- mandatory condition / registration / battery evidence
+- absurd provisional-market bid rejected even without exact completed sale
+- same-model other-storage fallback catches sparse exact-storage absurd prices
+- estimator exposes demand separately from sales
+
+Final targeted suite:
+- `PublicWantedDeviceTest`
+- `PriceEstimationServiceTest`
+- `PublicFeaturesTest`
+
+Result:
+- 28 tests passed
+- 99 assertions passed
+
+Also confirmed:
+- production Vite build passed
+- `git diff --check` passed
+- user manually verified desktop and mobile wanted-tool behavior and approved the final UX
+
+### Next product area
+Next public tool:
+- #6 «چیا می‌خوان؟»
+
+Planned direction:
+- public live demand board powered by `wanted_device_requests`
+- organic requester mobile hidden initially
+- explicit reveal/contact action
+- bootstrap rows shown transparently as provisional market samples
+- bootstrap rows must never expose fake callable phone numbers
+- visual direction should feel like a live market pulse / demand board, complementary to the radar/request identity of «چی می‌خوام؟»

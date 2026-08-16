@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\DB;
 
 class PriceEstimationService
 {
+    public function __construct(
+        private WantedMarketSignalService $wantedMarketSignalService
+    ) {
+    }
+
     public function estimate(
         string $brand,
         string $model,
@@ -22,6 +27,18 @@ class PriceEstimationService
         if ($currentUsdRate <= 0) {
             return $this->emptyResult('current_usd_unavailable');
         }
+
+        $demandSignal = $this->wantedMarketSignalService->demandSummary(
+            $brand,
+            $model,
+            $storage,
+            $currentUsdRate,
+            $conditionGrade,
+            $batteryHealth,
+            $batteryCondition,
+            $registrationStatus,
+            $color
+        );
 
         $comparables = DB::table('sales as s')
             ->join('devices as d', 'd.id', '=', 's.device_id')
@@ -83,7 +100,10 @@ class PriceEstimationService
             ->values();
 
         if ($comparables->isEmpty()) {
-            return $this->emptyResult('no_exact_comparables');
+            return $this->emptyResult(
+                'no_exact_comparables',
+                $demandSignal
+            );
         }
 
         $prices = $comparables
@@ -131,6 +151,13 @@ class PriceEstimationService
             'current_usd_rate' => $currentUsdRate,
             'specification_adjusted' => $hasSpecificationInputs,
             'comparables' => $comparables->all(),
+
+            // A separate professional-buyer anchor.
+            // This is NOT averaged into completed-sale market value.
+            'demand_signal' => $demandSignal,
+            'suggested_purchase_price' => $demandSignal['available']
+                ? $demandSignal['reference_price']
+                : null,
         ];
     }
 
@@ -283,8 +310,27 @@ class PriceEstimationService
         );
     }
 
-    private function emptyResult(string $reason): array
-    {
+    private function emptyResult(
+        string $reason,
+        ?array $demandSignal = null
+    ): array {
+        $demandSignal ??= [
+            'available' => false,
+            'reference_price' => null,
+            'range_min' => null,
+            'range_max' => null,
+            'robust_lower_bound' => null,
+            'robust_upper_bound' => null,
+            'unique_demand_count' => 0,
+            'organic_demand_count' => 0,
+            'bootstrap_demand_count' => 0,
+            'provisional' => false,
+            'organic_consensus' => false,
+            'confidence' => 'none',
+            'lookback_days' => 45,
+            'specification_adjusted' => false,
+        ];
+
         return [
             'available' => false,
             'reason' => $reason,
@@ -296,6 +342,10 @@ class PriceEstimationService
             'current_usd_rate' => null,
             'specification_adjusted' => false,
             'comparables' => [],
+            'demand_signal' => $demandSignal,
+            'suggested_purchase_price' => $demandSignal['available']
+                ? $demandSignal['reference_price']
+                : null,
         ];
     }
 }
