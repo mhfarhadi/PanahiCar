@@ -15,10 +15,7 @@ return new class extends Migration
                 ->constrained('devices')
                 ->cascadeOnDelete();
 
-            $table->foreignId('seller_id')
-                ->nullable()
-                ->constrained('contacts')
-                ->nullOnDelete();
+            $table->foreignId('seller_id')->nullable();
 
             $table->unsignedBigInteger('purchase_price');
             $table->date('purchase_date');
