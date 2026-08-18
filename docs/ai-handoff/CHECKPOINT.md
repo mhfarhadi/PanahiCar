@@ -1,12 +1,14 @@
-# Automaya — Quick Checkpoint
+# Panahi Car — Quick Checkpoint
 
 Date: 2026-08-18
 
-Project: **automaya** — car dealership management (MayaHamrah workflow, automotive domain)
+Project: **Panahi Car** — car dealership management software
 
 Path: `/Users/macbook/Desktop/automaya`
 
-Branch: `automaya/inventory-foundation`
+GitHub: `https://github.com/mhfarhadi/PanahiCar` (private, default branch `main`)
+
+Branch: `main`
 
 ## Stack
 
@@ -16,7 +18,7 @@ Branch: `automaya/inventory-foundation`
 
 ## Domain
 
-Same operational model as MayaHamrah, adapted for a car showroom:
+Dealership operations:
 
 - **Inventory (`in_stock`)** — vehicles purchased into showroom stock
 - **Announced (`announced`)** — consignment / seller-held cars
@@ -46,7 +48,7 @@ Demo data: `AutomayaDemoSeeder` — 20 in-stock, 20 announced, 20 cash sales, 20
 ## UI
 
 - Behance Cortana / Modern Fintech CRM: off-white canvas `#f4f4f5`, white floating cards, black pill CTAs, green for positive numbers
-- Not neumorphism, not lime, not MayaHamrah coral
+- Not neumorphism, not lime, not coral-accent UI
 - Compact asset-style list rows; real car photos only on inventory/sale vehicles
 - Dashboard title: اتوگالری مایا — photo hero of in-stock cars + metric cards + Features illustration tiles
 - Page transitions: soft fade/slide/blur (`am-soft-enter`), card lift on hover

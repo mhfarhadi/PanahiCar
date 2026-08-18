@@ -1,4 +1,4 @@
-# Automaya — Agent Instructions
+# Panahi Car — Agent Instructions
 
 Before making any change:
 
@@ -17,6 +17,6 @@ Before making any change:
 13. Before committing: run relevant tests, `php artisan test`, `npm run build` when frontend changed, `git diff --check`.
 14. Use `docs/ai-handoff/CHECKPOINT.md` as the current project handoff/source of truth.
 
-Current project branch: `automaya/inventory-foundation`.
+Current project branch: `main`.
 
-Automaya is a car dealership management system (MayaHamrah workflow, automotive domain). Work only inside `/Users/macbook/Desktop/automaya`.
+This is Panahi Car dealership software. Git remote is `https://github.com/mhfarhadi/PanahiCar.git` only. It is not MayaHamrah and must not be treated as a fork, clone, or continuation of that project. Work only inside `/Users/macbook/Desktop/automaya`.
