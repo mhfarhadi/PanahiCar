@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use App\Services\CurrencyRateService;
 use Illuminate\Support\Facades\DB;
 use Morilog\Jalali\Jalalian;
 
@@ -35,17 +34,6 @@ test('it rounds installment checks to nearest ten thousand toman and keeps contr
         ->toCarbon()
         ->toDateString();
 
-    $this->mock(CurrencyRateService::class, function ($mock) use ($saleDate) {
-        $mock->shouldReceive('snapshotForDate')
-            ->once()
-            ->with('USD', $saleDate)
-            ->andReturn([
-                'rate' => 190_000,
-                'rate_date' => $saleDate,
-                'source' => 'test',
-            ]);
-    });
-
     $response = $this
         ->actingAs($user)
         ->post(route('sales.store', $deviceId), [
@@ -66,6 +54,7 @@ test('it rounds installment checks to nearest ten thousand toman and keeps contr
         ->first();
 
     expect($sale)->not->toBeNull()
+        ->and($sale->usd_rate)->toBeNull()
         ->and((int) $sale->installment_profit)->toBe(39_010_000)
         ->and((int) $sale->contract_total)->toBe(339_010_000);
 

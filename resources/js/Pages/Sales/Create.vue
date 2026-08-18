@@ -4,7 +4,7 @@ import { computed, ref, watch } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
 import { toJalaali, toGregorian, jalaaliMonthLength } from 'jalaali-js';
-import { colorLabel } from '@/Utils/deviceLabels';
+import { colorLabel, formatMileage, formatYear } from '@/Utils/vehicleLabels';
 
 const props = defineProps({
     device: {
@@ -38,73 +38,15 @@ const form = useForm({
     installment_count: 12,
     first_due_date: '',
     sale_date: localDate,
-    usd_rate: '',
     notes: '',
 });
 
 const buyerSearch = ref('');
 
-const currencyRateLoading = ref(false);
-const currencyRateFound = ref(false);
-const currencyRateSource = ref(null);
-const currencyRateError = ref('');
-
 const goldRateLoading = ref(false);
 const goldRateFound = ref(false);
 const goldRateSource = ref(null);
 const goldRateError = ref('');
-
-const loadCurrencyRate = async (date) => {
-    if (!date) {
-        form.usd_rate = '';
-        currencyRateFound.value = false;
-        currencyRateSource.value = null;
-        currencyRateError.value = '';
-        return;
-    }
-
-    currencyRateLoading.value = true;
-    currencyRateError.value = '';
-
-    try {
-        const response = await fetch(
-            route('sales.currency-rate', { date }),
-            {
-                headers: {
-                    Accept: 'application/json',
-                },
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error('Currency rate request failed');
-        }
-
-        const data = await response.json();
-
-        currencyRateFound.value = Boolean(data.found);
-        currencyRateSource.value = data.source ?? null;
-
-        form.usd_rate = data.found && data.rate
-            ? String(data.rate)
-            : '';
-    } catch (error) {
-        currencyRateFound.value = false;
-        currencyRateSource.value = null;
-        form.usd_rate = '';
-        currencyRateError.value = 'دریافت نرخ دلار انجام نشد؛ نرخ را دستی وارد کنید.';
-    } finally {
-        currencyRateLoading.value = false;
-    }
-};
-
-watch(
-    () => form.sale_date,
-    (date) => {
-        loadCurrencyRate(date);
-    },
-    { immediate: true }
-);
 
 const loadGoldRate = async (date) => {
     if (form.sale_type !== 'installment' || form.guarantee_type !== 'gold') {
@@ -215,12 +157,6 @@ const formatPrice = (value) => {
 
 const handleSalePrice = (event) => {
     form.sale_price = normalizeDigits(event.target.value).replace(/\D/g, '');
-};
-
-const handleUsdRate = (event) => {
-    form.usd_rate = normalizeDigits(event.target.value)
-        .replace(/\D/g, '')
-        .slice(0, 9);
 };
 
 const handleGoldRate = (event) => {
@@ -558,7 +494,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="ثبت فروش | مایاهمراه" />
+    <Head title="ثبت فروش | automaya" />
 
     <AuthenticatedLayout>
         <div
@@ -568,8 +504,8 @@ const submit = () => {
             <div class="mx-auto max-w-4xl">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm font-bold text-[#ff6570]">
-                            مایاهمراه
+                        <p class="text-sm font-bold text-[#2563eb]">
+                            automaya
                         </p>
 
                         <h1 class="mt-1 text-2xl font-black">
@@ -578,7 +514,7 @@ const submit = () => {
 
                         <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
                             {{ device.brand }} {{ device.model }}
-                            <span v-if="device.storage">· {{ device.storage }}</span>
+                            <span v-if="device.model_year">· {{ formatYear(device.model_year) }}</span>
                         </p>
                     </div>
 
@@ -593,7 +529,7 @@ const submit = () => {
                 <div class="mb-5 rounded-3xl bg-white p-5 shadow-sm dark:bg-white/[0.035]">
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div>
-                            <p class="text-xs text-slate-400">دستگاه</p>
+                            <p class="text-xs text-slate-400">خودرو</p>
                             <p class="mt-1 font-black">
                                 {{ device.brand }} {{ device.model }}
                             </p>
@@ -607,9 +543,16 @@ const submit = () => {
                         </div>
 
                         <div>
-                            <p class="text-xs text-slate-400">IMEI</p>
+                            <p class="text-xs text-slate-400">سال / کارکرد</p>
+                            <p class="mt-1 font-bold">
+                                {{ formatYear(device.model_year) }} · {{ formatMileage(device.mileage) }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <p class="text-xs text-slate-400">VIN</p>
                             <p class="mt-1 font-bold" dir="ltr">
-                                {{ device.imei || '—' }}
+                                {{ device.vin || '—' }}
                             </p>
                         </div>
 
@@ -638,7 +581,7 @@ const submit = () => {
                                     class="rounded-2xl border px-4 py-4 font-black transition"
                                     :class="
                                         form.sale_type === 'cash'
-                                            ? 'border-[#ff6d76] bg-[#ff6d76] text-white'
+                                            ? 'border-[#2563eb] bg-[#2563eb] text-white'
                                             : 'border-slate-200/60 bg-[#f7f8fa] text-slate-600 dark:border-white/10 dark:bg-white/[0.025] dark:text-slate-300'
                                     "
                                     @click="form.sale_type = 'cash'"
@@ -651,7 +594,7 @@ const submit = () => {
                                     class="rounded-2xl border px-4 py-4 font-black transition"
                                     :class="
                                         form.sale_type === 'installment'
-                                            ? 'border-[#ff6d76] bg-[#ff6d76] text-white'
+                                            ? 'border-[#2563eb] bg-[#2563eb] text-white'
                                             : 'border-slate-200/60 bg-[#f7f8fa] text-slate-600 dark:border-white/10 dark:bg-white/[0.025] dark:text-slate-300'
                                     "
                                     @click="form.sale_type = 'installment'"
@@ -670,7 +613,7 @@ const submit = () => {
                                 v-model="buyerSearch"
                                 type="text"
                                 placeholder="جستجو با نام یا موبایل"
-                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
+                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/10 dark:bg-white/[0.025]"
                             />
 
                             <div
@@ -683,7 +626,7 @@ const submit = () => {
                                     class="flex w-full items-center justify-between rounded-xl px-3 py-3 text-right transition"
                                     :class="
                                         String(form.buyer_id) === String(contact.id)
-                                            ? 'bg-[#ff6d76] text-white'
+                                            ? 'bg-[#2563eb] text-white'
                                             : 'hover:bg-[#f7f8fa] dark:hover:bg-slate-800'
                                     "
                                     @click="form.buyer_id = contact.id"
@@ -700,7 +643,7 @@ const submit = () => {
 
                             <div
                                 v-if="selectedBuyer"
-                                class="mt-3 rounded-2xl bg-[#fff0f1] p-4 dark:bg-[#ff6d76]/[0.08]"
+                                class="mt-3 rounded-2xl bg-[#eff6ff] p-4 dark:bg-[#2563eb]/[0.08]"
                             >
                                 <p class="font-black">
                                     {{ selectedBuyer.name }}
@@ -728,7 +671,7 @@ const submit = () => {
                                 type="text"
                                 inputmode="numeric"
                                 placeholder="مثلاً ۱۳۵,۰۰۰,۰۰۰"
-                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
+                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 @input="handleSalePrice"
                             />
 
@@ -752,7 +695,7 @@ const submit = () => {
                                         class="rounded-2xl border px-4 py-4 text-right transition"
                                         :class="
                                             form.guarantee_type === 'check'
-                                                ? 'border-[#ff6d76] bg-[#fff0f1] text-[#d85e68] ring-2 ring-[#ff6d76]/15 dark:bg-[#ff6d76]/10 dark:text-[#ff9299]'
+                                                ? 'border-[#2563eb] bg-[#eff6ff] text-[#1d4ed8] ring-2 ring-[#2563eb]/15 dark:bg-[#2563eb]/10 dark:text-[#93c5fd]'
                                                 : 'border-slate-200/60 bg-[#f7f8fa] text-slate-600 dark:border-white/10 dark:bg-white/[0.025] dark:text-slate-300'
                                         "
                                         @click="form.guarantee_type = 'check'"
@@ -802,7 +745,7 @@ const submit = () => {
                                     type="text"
                                     inputmode="numeric"
                                     placeholder="مثلاً ۳۰,۰۰۰,۰۰۰"
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                     @input="handleDownPayment"
                                 />
 
@@ -834,7 +777,7 @@ const submit = () => {
                                             type="text"
                                             inputmode="decimal"
                                             placeholder="۶.۵"
-                                            class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] pl-12 text-center focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
+                                            class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] pl-12 text-center focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                             @input="handleMonthlyProfitRate"
                                             @blur="normalizeMonthlyProfitRate"
                                         />
@@ -877,7 +820,7 @@ const submit = () => {
                                     type="text"
                                         inputmode="numeric"
                                     @input="handleInstallmentCount"
-                                        class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
+                                        class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 />
 
                                 <p
@@ -906,7 +849,7 @@ const submit = () => {
 
                                 <input
                                     type="text"
-                                    class="first-due-date-input w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
+                                    class="first-due-date-input w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                     placeholder="تاریخ اولین قسط"
                                     readonly
                                 />
@@ -1177,7 +1120,7 @@ const submit = () => {
                             </div>
 
                             <div
-                                class="sm:col-span-2 grid gap-3 rounded-2xl bg-[#fff0f1] p-4 dark:bg-[#ff6d76]/[0.08] sm:grid-cols-2 lg:grid-cols-6"
+                                class="sm:col-span-2 grid gap-3 rounded-2xl bg-[#eff6ff] p-4 dark:bg-[#2563eb]/[0.08] sm:grid-cols-2 lg:grid-cols-6"
                             >
                                 <div>
                                     <p class="text-xs text-slate-500 dark:text-slate-400">
@@ -1201,7 +1144,7 @@ const submit = () => {
                                     <p class="text-xs text-slate-500 dark:text-slate-400">
                                         مبلغ هر قسط
                                     </p>
-                                    <p class="mt-1 font-black text-[#d85e68] dark:text-[#ff9299]">
+                                    <p class="mt-1 font-black text-[#1d4ed8] dark:text-[#93c5fd]">
                                         {{ formatMoney(installmentAmount) }} تومان
                                     </p>
                                 </div>
@@ -1210,7 +1153,7 @@ const submit = () => {
                                     <p class="text-xs text-slate-500 dark:text-slate-400">
                                         مجموع اقساط
                                     </p>
-                                    <p class="mt-1 font-black text-[#d85e68] dark:text-[#ff9299]">
+                                    <p class="mt-1 font-black text-[#1d4ed8] dark:text-[#93c5fd]">
                                         {{ formatMoney(installmentTotal) }} تومان
                                     </p>
                                 </div>
@@ -1261,7 +1204,7 @@ const submit = () => {
 
                             <input
                                 type="text"
-                                class="sale-date-input w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
+                                class="sale-date-input w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 placeholder="تاریخ فروش"
                                 readonly
                             />
@@ -1271,79 +1214,6 @@ const submit = () => {
                                 class="mt-2 text-xs font-bold text-red-500"
                             >
                                 {{ form.errors.sale_date }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <label class="mb-2 block text-sm font-bold">
-                                نرخ دلار روز فروش
-                            </label>
-
-                            <div class="relative">
-                                <input
-                                    :value="formatPrice(form.usd_rate)"
-                                    type="text"
-                                    inputmode="numeric"
-                                    :readonly="currencyRateFound || currencyRateLoading"
-                                    :placeholder="
-                                        currencyRateLoading
-                                            ? 'در حال دریافت نرخ...'
-                                            : currencyRateFound
-                                                ? ''
-                                                : 'نرخ دلار را دستی وارد کنید'
-                                    "
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] pl-16 focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 read-only:cursor-default read-only:text-slate-500 dark:border-white/10 dark:bg-white/[0.025] dark:read-only:text-slate-400"
-                                    @input="handleUsdRate"
-                                />
-
-                                <span
-                                    class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400"
-                                >
-                                    تومان
-                                </span>
-                            </div>
-
-                            <p
-                                v-if="currencyRateLoading"
-                                class="mt-2 text-xs font-bold text-slate-400"
-                            >
-                                در حال بررسی آرشیو نرخ دلار...
-                            </p>
-
-                            <p
-                                v-else-if="currencyRateFound"
-                                class="mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400"
-                            >
-                                <template v-if="currencyRateSource === 'navasan_historical_last'">
-                                    نرخ تاریخی · منبع: نوسان
-                                </template>
-                                <template v-else-if="currencyRateSource === 'navasan'">
-                                    منبع: نوسان
-                                </template>
-                                <template v-else>
-                                    نرخ آرشیوی
-                                </template>
-                            </p>
-
-                            <p
-                                v-else
-                                class="mt-2 text-xs font-bold text-amber-600 dark:text-amber-400"
-                            >
-                                دریافت نرخ این تاریخ از نوسان انجام نشد؛ نرخ دلار همان روز را دستی وارد کنید.
-                            </p>
-
-                            <p
-                                v-if="currencyRateError"
-                                class="mt-2 text-xs font-bold text-red-500"
-                            >
-                                {{ currencyRateError }}
-                            </p>
-
-                            <p
-                                v-if="form.errors.usd_rate"
-                                class="mt-2 text-xs font-bold text-red-500"
-                            >
-                                {{ form.errors.usd_rate }}
                             </p>
                         </div>
 
@@ -1390,7 +1260,7 @@ const submit = () => {
                             <textarea
                                 v-model="form.notes"
                                 rows="4"
-                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
+                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 placeholder="اختیاری"
                             ></textarea>
                         </div>
@@ -1400,7 +1270,7 @@ const submit = () => {
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="rounded-2xl bg-[#ff6d76] px-6 py-3 text-sm font-black text-white transition hover:bg-[#f45f6a] disabled:opacity-50"
+                            class="rounded-2xl bg-[#2563eb] px-6 py-3 text-sm font-black text-white transition hover:bg-[#1d4ed8] disabled:opacity-50"
                         >
                             {{ form.sale_type === 'cash' ? 'ثبت فروش نقدی' : 'ثبت فروش اقساطی' }}
                         </button>

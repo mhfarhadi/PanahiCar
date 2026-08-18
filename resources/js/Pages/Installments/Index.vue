@@ -258,7 +258,7 @@ const statusClass = (item) => {
     }
 
     if (item.is_overdue) {
-        return 'bg-[#fff0f1] text-[#d85b66] dark:bg-red-950/30 dark:text-red-300';
+        return 'bg-[#eff6ff] text-[#1d4ed8] dark:bg-red-950/30 dark:text-red-300';
     }
 
     if (item.is_due_soon) {
@@ -407,171 +407,122 @@ const submitImageAction = () => {
 </script>
 
 <template>
-    <Head title="اقساط و مطالبات | مایاهمراه" />
+    <Head title="اقساط و مطالبات | automaya" />
 
     <AuthenticatedLayout>
-        <div
-            dir="rtl"
-            class="relative min-h-screen overflow-hidden bg-[#fbfbfa] px-4 py-6 text-slate-900 dark:bg-[#0d1118] dark:text-slate-100 sm:px-6 lg:px-9 lg:py-8 xl:px-11"
-        >
-            <div
-                class="pointer-events-none absolute -left-24 -top-28 h-72 w-72 rounded-full border border-[#f6d88d]/30 dark:border-amber-300/5"
-            />
-
-            <div class="relative mx-auto max-w-[1480px]">
-                <div
-                    class="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
-                >
+        <div dir="rtl" class="am-page !pt-3">
+            <div class="am-page-inner-narrow !max-w-xl">
+                <div class="mb-5 flex items-center justify-between gap-3">
                     <div>
-                        <p
-                            class="mb-2 text-[11px] font-black tracking-[0.16em] text-[#ff6d76]"
-                        >
-                            MAYA HAMRAH
-                        </p>
-
-                        <h1 class="text-[26px] font-black tracking-tight sm:text-[30px]">
-                            اقساط و مطالبات
-                        </h1>
-
-                        <p class="mt-2 text-sm leading-7 text-slate-400">
-                            مدیریت سررسید و وصول اقساط با ضمانت چک یا طلا
+                        <h1 class="text-xl font-black">اقساط</h1>
+                        <p class="mt-1 text-[11px] font-bold text-slate-400">
+                            سررسید و وصول مطالبات
                         </p>
                     </div>
 
                     <Link
                         :href="route('sales.index')"
-                        class="w-fit rounded-2xl border border-white bg-white/80 px-4 py-3 text-xs font-black text-slate-500 shadow-[0_8px_25px_rgba(35,45,65,0.05)] transition hover:text-slate-900 dark:border-white/5 dark:bg-white/[0.03] dark:text-slate-300"
+                        class="am-btn-secondary !rounded-full !px-4 !py-2 text-xs"
                     >
-                        مشاهده فروش‌ها
+                        فروش‌ها
                     </Link>
                 </div>
 
-                <div class="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div class="mb-4 grid grid-cols-2 gap-3">
                     <Link
                         :href="route('installments.index', { status: 'open', search: filters.search || undefined })"
-                        class="rounded-[24px] bg-[#eef4ff] p-5 transition hover:-translate-y-0.5 dark:bg-sky-950/20"
+                        class="am-card !p-4"
                     >
-                        <p class="text-[11px] font-black text-[#6685b9]">اقساط باز</p>
-                        <p class="mt-3 text-xl font-black">{{ money(summary.open_amount) }}</p>
-                        <p class="mt-2 text-[11px] text-[#7d96bf]">
+                        <p class="text-[10px] font-black text-slate-400">باز</p>
+                        <p class="mt-2 text-sm font-black">{{ money(summary.open_amount) }}</p>
+                        <p class="mt-1 text-[10px] text-slate-400">
                             {{ formatNumber(summary.open_count) }} قسط
                         </p>
                     </Link>
 
                     <Link
                         :href="route('installments.index', { status: 'overdue', search: filters.search || undefined })"
-                        class="rounded-[24px] bg-[#fff0f1] p-5 transition hover:-translate-y-0.5 dark:bg-red-950/20"
+                        class="am-card !p-4"
                     >
-                        <p class="text-[11px] font-black text-[#d85e68]">معوق</p>
-                        <p class="mt-3 text-xl font-black">{{ money(summary.overdue_amount) }}</p>
-                        <p class="mt-2 text-[11px] text-[#df7d85]">
+                        <p class="text-[10px] font-black text-red-500">معوق</p>
+                        <p class="mt-2 text-sm font-black">{{ money(summary.overdue_amount) }}</p>
+                        <p class="mt-1 text-[10px] text-slate-400">
                             {{ formatNumber(summary.overdue_count) }} قسط
                         </p>
                     </Link>
 
                     <Link
                         :href="route('installments.index', { status: 'due_soon', search: filters.search || undefined })"
-                        class="rounded-[24px] bg-[#fff7e8] p-5 transition hover:-translate-y-0.5 dark:bg-amber-950/20"
+                        class="am-card !p-4"
                     >
-                        <p class="text-[11px] font-black text-[#bd8526]">
-                            سررسید ۷ روز آینده
-                        </p>
-                        <p class="mt-3 text-xl font-black">{{ money(summary.due_soon_amount) }}</p>
-                        <p class="mt-2 text-[11px] text-[#ca9740]">
+                        <p class="text-[10px] font-black text-amber-600">۷ روز آینده</p>
+                        <p class="mt-2 text-sm font-black">{{ money(summary.due_soon_amount) }}</p>
+                        <p class="mt-1 text-[10px] text-slate-400">
                             {{ formatNumber(summary.due_soon_count) }} قسط
                         </p>
                     </Link>
 
                     <Link
                         :href="route('installments.index', { status: 'paid', search: filters.search || undefined })"
-                        class="rounded-[24px] bg-[#edf8ef] p-5 transition hover:-translate-y-0.5 dark:bg-emerald-950/20"
+                        class="am-card !p-4"
                     >
-                        <p class="text-[11px] font-black text-[#4f9968]">وصول‌شده</p>
-                        <p class="mt-3 text-xl font-black">{{ money(summary.paid_amount) }}</p>
-                        <p class="mt-2 text-[11px] text-[#6da47f]">
+                        <p class="text-[10px] font-black text-emerald-600">وصول‌شده</p>
+                        <p class="mt-2 text-sm font-black">{{ money(summary.paid_amount) }}</p>
+                        <p class="mt-1 text-[10px] text-slate-400">
                             {{ formatNumber(summary.paid_count) }} قسط
                         </p>
                     </Link>
                 </div>
 
-                <section
-                    class="mb-5 rounded-[28px] border border-white bg-white/75 p-4 shadow-[0_16px_50px_rgba(40,50,70,0.045)] backdrop-blur dark:border-white/5 dark:bg-white/[0.025]"
+                <div class="mb-4 flex gap-2 overflow-x-auto pb-1">
+                    <Link
+                        v-for="tab in tabs"
+                        :key="tab.value"
+                        :href="
+                            route('installments.index', {
+                                status: tab.value,
+                                search: filters.search || undefined,
+                            })
+                        "
+                        class="am-chip shrink-0"
+                        :class="filters.status === tab.value ? 'am-chip-on' : ''"
+                    >
+                        {{ tab.label }}
+                    </Link>
+                </div>
+
+                <form
+                    class="mb-4 flex gap-2"
+                    @submit.prevent="submitSearch"
                 >
-                    <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                        <div class="flex max-w-full gap-2 overflow-x-auto pb-1">
-                            <Link
-                                v-for="tab in tabs"
-                                :key="tab.value"
-                                :href="
-                                    route('installments.index', {
-                                        status: tab.value,
-                                        search: filters.search || undefined,
-                                    })
-                                "
-                                class="shrink-0 rounded-full px-4 py-2 text-xs font-black transition"
-                                :class="
-                                    filters.status === tab.value
-                                        ? 'bg-[#ff6d76] text-white shadow-[0_7px_18px_rgba(255,109,118,0.20)]'
-                                        : 'bg-[#f4f6f8] text-slate-500 hover:bg-slate-200/70 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10'
-                                "
-                            >
-                                {{ tab.label }}
-                            </Link>
-                        </div>
+                    <input
+                        v-model="search"
+                        type="search"
+                        class="am-input min-w-0 flex-1"
+                        placeholder="نام، موبایل، مدل، VIN..."
+                    />
 
-                        <form
-                            class="flex w-full gap-2 xl:max-w-lg"
-                            @submit.prevent="submitSearch"
-                        >
-                            <input
-                                v-model="search"
-                                type="search"
-                                class="min-w-0 flex-1 rounded-2xl border-0 bg-[#f4f6f8] px-4 py-3 text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-[#ff6d76]/30 dark:bg-white/5"
-                                placeholder="نام، موبایل، مدل، IMEI، بانک یا شماره چک..."
-                            />
+                    <button
+                        type="submit"
+                        class="am-btn-primary !rounded-2xl !px-4 text-xs"
+                    >
+                        جست‌وجو
+                    </button>
+                </form>
 
-                            <button
-                                type="submit"
-                                class="rounded-2xl bg-slate-900 px-4 py-3 text-xs font-black text-white dark:bg-white dark:text-slate-900"
-                            >
-                                جست‌وجو
-                            </button>
-
-                            <button
-                                v-if="filters.search"
-                                type="button"
-                                class="rounded-2xl bg-[#fff0f1] px-4 py-3 text-xs font-black text-[#d85e68]"
-                                @click="clearSearch"
-                            >
-                                ×
-                            </button>
-                        </form>
-                    </div>
-                </section>
-
-                <section
-                    class="rounded-[30px] border border-white bg-white/75 p-4 shadow-[0_18px_60px_rgba(40,50,70,0.05)] backdrop-blur dark:border-white/5 dark:bg-white/[0.025] sm:p-6"
-                >
-                    <div class="mb-5">
-                        <h2 class="text-base font-black">فهرست اقساط</h2>
-                        <p class="mt-1 text-xs text-slate-400">
-                            {{ formatNumber(installments.length) }} نتیجه
-                        </p>
-                    </div>
-
-                    <div v-if="installments.length" class="space-y-2.5">
-                        <div
-                            v-for="item in installments"
-                            :key="item.id"
-                            class="group rounded-[20px] border border-transparent bg-[#f7f8fa] p-4 transition hover:border-[#ffdadd] hover:bg-white dark:bg-white/[0.025] dark:hover:border-rose-300/10 dark:hover:bg-white/[0.04]"
-                        >
+                <div v-if="installments.length" class="space-y-3">
+                    <div
+                        v-for="item in installments"
+                        :key="item.id"
+                        class="am-card !p-4"
+                    >
                             <div
                                 class="grid gap-4 xl:grid-cols-[minmax(170px,1.25fr)_minmax(150px,1fr)_95px_minmax(135px,.85fr)_minmax(155px,1fr)_auto] xl:items-center"
                             >
                                 <div class="min-w-0">
                                     <Link
                                         :href="route('contacts.show', item.buyer_id)"
-                                        class="font-black transition hover:text-[#ff6570]"
+                                        class="font-black transition hover:text-[#2563eb]"
                                     >
                                         {{ item.buyer_name }}
                                     </Link>
@@ -587,8 +538,9 @@ const submitImageAction = () => {
                                     </p>
 
                                     <p class="mt-1 truncate text-[11px] text-slate-400">
-                                        <span v-if="item.storage">{{ item.storage }}</span>
-                                        <span v-if="item.imei"> · IMEI {{ item.imei }}</span>
+                                        <span v-if="item.model_year">{{ item.model_year }}</span>
+                                        <span v-if="item.mileage !== null && item.mileage !== undefined"> · {{ Number(item.mileage).toLocaleString('fa-IR') }} km</span>
+                                        <span v-if="item.vin"> · VIN {{ item.vin }}</span>
                                     </p>
                                 </div>
 
@@ -691,7 +643,7 @@ const submitImageAction = () => {
                                     <button
                                         v-if="item.guarantee_type !== 'gold'"
                                         type="button"
-                                        class="rounded-xl bg-[#fff0f1] px-3 py-2 text-[10px] font-black text-[#d85e68] transition hover:bg-[#ffe5e7] dark:bg-[#ff6d76]/10 dark:text-[#ff9299]"
+                                        class="rounded-full bg-neutral-900 px-3 py-2 text-[10px] font-bold text-white"
                                         @click="openCheckModal(item)"
                                     >
                                         {{
@@ -725,7 +677,7 @@ const submitImageAction = () => {
 
                                     <Link
                                         :href="route('sales.show', item.sale_id)"
-                                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-400 shadow-[0_5px_14px_rgba(35,45,65,0.05)] transition hover:text-[#ff6570] dark:bg-white/5"
+                                        class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-400 shadow-[0_5px_14px_rgba(35,45,65,0.05)] transition hover:text-[#2563eb] dark:bg-white/5"
                                         title="مشاهده قرارداد"
                                         aria-label="مشاهده قرارداد"
                                     >
@@ -738,7 +690,7 @@ const submitImageAction = () => {
 
                     <div
                         v-else
-                        class="rounded-[20px] bg-[#f7f8fa] px-5 py-12 text-center dark:bg-white/[0.025]"
+                        class="am-soft py-12 text-center"
                     >
                         <p class="text-sm font-black text-slate-500 dark:text-slate-300">
                             قسطی با این شرایط پیدا نشد.
@@ -747,7 +699,6 @@ const submitImageAction = () => {
                             فیلتر یا عبارت جست‌وجو را تغییر دهید.
                         </p>
                     </div>
-                </section>
             </div>
         </div>
 
@@ -763,7 +714,7 @@ const submitImageAction = () => {
             >
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <p class="text-[11px] font-black text-[#ff6570]">
+                        <p class="text-[11px] font-black text-[#2563eb]">
                             مشخصات چک
                         </p>
 
@@ -914,7 +865,7 @@ const submitImageAction = () => {
 
                                     <button
                                         type="button"
-                                        class="rounded-xl bg-[#fff0f1] px-2 py-2 text-[10px] font-black text-[#d85e68] transition hover:bg-[#ffe5e7] dark:bg-red-950/25 dark:text-red-300"
+                                        class="rounded-xl bg-[#eff6ff] px-2 py-2 text-[10px] font-black text-[#1d4ed8] transition hover:bg-[#dbeafe] dark:bg-red-950/25 dark:text-red-300"
                                         @click="openImageAction(image, 'remove')"
                                     >
                                         حذف
@@ -935,7 +886,7 @@ const submitImageAction = () => {
                         </label>
 
                         <label
-                            class="flex cursor-pointer flex-col items-center justify-center rounded-[22px] border-2 border-dashed border-[#ffcbd0] bg-[#fff5f5] px-4 py-7 text-center transition hover:border-[#ff9299] dark:border-[#ff6d76]/20 dark:bg-[#ff6d76]/[0.06]"
+                            class="flex cursor-pointer flex-col items-center justify-center rounded-[22px] border-2 border-dashed border-[#93c5fd] bg-[#eff6ff] px-4 py-7 text-center transition hover:border-[#93c5fd] dark:border-[#2563eb]/20 dark:bg-[#2563eb]/[0.06]"
                         >
                             <span class="text-2xl">＋</span>
                             <span class="mt-2 text-sm font-black">
@@ -956,7 +907,7 @@ const submitImageAction = () => {
 
                         <p
                             v-if="checkForm.images.length"
-                            class="mt-2 text-xs font-black text-[#ff6570]"
+                            class="mt-2 text-xs font-black text-[#2563eb]"
                         >
                             {{ formatNumber(checkForm.images.length) }}
                             تصویر جدید انتخاب شده
@@ -1297,7 +1248,7 @@ const submitImageAction = () => {
                             :class="
                                 imageActionMode === 'replace'
                                     ? 'text-[#6382b8] dark:text-sky-300'
-                                    : 'text-[#d85e68] dark:text-red-300'
+                                    : 'text-[#1d4ed8] dark:text-red-300'
                             "
                         >
                             مدیریت تصویر چک

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\VehicleOptions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -14,7 +16,7 @@ class PublicWantedMarketController extends Controller
     {
         $search = trim((string) $request->query('q', ''));
         $brand = trim((string) $request->query('brand', ''));
-        $origin = trim((string) $request->query('origin', ''));
+        $hasOrigin = Schema::hasColumn('wanted_device_requests', 'origin');
 
         $query = DB::table('wanted_device_requests');
 
@@ -34,54 +36,36 @@ class PublicWantedMarketController extends Controller
             $query->where('brand', $brand);
         }
 
-        if ($origin === 'organic') {
-            $query->where('origin', 'organic');
-        } elseif ($origin === 'bootstrap_market') {
-            $query->where('origin', 'bootstrap_market');
-        }
-
         $requests = $query
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(18)
             ->withQueryString()
-            ->through(function ($request) {
-                $isOrganic = $request->origin === 'organic';
+            ->through(function ($row) use ($hasOrigin) {
+                $origin = $hasOrigin ? ($row->origin ?? 'organic') : 'organic';
+                $isOrganic = $origin === 'organic';
 
                 return [
-                    'id' => $request->id,
-                    'requester_name' => $isOrganic
-                        ? $request->requester_name
-                        : 'نمونه‌ی بازار',
-                    'brand' => $request->brand,
-                    'model' => $request->model,
-                    'storage' => $request->storage,
-                    'color' => $request->color,
-                    'condition_grade' => $request->condition_grade,
-                    'registration_status' => $request->registration_status,
-                    'battery_health' => $request->battery_health,
-                    'battery_condition' => $request->battery_condition,
-                    'max_price' => (int) $request->max_price,
-                    'description' => $isOrganic
-                        ? $request->description
-                        : null,
-                    'origin' => $request->origin,
-                    'market_reference_source' => $isOrganic
-                        ? null
-                        : $request->market_reference_source,
-                    'is_provisional' => ! $isOrganic,
+                    'id' => $row->id,
+                    'requester_name' => $isOrganic ? $row->requester_name : 'نمونه‌ی بازار',
+                    'brand' => $row->brand,
+                    'model' => $row->model,
+                    'model_year' => $row->storage,
+                    'color' => $row->color,
+                    'body_condition' => $row->condition_grade,
+                    'body_condition_label' => VehicleOptions::label(
+                        VehicleOptions::bodyConditions(),
+                        $row->condition_grade
+                    ),
+                    'max_price' => (int) $row->max_price,
+                    'description' => $isOrganic ? $row->description : null,
+                    'origin' => $origin,
                     'can_reveal_contact' => $isOrganic,
-                    'created_at' => $request->created_at,
+                    'created_at' => $row->created_at,
                 ];
             });
 
         $total = DB::table('wanted_device_requests')->count();
-        $organic = DB::table('wanted_device_requests')
-            ->where('origin', 'organic')
-            ->count();
-        $bootstrap = DB::table('wanted_device_requests')
-            ->where('origin', 'bootstrap_market')
-            ->count();
         $recent = DB::table('wanted_device_requests')
             ->where('created_at', '>=', now()->subDay())
             ->count();
@@ -98,17 +82,10 @@ class PublicWantedMarketController extends Controller
             'filters' => [
                 'q' => $search,
                 'brand' => $brand,
-                'origin' => in_array(
-                    $origin,
-                    ['organic', 'bootstrap_market'],
-                    true
-                ) ? $origin : '',
             ],
             'brands' => $brands,
             'summary' => [
                 'total' => $total,
-                'organic' => $organic,
-                'bootstrap' => $bootstrap,
                 'recent' => $recent,
             ],
         ]);
@@ -116,20 +93,25 @@ class PublicWantedMarketController extends Controller
 
     public function contact(int $requestId): JsonResponse
     {
-        $request = DB::table('wanted_device_requests')
-            ->where('id', $requestId)
-            ->first([
-                'id',
-                'requester_name',
-                'requester_mobile',
-                'origin',
-            ]);
+        $hasOrigin = Schema::hasColumn('wanted_device_requests', 'origin');
 
-        if (! $request) {
+        $columns = ['id', 'requester_name', 'requester_mobile'];
+
+        if ($hasOrigin) {
+            $columns[] = 'origin';
+        }
+
+        $row = DB::table('wanted_device_requests')
+            ->where('id', $requestId)
+            ->first($columns);
+
+        if (! $row) {
             abort(404);
         }
 
-        if ($request->origin !== 'organic') {
+        $origin = $hasOrigin ? ($row->origin ?? 'organic') : 'organic';
+
+        if ($origin !== 'organic') {
             return response()->json([
                 'message' => 'این مورد نمونه‌ی بازار است و شماره تماس واقعی ندارد.',
             ], 422);
@@ -137,8 +119,8 @@ class PublicWantedMarketController extends Controller
 
         return response()->json([
             'contact' => [
-                'requester_name' => $request->requester_name,
-                'mobile' => $request->requester_mobile,
+                'requester_name' => $row->requester_name,
+                'mobile' => $row->requester_mobile,
             ],
         ]);
     }

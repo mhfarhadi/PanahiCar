@@ -4,8 +4,10 @@ import EntityNoteHistory from '@/Components/EntityNoteHistory.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import {
     colorLabel,
-    deviceStatusLabel,
-} from '@/Utils/deviceLabels';
+    formatMileage,
+    formatYear,
+    vehicleStatusLabel,
+} from '@/Utils/vehicleLabels';
 
 const props = defineProps({
     contact: {
@@ -91,7 +93,7 @@ const paymentHistoryLabel = (stats) => {
 </script>
 
 <template>
-    <Head :title="`${contact.name} | مایاهمراه`" />
+    <Head :title="`${contact.name} | automaya`" />
 
     <AuthenticatedLayout>
         <div
@@ -101,7 +103,7 @@ const paymentHistoryLabel = (stats) => {
             <div class="mx-auto max-w-6xl">
                 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-sm font-bold text-[#ff6570]">مایاهمراه</p>
+                        <p class="text-sm font-bold text-[#2563eb]">automaya</p>
                         <h1 class="mt-1 text-2xl font-black">{{ contact.name }}</h1>
 
                         <div class="mt-2 flex flex-wrap items-center gap-2">
@@ -109,7 +111,7 @@ const paymentHistoryLabel = (stats) => {
                                 class="rounded-xl px-3 py-1 text-xs font-bold"
                                 :class="
                                     contact.contact_type === 'colleague'
-                                        ? 'bg-[#fff0f1] text-[#d85e68] dark:bg-[#ff6d76]/[0.08] dark:text-[#ff9299]'
+                                        ? 'bg-[#eff6ff] text-[#1d4ed8] dark:bg-[#2563eb]/[0.08] dark:text-[#93c5fd]'
                                         : 'bg-slate-200 text-slate-700 dark:bg-white/[0.06] dark:text-slate-300'
                                 "
                             >
@@ -128,7 +130,7 @@ const paymentHistoryLabel = (stats) => {
                     >
                         <Link
                             :href="route('contacts.edit', contact.id)"
-                            class="rounded-2xl border border-[#ffcbd0] bg-[#fff0f1] px-4 py-2.5 text-center text-sm font-bold text-[#d85e68] dark:border-[#ff6d76]/[0.20] dark:bg-[#ff6d76]/[0.08] dark:text-[#ff9299]"
+                            class="rounded-2xl border border-[#93c5fd] bg-[#eff6ff] px-4 py-2.5 text-center text-sm font-bold text-[#1d4ed8] dark:border-[#2563eb]/[0.20] dark:bg-[#2563eb]/[0.08] dark:text-[#93c5fd]"
                         >
                             ویرایش
                         </Link>
@@ -179,7 +181,7 @@ const paymentHistoryLabel = (stats) => {
                     <div class="space-y-5">
                         <section class="rounded-[30px] bg-white p-6 shadow-sm dark:bg-white/[0.035]">
                             <div class="mb-6 flex flex-col items-center gap-5 sm:flex-row sm:items-start">
-                                <div class="flex h-36 w-36 sm:h-44 sm:w-44 shrink-0 items-center justify-center overflow-hidden rounded-[34px] sm:rounded-[38px] bg-[#fff0f1] text-4xl dark:bg-[#ff6d76]/[0.10]">
+                                <div class="flex h-36 w-36 sm:h-44 sm:w-44 shrink-0 items-center justify-center overflow-hidden rounded-[34px] sm:rounded-[38px] bg-[#eff6ff] text-4xl dark:bg-[#2563eb]/[0.10]">
                                     <img
                                         v-if="contact.avatar_path"
                                         :src="`/storage/${contact.avatar_path}`"
@@ -204,7 +206,7 @@ const paymentHistoryLabel = (stats) => {
                                     <p class="text-xs text-slate-400">موبایل</p>
                                     <a
                                         :href="`tel:${contact.mobile}`"
-                                        class="mt-1 inline-block font-bold text-[#ff6570]"
+                                        class="mt-1 inline-block font-bold text-[#2563eb]"
                                         dir="ltr"
                                     >
                                         {{ contact.mobile }}
@@ -230,7 +232,7 @@ const paymentHistoryLabel = (stats) => {
                         />
 
                         <section class="rounded-[30px] bg-white p-6 shadow-sm dark:bg-white/[0.035]">
-                            <h2 class="text-lg font-black">گوشی‌های خریداری‌شده از ما</h2>
+                            <h2 class="text-lg font-black">خودروهای خریداری‌شده از ما</h2>
 
                             <div
                                 v-if="!purchasedFromShop.length"
@@ -244,7 +246,7 @@ const paymentHistoryLabel = (stats) => {
                                     v-for="item in purchasedFromShop"
                                     :key="item.sale_id"
                                     :href="route('sales.show', item.sale_id)"
-                                    class="block rounded-2xl border border-slate-100 p-4 transition hover:border-[#ffadb4] hover:bg-[#fff0f1]/40 dark:border-white/5 dark:hover:bg-[#ff6d76]/[0.06]"
+                                    class="block rounded-2xl border border-slate-100 p-4 transition hover:border-[#93c5fd] hover:bg-[#eff6ff]/40 dark:border-white/5 dark:hover:bg-[#2563eb]/[0.06]"
                                 >
                                     <div class="flex items-start justify-between gap-4">
                                         <div>
@@ -252,11 +254,11 @@ const paymentHistoryLabel = (stats) => {
                                                 {{ item.brand }} {{ item.model }}
                                             </p>
                                             <p class="mt-1 text-sm text-slate-500">
-                                                {{ item.storage || '—' }} · {{ colorLabel(item.color) }}
+                                                {{ formatYear(item.model_year) }} · {{ formatMileage(item.mileage) }} · {{ colorLabel(item.color) }}
                                             </p>
                                         </div>
 
-                                        <span class="rounded-lg bg-[#fff0f1] px-2 py-1 text-xs font-bold text-[#d85e68] dark:bg-[#ff6d76]/[0.08] dark:text-[#ff9299]">
+                                        <span class="rounded-lg bg-[#eff6ff] px-2 py-1 text-xs font-bold text-[#1d4ed8] dark:bg-[#2563eb]/[0.08] dark:text-[#93c5fd]">
                                             {{ saleTypeLabel(item.sale_type) }}
                                         </span>
                                     </div>
@@ -283,14 +285,14 @@ const paymentHistoryLabel = (stats) => {
 
                         <section class="grid grid-cols-2 gap-3 sm:grid-cols-3">
                             <div class="rounded-[24px] bg-white p-5 shadow-sm dark:bg-white/[0.035]">
-                                <p class="text-xs text-slate-400">گوشی‌های اعلامی</p>
+                                <p class="text-xs text-slate-400">خودروهای اعلامی</p>
                                 <p class="mt-2 text-2xl font-black">
                                     {{ contact.stats.announced_count.toLocaleString('fa-IR') }}
                                 </p>
                             </div>
 
                             <div class="rounded-[24px] bg-white p-5 shadow-sm dark:bg-white/[0.035]">
-                                <p class="text-xs text-slate-400">فروش به مغازه</p>
+                                <p class="text-xs text-slate-400">فروش به نمایشگاه</p>
                                 <p class="mt-2 text-2xl font-black">
                                     {{ contact.stats.sold_to_shop_count.toLocaleString('fa-IR') }}
                                 </p>
@@ -338,13 +340,13 @@ const paymentHistoryLabel = (stats) => {
 
                     <div class="space-y-5">
                         <section class="rounded-[30px] bg-white p-6 shadow-sm dark:bg-white/[0.035]">
-                            <h2 class="text-lg font-black">گوشی‌های اعلامی</h2>
+                            <h2 class="text-lg font-black">خودروهای اعلامی</h2>
 
                             <div
                                 v-if="!announcedDevices.length"
                                 class="mt-5 rounded-2xl bg-[#f7f8fa] p-6 text-center text-sm text-slate-500 dark:bg-white/[0.025]"
                             >
-                                سابقه گوشی اعلامی ندارد.
+                                سابقه خودرو اعلامی ندارد.
                             </div>
 
                             <div v-else class="mt-5 space-y-3">
@@ -359,12 +361,12 @@ const paymentHistoryLabel = (stats) => {
                                                 {{ device.brand }} {{ device.model }}
                                             </p>
                                             <p class="mt-1 text-sm text-slate-500">
-                                                {{ device.storage || '—' }} · {{ colorLabel(device.color) }}
+                                                {{ formatYear(device.model_year) }} · {{ formatMileage(device.mileage) }} · {{ colorLabel(device.color) }}
                                             </p>
                                         </div>
 
                                         <span class="rounded-lg bg-[#f1f3f5] px-2 py-1 text-xs font-bold dark:bg-white/[0.06]">
-                                            {{ deviceStatusLabel(device.status) }}
+                                            {{ vehicleStatusLabel(device.status) }}
                                         </span>
                                     </div>
 
@@ -384,13 +386,13 @@ const paymentHistoryLabel = (stats) => {
                         </section>
 
                         <section class="rounded-[30px] bg-white p-6 shadow-sm dark:bg-white/[0.035]">
-                            <h2 class="text-lg font-black">فروش گوشی به مغازه</h2>
+                            <h2 class="text-lg font-black">فروش خودرو به نمایشگاه</h2>
 
                             <div
                                 v-if="!soldToShop.length"
                                 class="mt-5 rounded-2xl bg-[#f7f8fa] p-6 text-center text-sm text-slate-500 dark:bg-white/[0.025]"
                             >
-                                سابقه فروش گوشی به مغازه ندارد.
+                                سابقه فروش خودرو به نمایشگاه ندارد.
                             </div>
 
                             <div v-else class="mt-5 space-y-3">
@@ -398,7 +400,7 @@ const paymentHistoryLabel = (stats) => {
                                     v-for="item in soldToShop"
                                     :key="item.purchase_id"
                                     :href="route('devices.show', item.device_id)"
-                                    class="block rounded-2xl border border-slate-100 p-4 transition hover:border-[#ffadb4] hover:bg-[#fff0f1]/40 dark:border-white/5 dark:hover:bg-[#ff6d76]/[0.06]"
+                                    class="block rounded-2xl border border-slate-100 p-4 transition hover:border-[#93c5fd] hover:bg-[#eff6ff]/40 dark:border-white/5 dark:hover:bg-[#2563eb]/[0.06]"
                                 >
                                     <div class="flex items-start justify-between gap-4">
                                         <div>
@@ -406,12 +408,12 @@ const paymentHistoryLabel = (stats) => {
                                                 {{ item.brand }} {{ item.model }}
                                             </p>
                                             <p class="mt-1 text-sm text-slate-500">
-                                                {{ item.storage || '—' }} · {{ colorLabel(item.color) }}
+                                                {{ formatYear(item.model_year) }} · {{ formatMileage(item.mileage) }} · {{ colorLabel(item.color) }}
                                             </p>
                                         </div>
 
                                         <span class="rounded-lg bg-[#f1f3f5] px-2 py-1 text-xs font-bold dark:bg-white/[0.06]">
-                                            {{ deviceStatusLabel(item.status) }}
+                                            {{ vehicleStatusLabel(item.status) }}
                                         </span>
                                     </div>
 

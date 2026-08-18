@@ -28,14 +28,14 @@ return [
     'attributes' => [
         'brand' => 'برند',
         'model' => 'مدل',
-        'storage' => 'حافظه',
+        'model_year' => 'سال مدل',
+        'mileage' => 'کارکرد',
         'color' => 'رنگ',
-        'part_number' => 'پارت نامبر',
-        'sim_type' => 'نوع سیم‌کارت',
-        'battery_health' => 'سلامت باتری',
-        'condition_grade' => 'تمیزی دستگاه',
-        'imei' => 'IMEI',
-        'registration_status' => 'وضعیت رجیستری',
+        'transmission' => 'گیربکس',
+        'fuel_type' => 'نوع سوخت',
+        'body_condition' => 'وضعیت بدنه',
+        'insurance_months' => 'بیمه شخص ثالث',
+        'vin' => 'VIN',
         'description' => 'توضیحات',
         'seller_name' => 'نام فروشنده',
         'seller_mobile' => 'شماره موبایل فروشنده',
@@ -43,8 +43,10 @@ return [
         'announcer_id' => 'اعلام‌کننده',
         'purchase_price' => 'قیمت خرید',
         'purchase_date' => 'تاریخ خرید',
-        'images' => 'تصاویر دستگاه',
-        'images.*' => 'تصویر دستگاه',
+        'announced_price' => 'قیمت اعلامی',
+        'announced_at' => 'تاریخ اعلام',
+        'images' => 'تصاویر خودرو',
+        'images.*' => 'تصویر خودرو',
 
         // فروش و اقساط
         'buyer_id' => 'خریدار',
@@ -64,7 +66,6 @@ return [
         'gold_type' => 'نوع طلای دریافتی',
         'gold_description' => 'توضیحات طلای دریافتی',
 
-        // درخواست عمومی خرید دستگاه
         'requester_name' => 'نام ثبت‌کننده درخواست',
         'requester_mobile' => 'شماره موبایل',
         'max_price' => 'حداکثر قیمت خرید',

@@ -2,7 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
-import { colorLabel } from '@/Utils/deviceLabels';
+import { mediaUrl } from '@/Utils/carPhotos';
 
 const props = defineProps({
     sales: {
@@ -66,291 +66,119 @@ const saleTypeLabel = (type) =>
 </script>
 
 <template>
-    <Head title="گوشی‌های فروخته‌شده | مایاهمراه" />
+    <Head title="خودرو‌های فروخته‌شده | automaya" />
 
     <AuthenticatedLayout>
-        <div
-            dir="rtl"
-            class="mh-page"
-        >
-            <div class="mx-auto max-w-7xl">
-                <div class="mb-6 flex items-center justify-between gap-4">
-                    <div>
-                        <p class="text-sm font-bold text-[#ff6570]">
-                            مایاهمراه
-                        </p>
-
-                        <h1 class="mt-1 text-2xl font-black">
-                            گوشی‌های فروخته‌شده
-                        </h1>
-
-                        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                            سوابق فروش، خریداران و سود هر دستگاه
-                        </p>
-                    </div>
-
-                    <Link
-                        :href="route('dashboard')"
-                        class="rounded-2xl border border-slate-200/60 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 dark:border-white/5 dark:bg-white/[0.035] dark:text-slate-300"
-                    >
-                        داشبورد
-                    </Link>
+        <div dir="rtl" class="am-page !pt-3">
+            <div class="am-page-inner-narrow !max-w-xl">
+                <div class="mb-5">
+                    <h1 class="text-xl font-black">فروش‌ها</h1>
+                    <p class="mt-1 text-[11px] font-bold text-slate-400">
+                        سوابق فروش و سود هر خودرو
+                    </p>
                 </div>
 
-                <div class="mb-5">
+                <div class="mb-4">
                     <input
                         v-model="search"
                         type="search"
-                        placeholder="جستجو با برند، مدل، حافظه، رنگ، IMEI یا خریدار..."
+                        placeholder="برند، مدل، VIN یا خریدار..."
                         autocomplete="off"
-                        class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 text-sm shadow-sm focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/5 dark:bg-white/[0.035]"
+                        class="am-input"
                     />
                 </div>
 
-                <div class="mb-5 grid gap-3 lg:grid-cols-2">
-                    <div
-                        class="rounded-3xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-white/[0.035]"
+                <div class="mb-4 flex gap-2 overflow-x-auto pb-1">
+                    <button
+                        v-for="option in [
+                            { value: 'all', label: 'همه' },
+                            { value: 'cash', label: 'نقدی' },
+                            { value: 'installment', label: 'اقساطی' },
+                        ]"
+                        :key="option.value"
+                        type="button"
+                        class="am-chip shrink-0"
+                        :class="saleType === option.value ? 'am-chip-on' : ''"
+                        @click="saleType = option.value"
                     >
-                        <p class="mb-3 text-xs font-black text-slate-400">
-                            نوع فروش
-                        </p>
-
-                        <div class="grid grid-cols-3 gap-2">
-                            <button
-                                v-for="option in [
-                                    { value: 'all', label: 'همه' },
-                                    { value: 'cash', label: 'نقدی' },
-                                    { value: 'installment', label: 'اقساطی' },
-                                ]"
-                                :key="option.value"
-                                type="button"
-                                class="rounded-xl px-3 py-2.5 text-sm font-black transition"
-                                :class="
-                                    saleType === option.value
-                                        ? 'bg-[#ff6d76] text-white'
-                                        : 'bg-[#f1f3f5] text-slate-600 hover:bg-slate-200 dark:bg-white/[0.06] dark:text-slate-300 dark:hover:bg-slate-700'
-                                "
-                                @click="saleType = option.value"
-                            >
-                                {{ option.label }}
-                            </button>
-                        </div>
-                    </div>
-
-                    <div
-                        class="rounded-3xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-white/[0.035]"
-                    >
-                        <p class="mb-3 text-xs font-black text-slate-400">
-                            بازه زمانی
-                        </p>
-
-                        <select
-                            v-model="period"
-                            class="w-full rounded-xl border-slate-200/60 bg-[#f7f8fa] px-3 py-2.5 text-sm font-bold focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.06]"
-                        >
-                            <option value="all">همه زمان‌ها</option>
-                            <option value="last_7_days">۷ روز گذشته</option>
-                            <option value="current_month">ماه جاری شمسی</option>
-                            <option value="previous_month">ماه گذشته شمسی</option>
-                        </select>
-                    </div>
+                        {{ option.label }}
+                    </button>
                 </div>
 
-                <div class="mb-5 grid gap-3 sm:grid-cols-2">
-                    <div
-                        class="rounded-3xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/[0.035]"
-                    >
-                        <p class="text-xs font-bold text-slate-400">
-                            تعداد فروش در نتایج
-                        </p>
+                <select
+                    v-model="period"
+                    class="am-input mb-4"
+                >
+                    <option value="all">همه زمان‌ها</option>
+                    <option value="last_7_days">۷ روز گذشته</option>
+                    <option value="current_month">ماه جاری شمسی</option>
+                    <option value="previous_month">ماه گذشته شمسی</option>
+                </select>
 
-                        <p class="mt-2 text-2xl font-black">
+                <div class="mb-5 grid grid-cols-2 gap-3">
+                    <div class="am-card !p-4">
+                        <p class="text-[10px] font-bold text-slate-400">تعداد</p>
+                        <p class="mt-1 text-lg font-black">
                             {{ Number(summary.count || 0).toLocaleString('fa-IR') }}
-                            <span class="text-sm text-slate-400">دستگاه</span>
                         </p>
                     </div>
 
-                    <div
-                        class="rounded-3xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/[0.035]"
-                    >
-                        <p class="text-xs font-bold text-slate-400">
-                            مجموع مبلغ فروش
-                        </p>
+                    <div class="am-card !p-4">
+                        <p class="text-[10px] font-bold text-slate-400">مجموع فروش</p>
 
-                        <p class="mt-2 text-2xl font-black text-[#d85e68] dark:text-[#ff9299]">
+                        <p class="mt-1 text-lg font-black">
                             {{ formatMoney(summary.total_sale_amount) }}
-                            <span class="text-sm text-slate-400">تومان</span>
                         </p>
                     </div>
                 </div>
 
                 <div
                     v-if="sales.length === 0"
-                    class="rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-white/[0.035]"
+                    class="am-soft py-12 text-center"
                 >
-                    <p class="text-lg font-black">
-                        هنوز فروشی ثبت نشده
-                    </p>
-
-                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                        بعد از ثبت فروش، اطلاعات دستگاه در این بخش نمایش داده می‌شود.
-                    </p>
+                    <p class="text-sm font-black">هنوز فروشی ثبت نشده</p>
                 </div>
 
-                <div
-                    v-else
-                    class="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3"
-                >
-                    <article
+                <div v-else class="space-y-3">
+                    <Link
                         v-for="sale in sales"
                         :key="sale.id"
-                    class="flex h-full flex-col overflow-hidden rounded-[30px] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:bg-white/[0.035]"
+                        :href="route('sales.show', sale.id)"
+                        class="am-row"
                     >
-                    <div class="w-full shrink-0 overflow-hidden bg-[#f1f3f5] dark:bg-white/[0.06]" style="height: 224px; min-height: 224px; max-height: 224px;">
-                        <img
-                            v-if="sale.cover_image"
-                            :src="`/storage/${sale.cover_image}`"
-                            :alt="`${sale.brand} ${sale.model}`"
-                            class="block w-full object-cover" style="height: 224px; min-height: 224px; max-height: 224px;"
-                        />
-
-                        <div
-                            v-else
-                            class="flex w-full items-center justify-center bg-[#f1f3f5] dark:bg-white/[0.06]" style="height: 224px; min-height: 224px; max-height: 224px;"
-                        >
-                            <span class="text-8xl opacity-40">📱</span>
+                        <div class="am-thumb">
+                            <img
+                                :src="mediaUrl(sale.cover_image, sale.id)"
+                                :alt="`${sale.brand} ${sale.model}`"
+                                class="h-full w-full object-cover"
+                            />
                         </div>
-                    </div>
 
-                    <div class="flex flex-1 flex-col p-5">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <h2 class="text-lg font-black">
-                                        {{ sale.brand }} {{ sale.model }}
-                                    </h2>
-
-                                    <span
-                                        class="rounded-lg bg-emerald-50 px-2 py-1 text-xs font-black text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300"
-                                    >
-                                        فروخته شد
-                                    </span>
-                                </div>
-
-                                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                                    <span v-if="sale.storage">
-                                        {{ sale.storage }}
-                                    </span>
-                                    <span v-if="sale.color">
-                                        · {{ colorLabel(sale.color) }}
-                                    </span>
-                                </p>
-                            </div>
-
-                            <span
-                                class="rounded-xl bg-[#fff0f1] px-3 py-1.5 text-xs font-black text-[#d85e68] dark:bg-[#ff6d76]/[0.08] dark:text-[#ff9299]"
-                            >
+                        <div class="min-w-0 flex-1">
+                            <h2 class="truncate text-sm font-black">
+                                {{ sale.brand }} {{ sale.model }}
+                            </h2>
+                            <p class="mt-0.5 truncate text-[11px] text-slate-400">
+                                {{ sale.buyer_name }} · {{ formatDate(sale.sale_date) }}
+                            </p>
+                            <p class="mt-0.5 text-[10px] font-bold text-slate-400">
                                 {{ saleTypeLabel(sale.sale_type) }}
-                            </span>
+                            </p>
                         </div>
 
-                        <div class="mt-5 space-y-3 text-sm">
-                            <div class="flex items-center justify-between gap-4">
-                                <span class="text-slate-400">
-                                    خریدار
-                                </span>
-
-                                <Link
-                                    :href="route('contacts.show', sale.buyer_id)"
-                                    class="font-black text-[#ff6570]"
-                                >
-                                    {{ sale.buyer_name }}
-                                </Link>
-                            </div>
-
-                            <div class="flex items-center justify-between gap-4">
-                                <span class="text-slate-400">
-                                    موبایل
-                                </span>
-
-                                <a
-                                    :href="`tel:${sale.buyer_mobile}`"
-                                    class="font-bold"
-                                    dir="ltr"
-                                >
-                                    {{ sale.buyer_mobile }}
-                                </a>
-                            </div>
-
-                            <div class="flex items-center justify-between gap-4">
-                                <span class="text-slate-400">
-                                    تاریخ فروش
-                                </span>
-
-                                <span class="font-bold">
-                                    {{ formatDate(sale.sale_date) }}
-                                </span>
-                            </div>
-
-                            <div class="flex items-center justify-between gap-4">
-                                <span class="text-slate-400">
-                                    قیمت خرید
-                                </span>
-
-                                <span class="font-bold">
-                                    {{ formatMoney(sale.purchase_price) }} تومان
-                                </span>
-                            </div>
-
-                            <div class="flex items-center justify-between gap-4">
-                                <span class="text-slate-400">
-                                    قیمت فروش
-                                </span>
-
-                                <span class="font-black">
-                                    {{ formatMoney(sale.sale_price) }} تومان
-                                </span>
-                            </div>
-
-                            <div
+                        <div class="shrink-0 text-left">
+                            <p class="text-xs font-black">
+                                {{ formatMoney(sale.sale_price) }}
+                            </p>
+                            <p
                                 v-if="sale.profit !== null"
-                                class="flex items-center justify-between gap-4 border-t border-slate-100 pt-3 dark:border-white/5"
+                                class="mt-1 text-[10px] font-bold"
+                                :class="sale.profit >= 0 ? 'text-emerald-600' : 'text-red-500'"
                             >
-                                <span class="text-slate-400">
-                                    سود / زیان
-                                </span>
-
-                                <span
-                                    class="font-black"
-                                    :class="
-                                        sale.profit >= 0
-                                            ? 'text-emerald-600'
-                                            : 'text-red-600'
-                                    "
-                                >
-                                    {{ sale.profit >= 0 ? '+' : '' }}{{ formatMoney(sale.profit) }} تومان
-                                </span>
-                            </div>
+                                {{ sale.profit >= 0 ? '+' : '' }}{{ formatMoney(sale.profit) }}
+                            </p>
                         </div>
-
-                        <div
-                            v-if="sale.imei"
-                            class="mt-4 rounded-2xl bg-[#f7f8fa] p-3 text-xs text-slate-500 dark:bg-white/[0.025] dark:text-slate-400"
-                        >
-                            IMEI:
-                            <span class="font-bold" dir="ltr">
-                                {{ sale.imei }}
-                            </span>
-                        </div>
-
-                        <Link
-                            :href="route('sales.show', sale.id)"
-                            class="mt-4 flex w-full items-center justify-center rounded-2xl bg-[#ff6d76] px-4 py-3 text-sm font-black text-white transition hover:bg-[#f45f6a]"
-                        >
-                            مشاهده جزئیات فروش
-                        </Link>
-                        </div>
-                    </article>
+                    </Link>
                 </div>
             </div>
         </div>

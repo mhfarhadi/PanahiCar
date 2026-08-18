@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use App\Services\CurrencyRateService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -38,17 +37,6 @@ test('it stores installment check details images and append only notes', functio
         ->addMonths(1)
         ->toCarbon()
         ->toDateString();
-
-    $this->mock(CurrencyRateService::class, function ($mock) use ($saleDate) {
-        $mock->shouldReceive('snapshotForDate')
-            ->once()
-            ->with('USD', $saleDate)
-            ->andReturn([
-                'rate' => 190_000,
-                'rate_date' => $saleDate,
-                'source' => 'test',
-            ]);
-    });
 
     $this
         ->actingAs($user)
@@ -165,17 +153,6 @@ test('sayad id must contain exactly sixteen digits when provided', function () {
         ->toCarbon()
         ->toDateString();
 
-    $this->mock(CurrencyRateService::class, function ($mock) use ($saleDate) {
-        $mock->shouldReceive('snapshotForDate')
-            ->once()
-            ->with('USD', $saleDate)
-            ->andReturn([
-                'rate' => 190_000,
-                'rate_date' => $saleDate,
-                'source' => 'test',
-            ]);
-    });
-
     $this
         ->actingAs($user)
         ->post(route('sales.store', $deviceId), [
@@ -246,17 +223,6 @@ test('marking an installment paid stores the real paid date without rewriting fi
         ->addMonths(1)
         ->toCarbon()
         ->toDateString();
-
-    $this->mock(CurrencyRateService::class, function ($mock) use ($saleDate) {
-        $mock->shouldReceive('snapshotForDate')
-            ->once()
-            ->with('USD', $saleDate)
-            ->andReturn([
-                'rate' => 190_000,
-                'rate_date' => $saleDate,
-                'source' => 'test',
-            ]);
-    });
 
     $this
         ->actingAs($user)
@@ -397,17 +363,6 @@ test('a mistakenly paid check can be safely reopened with an append only audit n
         ->addMonths(1)
         ->toCarbon()
         ->toDateString();
-
-    $this->mock(CurrencyRateService::class, function ($mock) use ($saleDate) {
-        $mock->shouldReceive('snapshotForDate')
-            ->once()
-            ->with('USD', $saleDate)
-            ->andReturn([
-                'rate' => 190_000,
-                'rate_date' => $saleDate,
-                'source' => 'test',
-            ]);
-    });
 
     $this
         ->actingAs($user)
@@ -596,17 +551,6 @@ test('check images can be removed and replaced without destroying historical fil
         ->addMonths(1)
         ->toCarbon()
         ->toDateString();
-
-    $this->mock(CurrencyRateService::class, function ($mock) use ($saleDate) {
-        $mock->shouldReceive('snapshotForDate')
-            ->once()
-            ->with('USD', $saleDate)
-            ->andReturn([
-                'rate' => 190_000,
-                'rate_date' => $saleDate,
-                'source' => 'test',
-            ]);
-    });
 
     $this
         ->actingAs($user)

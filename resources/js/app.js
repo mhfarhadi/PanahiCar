@@ -6,7 +6,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 
-const THEME_KEY = 'maya_theme';
+const THEME_KEY = 'automaya_theme';
 
 const applyTheme = (theme) => {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -46,6 +46,8 @@ createInertiaApp({
             .mount(el);
     },
     progress: {
-        color: '#4B5563',
+        delay: 80,
+        color: '#111111',
+        includeCSS: true,
     },
 });

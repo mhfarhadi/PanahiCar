@@ -50,9 +50,9 @@ class SaleController extends Controller
                 $query->where(function ($query) use ($search) {
                     $query->where('d.brand', 'like', "%{$search}%")
                         ->orWhere('d.model', 'like', "%{$search}%")
-                        ->orWhere('d.storage', 'like', "%{$search}%")
                         ->orWhere('d.color', 'like', "%{$search}%")
-                        ->orWhere('d.imei', 'like', "%{$search}%")
+                        ->orWhere('d.vin', 'like', "%{$search}%")
+                        ->orWhereRaw('CAST(d.model_year AS CHAR) like ?', ["%{$search}%"])
                         ->orWhere('c.name', 'like', "%{$search}%")
                         ->orWhere('c.mobile', 'like', "%{$search}%");
                 });
@@ -119,9 +119,10 @@ class SaleController extends Controller
                 's.notes',
                 'd.brand',
                 'd.model',
-                'd.storage',
+                'd.model_year',
+                'd.mileage',
                 'd.color',
-                'd.imei',
+                'd.vin',
                 'd.status',
                 'c.id as buyer_id',
                 'c.name as buyer_name',
@@ -154,7 +155,7 @@ class SaleController extends Controller
     }
 
 
-    public function show(Sale $sale, CurrencyRateService $currencyRateService): Response
+    public function show(Sale $sale): Response
     {
         $saleData = DB::table('sales as s')
             ->join('devices as d', 'd.id', '=', 's.device_id')
@@ -174,15 +175,13 @@ class SaleController extends Controller
                 's.installment_profit',
                 's.contract_total',
                 's.sale_date',
-            's.usd_rate',
-            's.usd_rate_date',
-            's.usd_rate_source',
                 's.notes',
                 'd.brand',
                 'd.model',
-                'd.storage',
+                'd.model_year',
+                'd.mileage',
                 'd.color',
-                'd.imei',
+                'd.vin',
                 'd.status',
                 'c.name as buyer_name',
                 'c.mobile as buyer_mobile',
@@ -262,12 +261,9 @@ class SaleController extends Controller
             return $installment;
         });
 
-        $currentRates = $currencyRateService->latest();
-
-    return Inertia::render('Sales/Show', [
+        return Inertia::render('Sales/Show', [
             'sale' => $saleData,
             'installments' => $installments,
-        'currentUsdRate' => (int) ($currentRates['usd']['value'] ?? 0),
         ]);
     }
 
@@ -296,9 +292,10 @@ class SaleController extends Controller
                 'id' => $device->id,
                 'brand' => $device->brand,
                 'model' => $device->model,
-                'storage' => $device->storage,
+                'model_year' => $device->model_year,
+                'mileage' => $device->mileage,
                 'color' => $device->color,
-                'imei' => $device->imei,
+                'vin' => $device->vin,
                 'purchase_price' => $purchase?->purchase_price,
             ],
             'contacts' => $contacts,
@@ -362,7 +359,6 @@ class SaleController extends Controller
     public function store(
         Request $request,
         Device $device,
-        CurrencyRateService $currencyRateService,
         InstallmentCalculatorService $installmentCalculatorService,
         GoldRateService $goldRateService,
         GoldCollateralService $goldCollateralService
@@ -450,22 +446,9 @@ class SaleController extends Controller
             ],
 
             'sale_date' => ['required', 'date'],
-            'usd_rate' => ['nullable', 'integer', 'min:1'],
             'notes' => ['nullable', 'string'],
         ]);
 
-        $currencySnapshot = $currencyRateService->snapshotForDate(
-            'USD',
-            $validated['sale_date']
-        );
-
-        if (! $currencySnapshot && ! empty($validated['usd_rate'])) {
-            $currencySnapshot = [
-                'rate' => (int) $validated['usd_rate'],
-                'rate_date' => $validated['sale_date'],
-                'source' => 'manual',
-            ];
-        }
         $installmentCalculation = null;
 
         if (($validated['sale_type'] ?? null) === 'installment') {
@@ -540,7 +523,6 @@ class SaleController extends Controller
             $device,
             $validated,
             $installmentCalculation,
-            $currencySnapshot,
             $goldSnapshot,
             $goldCalculation
         ) {
@@ -598,9 +580,9 @@ class SaleController extends Controller
             $sale->deferment_days = $defermentDays;
             $sale->deferment_profit = $defermentProfit;
             $sale->sale_date = $validated['sale_date'];
-        $sale->usd_rate = $currencySnapshot['rate'] ?? null;
-        $sale->usd_rate_date = $currencySnapshot['rate_date'] ?? null;
-        $sale->usd_rate_source = $currencySnapshot['source'] ?? null;
+            $sale->usd_rate = null;
+            $sale->usd_rate_date = null;
+            $sale->usd_rate_source = null;
             $sale->notes = $validated['notes'] ?? null;
             $sale->created_by = $request->user()->id;
             $sale->save();
@@ -672,7 +654,7 @@ class SaleController extends Controller
 
         return redirect()
             ->route('sales.index')
-            ->with('success', 'فروش گوشی با موفقیت ثبت شد.');
+            ->with('success', 'فروش خودرو با موفقیت ثبت شد.');
     }
 
 }

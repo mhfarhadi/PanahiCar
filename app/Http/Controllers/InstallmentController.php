@@ -38,8 +38,8 @@ class InstallmentController extends Controller
                         ->orWhere('c.mobile', 'like', "%{$search}%")
                         ->orWhere('d.brand', 'like', "%{$search}%")
                         ->orWhere('d.model', 'like', "%{$search}%")
-                        ->orWhere('d.storage', 'like', "%{$search}%")
-                        ->orWhere('d.imei', 'like', "%{$search}%")
+                        ->orWhere('d.vin', 'like', "%{$search}%")
+                        ->orWhereRaw('CAST(d.model_year AS CHAR) like ?', ["%{$search}%"])
                         ->orWhere('i.check_number', 'like', "%{$search}%")
                         ->orWhere('i.bank_name', 'like', "%{$search}%")
                         ->orWhere('i.sayad_id', 'like', "%{$search}%");
@@ -135,8 +135,9 @@ class InstallmentController extends Controller
                 'c.mobile as buyer_mobile',
                 'd.brand',
                 'd.model',
-                'd.storage',
-                'd.imei',
+                'd.model_year',
+                'd.mileage',
+                'd.vin',
             ]);
 
         $installmentIds = $installments->pluck('id');

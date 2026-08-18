@@ -72,7 +72,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head :title="`ویرایش ${contact.name} | مایاهمراه`" />
+    <Head :title="`ویرایش ${contact.name} | automaya`" />
 
     <AuthenticatedLayout>
         <div
@@ -82,7 +82,7 @@ const submit = () => {
             <div class="mx-auto max-w-3xl">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm font-bold text-[#ff6570]">مایاهمراه</p>
+                        <p class="text-sm font-bold text-[#2563eb]">automaya</p>
                         <h1 class="mt-1 text-2xl font-black">ویرایش شخص</h1>
                         <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
                             اطلاعات هویتی و تماس را اصلاح کنید
@@ -115,7 +115,7 @@ const submit = () => {
                             </label>
 
                             <div class="flex flex-col gap-4 rounded-2xl border border-dashed border-slate-200/60 p-4 dark:border-white/10 sm:flex-row sm:items-center">
-                                <div class="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-[#fff0f1] text-4xl dark:bg-[#ff6d76]/[0.10]">
+                                <div class="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-[#eff6ff] text-4xl dark:bg-[#2563eb]/[0.10]">
                                     <img
                                         v-if="avatarPreview"
                                         :src="avatarPreview"
@@ -129,7 +129,7 @@ const submit = () => {
                                     <input
                                         type="file"
                                         accept="image/jpeg,image/png,image/webp"
-                                        class="block w-full text-sm text-slate-500 file:ml-4 file:rounded-xl file:border-0 file:bg-[#fff0f1] file:px-4 file:py-2 file:font-bold file:text-[#d85e68] dark:text-slate-400 dark:file:bg-[#ff6d76]/[0.10] dark:file:text-[#ff9299]"
+                                        class="block w-full text-sm text-slate-500 file:ml-4 file:rounded-xl file:border-0 file:bg-[#eff6ff] file:px-4 file:py-2 file:font-bold file:text-[#1d4ed8] dark:text-slate-400 dark:file:bg-[#2563eb]/[0.10] dark:file:text-[#93c5fd]"
                                         @change="handleAvatar"
                                     />
 
@@ -160,7 +160,7 @@ const submit = () => {
                             <input
                                 v-model="form.name"
                                 type="text"
-                                class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/5 dark:bg-white/[0.025]"
+                                class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/5 dark:bg-white/[0.025]"
                             />
 
                             <p
@@ -181,7 +181,7 @@ const submit = () => {
                                 type="tel"
                                 inputmode="numeric"
                                 dir="ltr"
-                                class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 text-left focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/5 dark:bg-white/[0.025]"
+                                class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 text-left focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/5 dark:bg-white/[0.025]"
                                 @input="handleMobile"
                             />
 
@@ -203,7 +203,7 @@ const submit = () => {
                                 type="tel"
                                 inputmode="numeric"
                                 dir="ltr"
-                                class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 text-left focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/5 dark:bg-white/[0.025]"
+                                class="w-full rounded-2xl border-slate-200/60 bg-white px-4 py-3 text-left focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/5 dark:bg-white/[0.025]"
                                 @input="handlePhone"
                             />
 
@@ -225,7 +225,7 @@ const submit = () => {
                                     class="rounded-2xl border p-4"
                                     :class="
                                         form.contact_type === 'individual'
-                                            ? 'border-[#ff6d76] bg-[#fff0f1] dark:bg-[#ff6d76]/[0.08]'
+                                            ? 'border-[#2563eb] bg-[#eff6ff] dark:bg-[#2563eb]/[0.08]'
                                             : 'border-slate-200/60 dark:border-white/5'
                                     "
                                 >
@@ -243,7 +243,7 @@ const submit = () => {
                                     class="rounded-2xl border p-4"
                                     :class="
                                         form.contact_type === 'colleague'
-                                            ? 'border-[#ff6d76] bg-[#fff0f1] dark:bg-[#ff6d76]/[0.08]'
+                                            ? 'border-[#2563eb] bg-[#eff6ff] dark:bg-[#2563eb]/[0.08]'
                                             : 'border-slate-200/60 dark:border-white/5'
                                     "
                                 >
@@ -276,7 +276,7 @@ const submit = () => {
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="rounded-2xl bg-[#ff6d76] px-6 py-3 font-black text-white transition hover:bg-[#f45f6a] disabled:opacity-50"
+                            class="rounded-2xl bg-[#2563eb] px-6 py-3 font-black text-white transition hover:bg-[#1d4ed8] disabled:opacity-50"
                         >
                             {{ form.processing ? 'در حال ذخیره...' : 'ذخیره تغییرات' }}
                         </button>

@@ -27,12 +27,17 @@ class AnnouncedDevicePurchaseController extends Controller
                 'id' => $device->id,
                 'brand' => $device->brand,
                 'model' => $device->model,
-                'storage' => $device->storage,
+                'model_year' => $device->model_year,
+                'mileage' => $device->mileage,
                 'color' => $device->color,
-                'imei' => $device->imei,
+                'transmission' => $device->transmission,
+                'vin' => $device->vin,
                 'announced_price' => $device->announced_price,
                 'announcer_name' => $announcer?->name,
                 'announcer_mobile' => $announcer?->mobile,
+            ],
+            'optionLabels' => [
+                'transmissions' => \App\Support\VehicleOptions::transmissions(),
             ],
         ]);
     }
@@ -78,6 +83,6 @@ class AnnouncedDevicePurchaseController extends Controller
 
         return redirect()
             ->route('devices.index')
-            ->with('success', 'گوشی با موفقیت خریداری و به موجودی اضافه شد.');
+            ->with('success', 'خودرو با موفقیت خریداری و به موجودی اضافه شد.');
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
+use App\Support\VehicleOptions;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -76,16 +77,14 @@ class DeviceShowController extends Controller
                 'id' => $device->id,
                 'brand' => $device->brand,
                 'model' => $device->model,
-                'storage' => $device->storage,
+                'model_year' => $device->model_year,
+                'mileage' => $device->mileage,
                 'color' => $device->color,
-                'part_number' => $device->part_number,
-                'manufacturing_country' => $device->manufacturing_country,
-                'sim_type' => $device->sim_type,
-                'battery_health' => $device->battery_health,
-                'battery_condition' => $device->battery_condition,
-                'condition_grade' => $device->condition_grade,
-                'imei' => $device->imei,
-                'registration_status' => $device->registration_status,
+                'transmission' => $device->transmission,
+                'fuel_type' => $device->fuel_type,
+                'insurance_months' => $device->insurance_months,
+                'body_condition' => $device->body_condition,
+                'vin' => $device->vin,
                 'description' => $device->description,
 
                 'purchase_id' => $purchase?->purchase_id,
@@ -106,6 +105,11 @@ class DeviceShowController extends Controller
             ],
             'deviceNotes' => $deviceNotes,
             'purchaseNotes' => $purchaseNotes,
+            'optionLabels' => [
+                'transmissions' => VehicleOptions::transmissions(),
+                'fuelTypes' => VehicleOptions::fuelTypes(),
+                'bodyConditions' => VehicleOptions::bodyConditions(),
+            ],
         ]);
     }
 }

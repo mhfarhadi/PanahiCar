@@ -1,13 +1,12 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import InputError from '@/Components/InputError.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import TextInput from '@/Components/TextInput.vue';
 import { computed, ref, watch } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import {
-    colorLabel,
-    registrationStatusLabel,
-    samsungBatteryConditionOptions,
-    manufacturingCountryOptions,
-} from '@/Utils/deviceLabels';
+import { colorLabel } from '@/Utils/vehicleLabels';
 
 const props = defineProps({
     device: {
@@ -17,6 +16,10 @@ const props = defineProps({
     catalog: {
         type: Object,
         required: true,
+    },
+    optionLabels: {
+        type: Object,
+        default: () => ({}),
     },
 });
 
@@ -34,44 +37,18 @@ const initialModel = props.catalog.models.find(
 
 const selectedModelId = ref(initialModel?.id ?? '');
 
-const selectedBrand = computed(() =>
-    props.catalog.brands.find(
-        (item) => String(item.id) === String(selectedBrandId.value)
-    )
-);
-
-const isSamsung = computed(
-    () => selectedBrand.value?.name === 'Samsung'
-);
-
 const filteredModels = computed(() =>
     props.catalog.models.filter(
         (model) => String(model.brand_id) === String(selectedBrandId.value)
     )
 );
 
-const filteredStorages = computed(() => {
-    if (!selectedModelId.value) return [];
-
-    const allowedIds = props.catalog.modelStorages
-        .filter(
-            (item) =>
-                String(item.device_model_id) === String(selectedModelId.value)
-        )
-        .map((item) => String(item.storage_option_id));
-
-    return props.catalog.storages.filter((storage) =>
-        allowedIds.includes(String(storage.id))
-    );
-});
-
 const filteredColors = computed(() => {
     if (!selectedModelId.value) return [];
 
     const allowedIds = props.catalog.modelColors
         .filter(
-            (item) =>
-                String(item.device_model_id) === String(selectedModelId.value)
+            (item) => String(item.device_model_id) === String(selectedModelId.value)
         )
         .map((item) => String(item.color_option_id));
 
@@ -80,52 +57,28 @@ const filteredColors = computed(() => {
     );
 });
 
-const filteredPartNumbers = computed(() => {
-    if (!selectedModelId.value) return [];
-
-    const allowedIds = props.catalog.modelPartNumbers
-        .filter(
-            (item) =>
-                String(item.device_model_id) === String(selectedModelId.value)
-        )
-        .map((item) => String(item.part_number_option_id));
-
-    return props.catalog.partNumbers.filter((part) =>
-        allowedIds.includes(String(part.id))
-    );
-});
-
 const form = useForm({
     brand: props.device.brand ?? '',
     model: props.device.model ?? '',
-    storage: props.device.storage ?? '',
+    model_year: props.device.model_year ?? '',
+    mileage: props.device.mileage ?? '',
     color: props.device.color ?? '',
-    part_number: props.device.part_number ?? '',
-    manufacturing_country: props.device.manufacturing_country ?? '',
-    sim_type: props.device.sim_type ?? '',
-    battery_health: props.device.battery_health ?? '',
-    battery_condition: props.device.battery_condition ?? '',
-    condition_grade: props.device.condition_grade ?? '',
-    imei: props.device.imei ?? '',
-    registration_status: props.device.registration_status ?? '',
+    transmission: props.device.transmission ?? '',
+    fuel_type: props.device.fuel_type ?? '',
+    body_condition: props.device.body_condition ?? '',
+    insurance_months: props.device.insurance_months ?? '',
+    vin: props.device.vin ?? '',
 });
 
 watch(selectedBrandId, () => {
     selectedModelId.value = '';
     form.brand = '';
     form.model = '';
-    form.storage = '';
     form.color = '';
-    form.part_number = '';
-    form.manufacturing_country = '';
-    form.battery_health = '';
-    form.battery_condition = '';
 });
 
 watch(selectedModelId, (value) => {
-    form.storage = '';
     form.color = '';
-    form.part_number = '';
 
     const model = props.catalog.models.find(
         (item) => String(item.id) === String(value)
@@ -133,12 +86,6 @@ watch(selectedModelId, (value) => {
 
     form.model = model?.name ?? '';
 });
-
-const normalizeDigits = (value) => {
-    return String(value ?? '')
-        .replace(/[۰-۹]/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit))
-        .replace(/[٠-٩]/g, (digit) => '٠١٢٣٤٥٦٧٨٩'.indexOf(digit));
-};
 
 const selectBrand = () => {
     const brand = props.catalog.brands.find(
@@ -148,40 +95,36 @@ const selectBrand = () => {
     form.brand = brand?.name ?? '';
 };
 
+const normalizeDigits = (value) =>
+    String(value ?? '')
+        .replace(/[۰-۹]/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(digit))
+        .replace(/[٠-٩]/g, (digit) => '٠١٢٣٤٥٦٧٨٩'.indexOf(digit));
+
 const submit = () => {
     form.patch(route('devices.update', props.device.id));
 };
 </script>
 
 <template>
-    <Head :title="`ویرایش ${device.brand} ${device.model} | مایاهمراه`" />
+    <Head :title="`ویرایش ${device.brand} ${device.model} | automaya`" />
 
     <AuthenticatedLayout>
-        <div
-            dir="rtl"
-            class="mh-page"
-        >
-            <div class="mx-auto max-w-5xl">
+        <div dir="rtl" class="am-page">
+            <div class="am-page-inner-narrow">
                 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-sm font-bold text-[#ff6570]">
-                            مایاهمراه
-                        </p>
-
-                        <h1 class="mt-1 text-2xl font-black">
-                            ویرایش مشخصات دستگاه
-                        </h1>
-
-                        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                        <p class="am-kicker">automaya</p>
+                        <h1 class="am-title">ویرایش مشخصات خودرو</h1>
+                        <p class="am-subtitle">
                             {{ device.brand }} {{ device.model }}
                         </p>
                     </div>
 
                     <Link
                         :href="route('devices.show', device.id)"
-                        class="rounded-2xl border border-slate-200/60 bg-white px-4 py-2.5 text-center text-sm font-bold text-slate-600 dark:border-white/5 dark:bg-white/[0.035] dark:text-slate-300"
+                        class="am-btn-secondary shrink-0"
                     >
-                        بازگشت به دستگاه
+                        بازگشت
                     </Link>
                 </div>
 
@@ -191,36 +134,24 @@ const submit = () => {
                     اطلاعات خرید، فروشنده، قیمت خرید و سوابق مالی از این صفحه تغییر نمی‌کنند.
                 </div>
 
-                <form
-                    class="space-y-6"
-                    @submit.prevent="submit"
-                >
-                    <section
-                        class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-white/[0.035] sm:p-7"
-                    >
+                <form class="space-y-6" @submit.prevent="submit">
+                    <section class="am-card sm:!p-7">
                         <div class="mb-6">
-                            <h2 class="text-lg font-black">
-                                مشخصات دستگاه
-                            </h2>
-
+                            <h2 class="text-lg font-black">مشخصات خودرو</h2>
                             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                                اطلاعات فنی قابل ویرایش گوشی
+                                اطلاعات فنی قابل ویرایش
                             </p>
                         </div>
 
-                        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                        <div class="grid gap-5 sm:grid-cols-2">
                             <div>
-                                <label class="mb-2 block text-sm font-bold">
-                                    برند *
-                                </label>
-
+                                <InputLabel value="برند *" class="mb-2 font-bold" />
                                 <select
                                     v-model="selectedBrandId"
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
+                                    class="am-input"
                                     @change="selectBrand"
                                 >
                                     <option value="">انتخاب برند</option>
-
                                     <option
                                         v-for="brand in catalog.brands"
                                         :key="brand.id"
@@ -229,27 +160,17 @@ const submit = () => {
                                         {{ brand.name }}
                                     </option>
                                 </select>
-
-                                <p
-                                    v-if="form.errors.brand"
-                                    class="mt-1 text-xs text-red-500"
-                                >
-                                    {{ form.errors.brand }}
-                                </p>
+                                <InputError class="mt-1" :message="form.errors.brand" />
                             </div>
 
                             <div>
-                                <label class="mb-2 block text-sm font-bold">
-                                    مدل *
-                                </label>
-
+                                <InputLabel value="مدل *" class="mb-2 font-bold" />
                                 <select
                                     v-model="selectedModelId"
                                     :disabled="!selectedBrandId"
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
+                                    class="am-input disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <option value="">انتخاب مدل</option>
-
                                     <option
                                         v-for="model in filteredModels"
                                         :key="model.id"
@@ -258,49 +179,41 @@ const submit = () => {
                                         {{ model.name }}
                                     </option>
                                 </select>
-
-                                <p
-                                    v-if="form.errors.model"
-                                    class="mt-1 text-xs text-red-500"
-                                >
-                                    {{ form.errors.model }}
-                                </p>
+                                <InputError class="mt-1" :message="form.errors.model" />
                             </div>
 
                             <div>
-                                <label class="mb-2 block text-sm font-bold">
-                                    حافظه
-                                </label>
-
-                                <select
-                                    v-model="form.storage"
-                                    :disabled="!selectedModelId"
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
-                                >
-                                    <option value="">انتخاب حافظه</option>
-
-                                    <option
-                                        v-for="storage in filteredStorages"
-                                        :key="storage.id"
-                                        :value="storage.name"
-                                    >
-                                        {{ storage.name }}
-                                    </option>
-                                </select>
+                                <InputLabel value="سال مدل *" class="mb-2 font-bold" />
+                                <TextInput
+                                    :model-value="String(form.model_year ?? '')"
+                                    type="text"
+                                    inputmode="numeric"
+                                    class="am-input border-0 shadow-none focus:ring-2"
+                                    @update:model-value="form.model_year = normalizeDigits($event).replace(/\D/g, '').slice(0, 4)"
+                                />
+                                <InputError class="mt-1" :message="form.errors.model_year" />
                             </div>
 
                             <div>
-                                <label class="mb-2 block text-sm font-bold">
-                                    رنگ
-                                </label>
+                                <InputLabel value="کارکرد (کیلومتر) *" class="mb-2 font-bold" />
+                                <TextInput
+                                    :model-value="String(form.mileage ?? '')"
+                                    type="text"
+                                    inputmode="numeric"
+                                    class="am-input border-0 shadow-none focus:ring-2"
+                                    @update:model-value="form.mileage = normalizeDigits($event).replace(/\D/g, '')"
+                                />
+                                <InputError class="mt-1" :message="form.errors.mileage" />
+                            </div>
 
+                            <div>
+                                <InputLabel value="رنگ" class="mb-2 font-bold" />
                                 <select
                                     v-model="form.color"
                                     :disabled="!selectedModelId"
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
+                                    class="am-input disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <option value="">انتخاب رنگ</option>
-
                                     <option
                                         v-for="color in filteredColors"
                                         :key="color.id"
@@ -309,187 +222,91 @@ const submit = () => {
                                         {{ colorLabel(color.name) }}
                                     </option>
                                 </select>
-                            </div>
-
-                            <div v-if="isSamsung">
-                                <label class="mb-2 block text-sm font-bold">
-                                    کشور سازنده
-                                </label>
-
-                                <select
-                                    v-model="form.manufacturing_country"
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
-                                >
-                                    <option value="">انتخاب کشور سازنده</option>
-
-                                    <option
-                                        v-for="country in manufacturingCountryOptions"
-                                        :key="country.value"
-                                        :value="country.value"
-                                    >
-                                        {{ country.label }}
-                                    </option>
-                                </select>
-                            </div>
-
-                            <div v-else>
-                                <label class="mb-2 block text-sm font-bold">
-                                    پارت نامبر
-                                </label>
-
-                                <select
-                                    v-model="form.part_number"
-                                    :disabled="!selectedModelId || !filteredPartNumbers.length"
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.025]"
-                                >
-                                    <option value="">
-                                        {{ filteredPartNumbers.length ? 'انتخاب پارت نامبر' : 'پارت نامبر ندارد' }}
-                                    </option>
-
-                                    <option
-                                        v-for="part in filteredPartNumbers"
-                                        :key="part.id"
-                                        :value="part.name"
-                                    >
-                                        {{ part.name }}
-                                    </option>
-                                </select>
+                                <InputError class="mt-1" :message="form.errors.color" />
                             </div>
 
                             <div>
-                                <label class="mb-2 block text-sm font-bold">
-                                    نوع سیم‌کارت
-                                </label>
-
-                                <select
-                                    v-model="form.sim_type"
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
-                                >
+                                <InputLabel value="گیربکس *" class="mb-2 font-bold" />
+                                <select v-model="form.transmission" class="am-input">
                                     <option value="">انتخاب کنید</option>
-                                    <option value="single">تک‌سیم</option>
-                                    <option value="dual">دو‌سیم</option>
-                                </select>
-                            </div>
-
-                            <div v-if="isSamsung">
-                                <label class="mb-2 block text-sm font-bold">
-                                    وضعیت باتری
-                                </label>
-
-                                <select
-                                    v-model="form.battery_condition"
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
-                                >
-                                    <option value="">انتخاب وضعیت باتری</option>
-
                                     <option
-                                        v-for="option in samsungBatteryConditionOptions"
-                                        :key="option.value"
-                                        :value="option.value"
+                                        v-for="(label, value) in optionLabels.transmissions"
+                                        :key="value"
+                                        :value="value"
                                     >
-                                        {{ option.label }}
+                                        {{ label }}
                                     </option>
                                 </select>
-                            </div>
-
-                            <div v-else>
-                                <label class="mb-2 block text-sm font-bold">
-                                    سلامت باتری
-                                </label>
-
-                                <div class="relative">
-                                    <input
-                                        :value="form.battery_health"
-                                        type="text"
-                                        inputmode="numeric"
-                                        placeholder="مثلاً ۸۹ یا 89"
-                                        class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] pl-12 focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
-                                        @input="form.battery_health = normalizeDigits($event.target.value).replace(/\D/g, '').slice(0, 3)"
-                                    />
-
-                                    <span
-                                        class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400"
-                                    >
-                                        %
-                                    </span>
-                                </div>
+                                <InputError class="mt-1" :message="form.errors.transmission" />
                             </div>
 
                             <div>
-                                <label class="mb-2 block text-sm font-bold">
-                                    تمیزی دستگاه
-                                </label>
-
-                                <select
-                                    v-model="form.condition_grade"
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
-                                >
+                                <InputLabel value="نوع سوخت *" class="mb-2 font-bold" />
+                                <select v-model="form.fuel_type" class="am-input">
                                     <option value="">انتخاب کنید</option>
-                                    <option value="A+">A+ | در حد نو</option>
-                                    <option value="A">A | بسیار تمیز</option>
-                                    <option value="B">B | تمیز</option>
-                                    <option value="C">C | خط و خش‌دار</option>
+                                    <option
+                                        v-for="(label, value) in optionLabels.fuelTypes"
+                                        :key="value"
+                                        :value="value"
+                                    >
+                                        {{ label }}
+                                    </option>
                                 </select>
+                                <InputError class="mt-1" :message="form.errors.fuel_type" />
                             </div>
 
                             <div>
-                                <label class="mb-2 block text-sm font-bold">
-                                    IMEI
-                                </label>
+                                <InputLabel value="وضعیت بدنه *" class="mb-2 font-bold" />
+                                <select v-model="form.body_condition" class="am-input">
+                                    <option value="">انتخاب کنید</option>
+                                    <option
+                                        v-for="(label, value) in optionLabels.bodyConditions"
+                                        :key="value"
+                                        :value="value"
+                                    >
+                                        {{ label }}
+                                    </option>
+                                </select>
+                                <InputError class="mt-1" :message="form.errors.body_condition" />
+                            </div>
 
-                                <input
-                                    :value="form.imei"
+                            <div>
+                                <InputLabel value="بیمه شخص ثالث (ماه)" class="mb-2 font-bold" />
+                                <TextInput
+                                    :model-value="String(form.insurance_months ?? '')"
                                     type="text"
                                     inputmode="numeric"
-                                    maxlength="15"
-                                    placeholder="IMEI پانزده رقمی"
-                                    dir="ltr"
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] text-left focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
-                                    @input="form.imei = normalizeDigits($event.target.value).replace(/\D/g, '').slice(0, 15)"
+                                    class="am-input border-0 shadow-none focus:ring-2"
+                                    @update:model-value="form.insurance_months = normalizeDigits($event).replace(/\D/g, '').slice(0, 2)"
                                 />
-
-                                <p
-                                    v-if="form.errors.imei"
-                                    class="mt-1 text-xs text-red-500"
-                                >
-                                    {{ form.errors.imei }}
-                                </p>
+                                <InputError class="mt-1" :message="form.errors.insurance_months" />
                             </div>
 
                             <div>
-                                <label class="mb-2 block text-sm font-bold">
-                                    وضعیت رجیستری
-                                </label>
-
-                                <select
-                                    v-model="form.registration_status"
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
-                                >
-                                    <option value="">انتخاب کنید</option>
-                                    <option value="registered">
-                                        {{ registrationStatusLabel('registered') }}
-                                    </option>
-                                    <option value="unregistered">
-                                        {{ registrationStatusLabel('unregistered') }}
-                                    </option>
-                                    <option value="unknown">نامشخص</option>
-                                </select>
+                                <InputLabel value="VIN" class="mb-2 font-bold" />
+                                <TextInput
+                                    v-model="form.vin"
+                                    type="text"
+                                    dir="ltr"
+                                    class="am-input border-0 text-left shadow-none focus:ring-2"
+                                />
+                                <InputError class="mt-1" :message="form.errors.vin" />
                             </div>
                         </div>
                     </section>
 
                     <div class="flex flex-col-reverse gap-3 pb-8 sm:flex-row">
-                        <button
+                        <PrimaryButton
                             type="submit"
                             :disabled="form.processing"
-                            class="rounded-2xl bg-[#ff6d76] px-8 py-3 font-black text-white shadow-lg shadow-[#ff6d76]/15 transition hover:bg-[#f45f6a] disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-none"
+                            class="am-btn-primary px-8"
                         >
                             {{ form.processing ? 'در حال ذخیره...' : 'ذخیره تغییرات' }}
-                        </button>
+                        </PrimaryButton>
 
                         <Link
                             :href="route('devices.show', device.id)"
-                            class="rounded-2xl bg-white px-8 py-3 text-center font-bold text-slate-600 shadow-sm dark:bg-white/[0.035] dark:text-slate-300"
+                            class="am-btn-secondary px-8 text-center"
                         >
                             انصراف
                         </Link>

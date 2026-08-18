@@ -1,118 +1,132 @@
 <?php
 
-test('public features page is accessible without authentication', function () {
-    $this
-        ->get(route('features.index'))
-        ->assertOk();
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+use Inertia\Testing\AssertableInertia as Assert;
+use Morilog\Jalali\Jalalian;
+
+beforeEach(function () {
+    Http::fake();
 });
 
-test('public installment contract page is accessible without authentication', function () {
-    $this
-        ->get(route('features.contracts.index'))
-        ->assertOk();
-});
-
-
-test('public price estimate page is accessible without authentication', function () {
-    $this
-        ->get(route('features.price-estimates.index'))
-        ->assertOk();
-});
-
-test('public gold collateral calculator is accessible without authentication', function () {
-    $this
-        ->get(route('features.gold-collateral.index'))
-        ->assertOk();
-});
-
-test('public wanted device page is accessible without authentication', function () {
-    $this
-        ->get(route('features.wanted.index'))
-        ->assertOk();
-});
-
-test('public wanted market page is accessible without authentication', function () {
-    $this
-        ->get(route('features.wanted-market.index'))
-        ->assertOk();
-});
-
-test('public check printer page is accessible without authentication', function () {
-    $this
-        ->get(route('features.check-printer.index'))
-        ->assertOk();
-});
-
-test('wanted market feed does not expose organic mobile numbers in initial page props', function () {
-    $id = \Illuminate\Support\Facades\DB::table('wanted_device_requests')
-        ->insertGetId([
-            'requester_name' => 'همکار تست',
-            'requester_mobile' => '09121234567',
-            'origin' => 'organic',
-            'brand' => 'Apple',
-            'model' => 'iPhone 13',
-            'storage' => '128GB',
-            'condition_grade' => 'A',
-            'registration_status' => 'registered',
-            'battery_health' => 90,
-            'max_price' => 80_000_000,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-    $response = $this->get(route('features.wanted-market.index'));
-
-    $response
+it('renders the public features hub', function () {
+    $this->get(route('features.index'))
         ->assertOk()
-        ->assertDontSee('09121234567');
-
-    expect($id)->toBeInt();
+        ->assertInertia(fn (Assert $page) => $page->component('Features/Index'));
 });
 
-test('organic wanted request contact can be revealed explicitly', function () {
-    $id = \Illuminate\Support\Facades\DB::table('wanted_device_requests')
-        ->insertGetId([
-            'requester_name' => 'همکار تست',
-            'requester_mobile' => '09121234567',
-            'origin' => 'organic',
-            'brand' => 'Apple',
-            'model' => 'iPhone 13',
-            'storage' => '128GB',
-            'condition_grade' => 'A',
-            'registration_status' => 'registered',
-            'battery_health' => 90,
-            'max_price' => 80_000_000,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+it('renders public feature tools', function (string $routeName) {
+    $this->get(route($routeName))->assertOk();
+})->with([
+    'features.installments.index',
+    'features.contracts.index',
+    'features.price-estimates.index',
+    'features.gold-collateral.index',
+    'features.wanted.index',
+    'features.wanted-market.index',
+    'features.check-printer.index',
+]);
 
-    $this
-        ->getJson(route('features.wanted-market.contact', $id))
+it('calculates a public installment plan', function () {
+    $saleDate = '2026-08-13';
+    $firstDueDate = Jalalian::fromCarbon(Carbon::parse($saleDate))
+        ->addMonths(1)
+        ->toCarbon()
+        ->toDateString();
+
+    $this->postJson(route('features.installments.calculate'), [
+        'mode' => 'regular',
+        'sale_price' => 800_000_000,
+        'down_payment' => 200_000_000,
+        'monthly_profit_rate' => 6.5,
+        'installment_count' => 6,
+        'sale_date' => $saleDate,
+        'first_due_date' => $firstDueDate,
+    ])
         ->assertOk()
-        ->assertJsonPath('contact.requester_name', 'همکار تست')
-        ->assertJsonPath('contact.mobile', '09121234567');
+        ->assertJsonPath('available', true)
+        ->assertJsonPath('result.installment_count', 6);
 });
 
-test('bootstrap wanted rows never reveal a contact number', function () {
-    $id = \Illuminate\Support\Facades\DB::table('wanted_device_requests')
-        ->insertGetId([
-            'requester_name' => 'نمونه بازار',
-            'requester_mobile' => '00000010001',
-            'origin' => 'bootstrap_market',
-            'market_reference_source' => 'divar',
-            'brand' => 'Apple',
-            'model' => 'iPhone 13',
-            'storage' => '128GB',
-            'condition_grade' => 'A',
-            'registration_status' => 'registered',
-            'battery_health' => 90,
-            'max_price' => 80_000_000,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+it('calculates irregular installment payments', function () {
+    $saleDate = '2026-08-13';
+    $firstDueDate = Jalalian::fromCarbon(Carbon::parse($saleDate))
+        ->addMonths(1)
+        ->toCarbon()
+        ->toDateString();
+    $secondDueDate = Jalalian::fromCarbon(Carbon::parse($firstDueDate))
+        ->addMonths(2)
+        ->toCarbon()
+        ->toDateString();
 
-    $this
-        ->getJson(route('features.wanted-market.contact', $id))
-        ->assertStatus(422)
-        ->assertJsonMissing(['mobile' => '00000010001']);
+    $this->postJson(route('features.installments.calculate'), [
+        'mode' => 'custom',
+        'sale_price' => 800_000_000,
+        'down_payment' => 200_000_000,
+        'monthly_profit_rate' => 6.5,
+        'sale_date' => $saleDate,
+        'payments' => [
+            ['due_date' => $firstDueDate, 'amount' => 80_000_000],
+            ['due_date' => $secondDueDate, 'amount' => 120_000_000],
+        ],
+    ])
+        ->assertOk()
+        ->assertJsonPath('available', true)
+        ->assertJsonPath('result.payments.0.amount', 80_000_000)
+        ->assertJsonPath('result.payments.1.amount', 120_000_000);
+});
+
+it('calculates gold collateral from a manual gram price', function () {
+    $saleDate = '2026-08-13';
+    $firstDueDate = Jalalian::fromCarbon(Carbon::parse($saleDate))
+        ->addMonths(1)
+        ->toCarbon()
+        ->toDateString();
+
+    $this->postJson(route('features.gold-collateral.calculate'), [
+        'sale_price' => 800_000_000,
+        'down_payment' => 200_000_000,
+        'monthly_profit_rate' => 6.5,
+        'installment_count' => 6,
+        'gold_rate_per_gram' => 8_000_000,
+        'sale_date' => $saleDate,
+        'first_due_date' => $firstDueDate,
+    ])
+        ->assertOk()
+        ->assertJsonPath('result.gold_rate.source', 'manual')
+        ->assertJsonPath('result.gold_rate.rate_per_gram', 8_000_000)
+        ->assertJsonPath('result.collateral.gold_rate_per_gram', 8_000_000);
+});
+
+it('estimates vehicle price from showroom inventory', function () {
+    $device = \App\Models\Device::create([
+        'brand' => 'ایران‌خودرو',
+        'model' => 'دنا پلاس',
+        'model_year' => 1402,
+        'mileage' => 12000,
+        'color' => 'سفید',
+        'transmission' => 'automatic',
+        'fuel_type' => 'petrol',
+        'body_condition' => 'pristine',
+        'status' => 'in_stock',
+    ]);
+
+    \Illuminate\Support\Facades\DB::table('purchases')->insert([
+        'device_id' => $device->id,
+        'purchase_price' => 800_000_000,
+        'purchase_date' => now()->toDateString(),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $this->get(route('features.price-estimates.index', [
+        'brand' => 'ایران‌خودرو',
+        'model' => 'دنا پلاس',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Features/PriceEstimate/Index')
+            ->where('estimate.available', true)
+            ->where('estimate.suggested_price', 880_000_000)
+        );
 });

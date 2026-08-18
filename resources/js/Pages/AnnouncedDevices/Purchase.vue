@@ -3,12 +3,16 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { colorLabel } from '@/Utils/deviceLabels';
+import { colorLabel, formatMileage, formatYear, transmissionLabel } from '@/Utils/vehicleLabels';
 
 const props = defineProps({
     device: {
         type: Object,
         required: true,
+    },
+    optionLabels: {
+        type: Object,
+        default: () => ({}),
     },
 });
 
@@ -122,7 +126,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="خرید گوشی اعلامی | مایاهمراه" />
+    <Head title="خرید خودرو اعلامی | automaya" />
 
     <AuthenticatedLayout>
         <div
@@ -132,10 +136,10 @@ const submit = () => {
             <div class="mx-auto max-w-4xl">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm font-bold text-[#ff6570]">مایاهمراه</p>
-                        <h1 class="mt-1 text-2xl font-black">خرید گوشی اعلامی</h1>
+                        <p class="text-sm font-bold text-[#2563eb]">automaya</p>
+                        <h1 class="mt-1 text-2xl font-black">خرید خودرو اعلامی</h1>
                         <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                            با ثبت خرید، گوشی از لیست اعلامی خارج و وارد موجودی مغازه می‌شود.
+                            با ثبت خرید، خودرو از لیست اعلامی خارج و وارد موجودی نمایشگاه می‌شود.
                         </p>
                     </div>
 
@@ -149,27 +153,35 @@ const submit = () => {
 
                 <form @submit.prevent="submit" class="space-y-6">
                     <section class="rounded-[30px] bg-white p-5 shadow-sm dark:bg-white/[0.035] sm:p-7">
-                        <h2 class="text-lg font-black">مشخصات گوشی</h2>
+                        <h2 class="text-lg font-black">مشخصات خودرو</h2>
 
                         <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             <div class="rounded-2xl bg-[#f7f8fa] p-4 dark:bg-white/[0.025]">
-                                <p class="text-xs text-slate-400">دستگاه</p>
+                                <p class="text-xs text-slate-400">خودرو</p>
                                 <p class="mt-1 font-black">
                                     {{ device.brand }} {{ device.model }}
                                 </p>
                             </div>
 
                             <div class="rounded-2xl bg-[#f7f8fa] p-4 dark:bg-white/[0.025]">
-                                <p class="text-xs text-slate-400">حافظه / رنگ</p>
+                                <p class="text-xs text-slate-400">سال / کارکرد</p>
                                 <p class="mt-1 font-bold">
-                                    {{ device.storage || '—' }} · {{ colorLabel(device.color) }}
+                                    {{ formatYear(device.model_year) }} · {{ formatMileage(device.mileage) }}
                                 </p>
                             </div>
 
                             <div class="rounded-2xl bg-[#f7f8fa] p-4 dark:bg-white/[0.025]">
-                                <p class="text-xs text-slate-400">IMEI</p>
+                                <p class="text-xs text-slate-400">رنگ / گیربکس</p>
+                                <p class="mt-1 font-bold">
+                                    {{ colorLabel(device.color) }} ·
+                                    {{ transmissionLabel(device.transmission, optionLabels.transmissions) }}
+                                </p>
+                            </div>
+
+                            <div class="rounded-2xl bg-[#f7f8fa] p-4 dark:bg-white/[0.025]">
+                                <p class="text-xs text-slate-400">VIN</p>
                                 <p class="mt-1 font-bold" dir="ltr">
-                                    {{ device.imei || '—' }}
+                                    {{ device.vin || '—' }}
                                 </p>
                             </div>
 
@@ -187,9 +199,9 @@ const submit = () => {
                                 </p>
                             </div>
 
-                            <div class="rounded-2xl bg-[#fff0f1] p-4 dark:bg-[#ff6d76]/[0.08]">
+                            <div class="rounded-2xl bg-[#eff6ff] p-4 dark:bg-[#2563eb]/[0.08]">
                                 <p class="text-xs text-slate-500">قیمت اعلامی</p>
-                                <p class="mt-1 font-black text-[#d85e68] dark:text-[#ff9299]">
+                                <p class="mt-1 font-black text-[#1d4ed8] dark:text-[#93c5fd]">
                                     {{ money(device.announced_price) }}
                                 </p>
                             </div>
@@ -210,12 +222,12 @@ const submit = () => {
                                     type="text"
                                     inputmode="numeric"
                                     @input="handlePurchasePrice"
-                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
+                                    class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                 />
 
                                 <p
                                     v-if="purchasePriceWords"
-                                    class="mt-2 text-sm font-bold text-[#ff6570] dark:text-[#ff9299]"
+                                    class="mt-2 text-sm font-bold text-[#2563eb] dark:text-[#93c5fd]"
                                 >
                                     {{ purchasePriceWords }}
                                 </p>
@@ -240,8 +252,8 @@ const submit = () => {
                                     convert-numbers
                                     :editable="false"
                                     :auto-submit="true"
-                                    color="#ff6d76"
-                                    input-class="w-full rounded-2xl border border-slate-200/60 bg-[#f7f8fa] px-3 py-2 text-right focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
+                                    color="#2563eb"
+                                    input-class="w-full rounded-2xl border border-slate-200/60 bg-[#f7f8fa] px-3 py-2 text-right focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/10 dark:bg-white/[0.025]"
                                     placeholder="انتخاب تاریخ خرید"
                                 />
                             </div>
@@ -256,7 +268,7 @@ const submit = () => {
                                 v-model="form.notes"
                                 rows="3"
                                 placeholder="در صورت نیاز توضیحات خرید را وارد کنید..."
-                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#ff6d76] focus:ring-[#ff6d76]/30 dark:border-white/10 dark:bg-white/[0.025]"
+                                class="w-full rounded-2xl border-slate-200/60 bg-[#f7f8fa] focus:border-[#2563eb] focus:ring-[#2563eb]/30 dark:border-white/10 dark:bg-white/[0.025]"
                             ></textarea>
                         </div>
                     </section>
@@ -265,7 +277,7 @@ const submit = () => {
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="rounded-2xl bg-[#ff6d76] px-8 py-3 font-black text-white shadow-lg shadow-[#ff6d76]/15 transition hover:bg-[#f45f6a] disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-none"
+                            class="rounded-2xl bg-[#2563eb] px-8 py-3 font-black text-white shadow-lg shadow-[#2563eb]/15 transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-none"
                         >
                             {{ form.processing ? 'در حال ثبت خرید...' : 'تأیید خرید و انتقال به موجودی' }}
                         </button>

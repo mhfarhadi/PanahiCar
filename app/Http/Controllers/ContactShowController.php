@@ -20,9 +20,10 @@ class ContactShowController extends Controller
                 'id',
                 'brand',
                 'model',
-                'storage',
+                'model_year',
+                'mileage',
                 'color',
-                'imei',
+                'vin',
                 'status',
                 'announced_price',
                 'announced_at',
@@ -41,9 +42,10 @@ class ContactShowController extends Controller
                 'p.notes',
                 'd.brand',
                 'd.model',
-                'd.storage',
+                'd.model_year',
+                'd.mileage',
                 'd.color',
-                'd.imei',
+                'd.vin',
                 'd.status',
             ]);
 
@@ -65,9 +67,10 @@ class ContactShowController extends Controller
                 's.notes',
                 'd.brand',
                 'd.model',
-                'd.storage',
+                'd.model_year',
+                'd.mileage',
                 'd.color',
-                'd.imei',
+                'd.vin',
                 'd.status',
             ]);
 

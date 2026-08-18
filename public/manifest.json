@@ -1,0 +1,12 @@
+{
+    "name": "automaya",
+    "short_name": "automaya",
+    "description": "مدیریت نمایشگاه خودرو",
+    "start_url": "/dashboard",
+    "display": "standalone",
+    "background_color": "#f4f4f5",
+    "theme_color": "#f4f4f5",
+    "dir": "rtl",
+    "lang": "fa",
+    "icons": []
+}

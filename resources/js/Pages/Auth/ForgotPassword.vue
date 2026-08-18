@@ -1,9 +1,6 @@
 <script setup>
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 
 defineProps({
@@ -23,46 +20,42 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Forgot Password" />
+        <Head title="بازیابی رمز | automaya" />
 
-        <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-            Forgot your password? No problem. Just let us know your email
-            address and we will email you a password reset link that will allow
-            you to choose a new one.
-        </div>
+        <div class="rounded-[32px] bg-white p-6 text-right shadow-[0_18px_50px_rgba(0,0,0,0.06)] dark:bg-[#161618] sm:p-8">
+            <h1 class="text-[22px] font-black tracking-tight">بازیابی رمز</h1>
+            <p class="mt-2 mb-6 text-sm leading-7 text-neutral-400">
+                ایمیل خود را وارد کنید تا لینک بازیابی رمز برایتان ارسال شود.
+            </p>
 
-        <div
-            v-if="status"
-            class="mb-4 text-sm font-medium text-green-600 dark:text-green-400"
-        >
-            {{ status }}
-        </div>
+            <p v-if="status" class="mb-5 text-sm font-semibold text-green-600">
+                {{ status }}
+            </p>
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
+            <form class="space-y-5" @submit.prevent="submit">
+                <div>
+                    <label for="email" class="mb-2 block text-[13px] font-semibold text-neutral-500">ایمیل</label>
+                    <input
+                        id="email"
+                        v-model="form.email"
+                        type="email"
+                        required
+                        autofocus
+                        autocomplete="username"
+                        dir="ltr"
+                        class="am-input text-left"
+                    />
+                    <InputError class="mt-2" :message="form.errors.email" />
+                </div>
 
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
-
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
-
-            <div class="mt-4 flex items-center justify-end">
-                <PrimaryButton
-                    :class="{ 'opacity-25': form.processing }"
+                <button
+                    type="submit"
+                    class="am-btn-primary w-full"
                     :disabled="form.processing"
                 >
-                    Email Password Reset Link
-                </PrimaryButton>
-            </div>
-        </form>
+                    ارسال لینک
+                </button>
+            </form>
+        </div>
     </GuestLayout>
 </template>

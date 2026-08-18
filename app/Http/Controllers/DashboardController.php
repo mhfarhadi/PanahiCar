@@ -106,11 +106,40 @@ class DashboardController extends Controller
                 return $installment;
             });
 
+        $featuredVehicles = DB::table('devices as d')
+            ->leftJoin('purchases as p', 'p.device_id', '=', 'd.id')
+            ->where('d.status', 'in_stock')
+            ->orderByDesc('d.id')
+            ->limit(8)
+            ->get([
+                'd.id',
+                'd.brand',
+                'd.model',
+                'd.model_year',
+                'd.mileage',
+                'd.color',
+                'p.purchase_price',
+            ])
+            ->map(function ($device) {
+                $device->cover_image = DB::table('device_images')
+                    ->where('device_id', $device->id)
+                    ->orderByDesc('is_cover')
+                    ->orderBy('sort_order')
+                    ->value('image_path');
+
+                $device->suggested_sale_price = $device->purchase_price
+                    ? (int) round($device->purchase_price * 1.10)
+                    : null;
+
+                return $device;
+            });
+
         return Inertia::render('Dashboard', [
             'inventoryCount' => $inventoryCount,
             'salesThisMonth' => $salesThisMonth,
             'receivables' => $receivables,
             'upcomingInstallments' => $upcomingInstallments,
+            'featuredVehicles' => $featuredVehicles,
             'currencyRates' => $currencyRateService->latest(),
         ]);
     }

@@ -3,7 +3,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker';
 import { computed, ref } from 'vue';
-import { colorLabel } from '@/Utils/deviceLabels';
+import { colorLabel, formatMileage, formatYear } from '@/Utils/vehicleLabels';
+import { mediaUrl } from '@/Utils/carPhotos';
 
 const props = defineProps({
     sale: {
@@ -13,10 +14,6 @@ const props = defineProps({
     installments: {
         type: Array,
         default: () => [],
-    },
-    currentUsdRate: {
-        type: Number,
-        default: 0,
     },
 });
 
@@ -212,7 +209,7 @@ const hasCheckDetails = (installment) =>
 </script>
 
 <template>
-    <Head :title="`جزئیات فروش ${sale.brand} ${sale.model} | مایاهمراه`" />
+    <Head :title="`جزئیات فروش ${sale.brand} ${sale.model} | automaya`" />
 
     <AuthenticatedLayout>
         <div
@@ -222,8 +219,8 @@ const hasCheckDetails = (installment) =>
             <div class="mx-auto max-w-7xl">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm font-bold text-[#ff6570]">
-                            مایاهمراه
+                        <p class="text-sm font-bold text-[#2563eb]">
+                            automaya
                         </p>
 
                         <h1 class="mt-1 text-2xl font-black">
@@ -251,18 +248,10 @@ const hasCheckDetails = (installment) =>
                             class="flex h-64 items-center justify-center overflow-hidden bg-[#f1f3f5] dark:bg-white/[0.06]"
                         >
                             <img
-                                v-if="sale.cover_image"
-                                :src="`/storage/${sale.cover_image}`"
+                                :src="mediaUrl(sale.cover_image, sale.id)"
                                 :alt="`${sale.brand} ${sale.model}`"
                                 class="h-full w-full object-cover"
                             />
-
-                            <span
-                                v-else
-                                class="text-8xl opacity-40"
-                            >
-                                📱
-                            </span>
                         </div>
 
                         <div class="p-5">
@@ -273,10 +262,10 @@ const hasCheckDetails = (installment) =>
                                     </h2>
 
                                     <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                                        <span v-if="sale.storage">
-                                            {{ sale.storage }}
+                                        {{ formatYear(sale.model_year) }}
+                                        <span v-if="sale.mileage !== null && sale.mileage !== undefined">
+                                            · {{ formatMileage(sale.mileage) }}
                                         </span>
-
                                         <span v-if="sale.color">
                                             · {{ colorLabel(sale.color) }}
                                         </span>
@@ -284,7 +273,7 @@ const hasCheckDetails = (installment) =>
                                 </div>
 
                                 <span
-                                    class="rounded-xl bg-[#fff0f1] px-3 py-1.5 text-xs font-black text-[#d85e68] dark:bg-[#ff6d76]/[0.08] dark:text-[#ff9299]"
+                                    class="rounded-xl bg-[#eff6ff] px-3 py-1.5 text-xs font-black text-[#1d4ed8] dark:bg-[#2563eb]/[0.08] dark:text-[#93c5fd]"
                                 >
                                     {{ saleTypeLabel(sale.sale_type) }}
                                 </span>
@@ -298,7 +287,7 @@ const hasCheckDetails = (installment) =>
 
                                     <Link
                                         :href="route('contacts.show', sale.buyer_id)"
-                                        class="font-black text-[#ff6570]"
+                                        class="font-black text-[#2563eb]"
                                     >
                                         {{ sale.buyer_name }}
                                     </Link>
@@ -341,7 +330,7 @@ const hasCheckDetails = (installment) =>
                                         :class="
                                             isGoldGuarantee
                                                 ? 'text-amber-700 dark:text-amber-300'
-                                                : 'text-[#d85e68] dark:text-[#ff9299]'
+                                                : 'text-[#1d4ed8] dark:text-[#93c5fd]'
                                         "
                                     >
                                         {{ isGoldGuarantee ? 'ضمانت طلا' : 'ضمانت چک' }}
@@ -349,18 +338,18 @@ const hasCheckDetails = (installment) =>
                                 </div>
 
                                 <div
-                                    v-if="sale.imei"
+                                    v-if="sale.vin"
                                     class="flex items-center justify-between gap-4"
                                 >
                                     <span class="text-slate-400">
-                                        IMEI
+                                        VIN
                                     </span>
 
                                     <span
                                         class="font-bold"
                                         dir="ltr"
                                     >
-                                        {{ sale.imei }}
+                                        {{ sale.vin }}
                                     </span>
                                 </div>
                             </div>
@@ -497,12 +486,12 @@ const hasCheckDetails = (installment) =>
                                             </p>
                                         </div>
 
-                                        <div class="rounded-2xl bg-[#fff0f1] p-4 dark:bg-[#ff6d76]/[0.06]">
-                                            <p class="text-xs font-bold text-[#ff6570]">
+                                        <div class="rounded-2xl bg-[#eff6ff] p-4 dark:bg-[#2563eb]/[0.06]">
+                                            <p class="text-xs font-bold text-[#2563eb]">
                                                 سود اقساط
                                             </p>
 
-                                            <p class="mt-2 font-black text-[#d85e68] dark:text-[#ff9299]">
+                                            <p class="mt-2 font-black text-[#1d4ed8] dark:text-[#93c5fd]">
                                                 +{{ formatMoney(sale.installment_profit) }}
                                                 <span class="text-xs">تومان</span>
                                             </p>
@@ -622,53 +611,6 @@ const hasCheckDetails = (installment) =>
                                     class="mt-3 rounded-2xl bg-white/80 p-4 text-sm leading-7 text-slate-600 dark:bg-white/[0.035] dark:text-slate-300"
                                 >
                                     {{ sale.gold_description }}
-                                </div>
-                            </div>
-
-                            <!-- نرخ ارز؛ اطلاعات کمکی -->
-                            <div
-                                v-if="sale.usd_rate"
-                                class="mt-5 border-t border-slate-100 pt-4 dark:border-white/5"
-                            >
-                                <div class="rounded-2xl bg-[#f7f8fa] px-4 py-3 dark:bg-white/[0.025]">
-                                    <div class="mb-3 flex items-center justify-between gap-3">
-                                        <p class="text-xs font-bold text-slate-400">
-                                            نرخ دلار
-                                        </p>
-
-                                        <span class="text-[11px] text-slate-400">
-                                            {{ formatDate(sale.usd_rate_date || sale.sale_date) }}
-                                            <span v-if="sale.usd_rate_source === 'manual'"> · ثبت دستی</span>
-                                            <span v-else-if="sale.usd_rate_source === 'navasan'"> · نوسان</span>
-                                        </span>
-                                    </div>
-
-                                    <div class="space-y-2">
-                                        <div class="flex items-center justify-between gap-3">
-                                            <span class="text-sm text-slate-500 dark:text-slate-400">
-                                                روز فروش
-                                            </span>
-
-                                            <span class="font-bold">
-                                                {{ formatMoney(sale.usd_rate) }}
-                                                <span class="text-xs text-slate-400">تومان</span>
-                                            </span>
-                                        </div>
-
-                                        <div
-                                            v-if="currentUsdRate"
-                                            class="flex items-center justify-between gap-3"
-                                        >
-                                            <span class="text-sm text-slate-500 dark:text-slate-400">
-                                                امروز
-                                            </span>
-
-                                            <span class="font-bold">
-                                                {{ formatMoney(currentUsdRate) }}
-                                                <span class="text-xs text-slate-400">تومان</span>
-                                            </span>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </section>
