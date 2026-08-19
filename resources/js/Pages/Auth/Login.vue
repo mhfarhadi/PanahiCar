@@ -1,9 +1,9 @@
 <script setup>
 import Checkbox from '@/Components/Checkbox.vue';
 import InputError from '@/Components/InputError.vue';
+import PublicShell from '@/Layouts/PublicShell.vue';
 import { pageTitle } from '@/Utils/brand';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 defineProps({
     canResetPassword: {
@@ -20,38 +20,6 @@ const form = useForm({
     remember: false,
 });
 
-const playing = ref(false);
-const ready = ref(false);
-let readyTimer;
-
-const letters = 'PANAHI CAR'.split('');
-
-const finishIntro = () => {
-    playing.value = false;
-    ready.value = true;
-};
-
-onMounted(() => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (reduce || sessionStorage.getItem('panahi_login_seen') === '1') {
-        ready.value = true;
-        return;
-    }
-
-    sessionStorage.setItem('panahi_login_seen', '1');
-
-    requestAnimationFrame(() => {
-        playing.value = true;
-    });
-
-    readyTimer = window.setTimeout(finishIntro, 1800);
-});
-
-onBeforeUnmount(() => {
-    window.clearTimeout(readyTimer);
-});
-
 const submit = () => {
     form.post(route('login'), {
         preserveScroll: false,
@@ -63,36 +31,24 @@ const submit = () => {
 <template>
     <Head :title="pageTitle('ورود')" />
 
-    <div
-        dir="rtl"
-        class="am-splash"
-        :class="{ 'is-playing': playing, 'is-ready': ready }"
-    >
-        <div class="am-splash-glow" />
-
-        <div class="am-splash-stack">
-            <div class="am-splash-brand" aria-hidden="true">
-                <p class="am-splash-word" dir="ltr">
-                    <span
-                        v-for="(letter, index) in letters"
-                        :key="`${letter}-${index}`"
-                        class="am-splash-letter"
-                        :class="{ 'is-space': letter === ' ' }"
-                        :style="{ '--i': index }"
-                    >{{ letter === ' ' ? '\u00a0' : letter }}</span>
+    <PublicShell :back-href="route('cars.landing')" back-label="بخش خودرو">
+        <div class="ph-login-page">
+            <div class="ph-login-page__intro">
+                <p class="text-[11px] font-bold text-slate-400">ورود کارکنان · بخش خودرو</p>
+                <h1 class="mt-2 text-2xl font-black">ورود به سیستم</h1>
+                <p class="mt-2 text-sm leading-7 text-slate-500 dark:text-slate-400">
+                    پس از ورود به داشبورد مدیریت نمایشگاه دسترسی دارید.
                 </p>
-                <span class="am-splash-line" />
             </div>
 
-            <aside class="am-splash-panel">
-            <div class="am-splash-card">
-                <p v-if="status" class="mb-4 text-sm font-semibold text-green-600">
+            <div class="ph-login-page__card am-card">
+                <p v-if="status" class="mb-4 text-sm font-semibold text-green-600 dark:text-green-400">
                     {{ status }}
                 </p>
 
                 <form class="space-y-4 text-right" @submit.prevent="submit">
                     <div>
-                        <label for="email" class="mb-2 block text-[13px] font-semibold text-neutral-500">
+                        <label for="email" class="mb-2 block text-[13px] font-semibold text-slate-500">
                             ایمیل
                         </label>
                         <input
@@ -109,7 +65,7 @@ const submit = () => {
                     </div>
 
                     <div>
-                        <label for="password" class="mb-2 block text-[13px] font-semibold text-neutral-500">
+                        <label for="password" class="mb-2 block text-[13px] font-semibold text-slate-500">
                             رمز عبور
                         </label>
                         <input
@@ -126,7 +82,7 @@ const submit = () => {
                     </div>
 
                     <div class="flex items-center justify-between gap-3">
-                        <label class="flex items-center gap-2 text-sm text-neutral-500">
+                        <label class="flex items-center gap-2 text-sm text-slate-500">
                             <Checkbox name="remember" v-model:checked="form.remember" />
                             مرا به خاطر بسپار
                         </label>
@@ -134,7 +90,7 @@ const submit = () => {
                         <Link
                             v-if="canResetPassword"
                             :href="route('password.request')"
-                            class="text-sm font-semibold text-neutral-900"
+                            class="text-sm font-semibold text-slate-800 dark:text-slate-200"
                         >
                             فراموشی رمز
                         </Link>
@@ -152,24 +108,14 @@ const submit = () => {
 
                 <Link
                     :href="route('features.index')"
-                    class="am-splash-features"
+                    class="mt-5 flex items-center justify-center gap-2 text-sm font-bold text-slate-500 transition hover:text-slate-800 dark:hover:text-slate-200"
                 >
-                    <span>ورود به امکانات</span>
+                    امکانات عمومی بدون ورود
                     <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M19 12H5M11 6l-6 6 6 6" />
                     </svg>
                 </Link>
             </div>
-        </aside>
         </div>
-
-        <button
-            v-if="!ready"
-            type="button"
-            class="am-splash-skip"
-            @click="finishIntro"
-        >
-            رد کردن
-        </button>
-    </div>
+    </PublicShell>
 </template>

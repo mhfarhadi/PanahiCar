@@ -22,7 +22,11 @@ use App\Http\Controllers\SaleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', fn () => redirect()->route('login'));
+Route::get('/', fn () => Inertia::render('Home/Splash'))->name('home');
+
+Route::get('/cars', fn () => Inertia::render('Home/CarLanding'))->name('cars.landing');
+
+Route::get('/real-estate', fn () => Inertia::render('Home/RealEstate'))->name('real-estate');
 
 Route::get('/features', fn () => Inertia::render('Features/Index'))
     ->name('features.index');

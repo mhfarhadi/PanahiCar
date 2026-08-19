@@ -1,51 +1,63 @@
 import { publicAsset } from '@/Utils/publicAsset';
 
-const ILLUSTRATIONS = {
-    installments: publicAsset('/images/illustrations/illustration-installments.png'),
-    contract: publicAsset('/images/illustrations/illustration-contract.png'),
-    estimate: publicAsset('/images/illustrations/illustration-estimate.png'),
-    gold: publicAsset('/images/illustrations/illustration-gold.png'),
-    wanted: publicAsset('/images/illustrations/illustration-wanted.png'),
-    market: publicAsset('/images/illustrations/illustration-market.png'),
-    check: publicAsset('/images/illustrations/illustration-check.png'),
-    showroom: publicAsset('/images/illustrations/illustration-showroom.png'),
+const ILLUSTRATION_FILES = {
+    installments: 'illustration-installments.png',
+    contract: 'illustration-contract.png',
+    estimate: 'illustration-estimate.png',
+    gold: 'illustration-gold.png',
+    wanted: 'illustration-wanted.png',
+    market: 'illustration-market.png',
+    check: 'illustration-check.png',
+    showroom: 'illustration-showroom.png',
 };
 
-const MODEL_PHOTOS = {
-    'دنا پلاس': publicAsset('/images/vehicles/dena-plus.jpg'),
-    تارا: publicAsset('/images/vehicles/tara.jpg'),
-    شاهین: publicAsset('/images/vehicles/shahin.jpg'),
-    اطلس: publicAsset('/images/vehicles/atlas.jpg'),
-    'تیگو 7 پرو': publicAsset('/images/vehicles/tiggo-7.jpg'),
-    'آریزو 6': publicAsset('/images/vehicles/arizo.jpg'),
-    'آریزو 5': publicAsset('/images/vehicles/arizo.jpg'),
-    فیدلیتی: publicAsset('/images/vehicles/fidelity.jpg'),
-    دیگنیتی: publicAsset('/images/vehicles/dignity.jpg'),
-    'KMC J7': publicAsset('/images/vehicles/kmc-j7.jpg'),
-    'تندر 90': publicAsset('/images/vehicles/tondar.jpg'),
-    'پژو 207': publicAsset('/images/vehicles/peugeot-207.jpg'),
-    'کوییک S': publicAsset('/images/vehicles/quick.jpg'),
-    'ساینا S': publicAsset('/images/vehicles/saina.jpg'),
-    'ری‌را': publicAsset('/images/vehicles/rira.jpg'),
-    X22: publicAsset('/images/vehicles/x22.jpg'),
-    'JAC J4': publicAsset('/images/vehicles/j4.jpg'),
-    'پژو پارس': publicAsset('/images/vehicles/pars.jpg'),
-    'سمند EF7': publicAsset('/images/vehicles/samand.jpg'),
-    'زامیاد Z24': publicAsset('/images/vehicles/zamyad.jpg'),
+const MODEL_FILES = {
+    'دنا پلاس': 'dena-plus.jpg',
+    تارا: 'tara.jpg',
+    شاهین: 'shahin.jpg',
+    اطلس: 'atlas.jpg',
+    'تیگو 7 پرو': 'tiggo-7.jpg',
+    'آریزو 6': 'arizo.jpg',
+    'آریزو 5': 'arizo.jpg',
+    فیدلیتی: 'fidelity.jpg',
+    دیگنیتی: 'dignity.jpg',
+    'KMC J7': 'kmc-j7.jpg',
+    'تندر 90': 'tondar.jpg',
+    'پژو 207': 'peugeot-207.jpg',
+    'کوییک S': 'quick.jpg',
+    'ساینا S': 'saina.jpg',
+    'ری‌را': 'rira.jpg',
+    X22: 'x22.jpg',
+    'JAC J4': 'j4.jpg',
+    'پژو پارس': 'pars.jpg',
+    'سمند EF7': 'samand.jpg',
+    'زامیاد Z24': 'zamyad.jpg',
 };
+
+function illustrationPath(name) {
+    const file = ILLUSTRATION_FILES[name] || ILLUSTRATION_FILES.showroom;
+
+    return publicAsset(`/images/illustrations/${file}`);
+}
+
+function modelPath(model) {
+    const file = MODEL_FILES[model] || MODEL_FILES['دنا پلاس'];
+
+    return publicAsset(`/images/vehicles/${file}`);
+}
 
 export function illustration(name = 'showroom') {
-    return ILLUSTRATIONS[name] || ILLUSTRATIONS.showroom;
+    return illustrationPath(name);
 }
 
 export function showroomPhoto(index = 0) {
-    const keys = Object.keys(ILLUSTRATIONS);
+    const keys = Object.keys(ILLUSTRATION_FILES);
 
-    return ILLUSTRATIONS[keys[Math.abs(Number(index) || 0) % keys.length]];
+    return illustrationPath(keys[Math.abs(Number(index) || 0) % keys.length]);
 }
 
 export function modelPhoto(model) {
-    return MODEL_PHOTOS[model] || MODEL_PHOTOS['دنا پلاس'];
+    return modelPath(model);
 }
 
 export function mediaUrl(path, fallbackIndex = 0) {
@@ -72,4 +84,4 @@ export function vehiclePhoto(vehicle, fallbackIndex = 0) {
     return modelPhoto(vehicle?.model);
 }
 
-export { ILLUSTRATIONS, MODEL_PHOTOS };
+export { ILLUSTRATION_FILES, MODEL_FILES };

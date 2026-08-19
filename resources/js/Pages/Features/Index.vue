@@ -79,7 +79,7 @@ const tools = [
                 <p class="mt-1 text-sm font-black">عمومی</p>
             </div>
             <Link
-                :href="loggedIn ? route('dashboard') : route('login')"
+                :href="loggedIn ? route('dashboard') : route('cars.landing')"
                 class="rounded-[24px] p-3 text-white shadow-lg"
                 style="background: linear-gradient(135deg, #c4b5fd, #60a5fa);"
             >

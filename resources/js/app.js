@@ -1,4 +1,3 @@
-import '@fontsource-variable/vazirmatn';
 import '../css/app.css';
 
 import { createInertiaApp } from '@inertiajs/vue3';
@@ -6,29 +5,10 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 
-import { BRAND_EN, THEME_KEY } from '@/Utils/brand';
+import { BRAND_EN } from '@/Utils/brand';
+import { initAppearance } from '@/Utils/appearance';
 
-const applyTheme = (theme) => {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    const shouldUseDark =
-        theme === 'dark' ||
-        (theme === 'system' && prefersDark);
-
-    document.documentElement.classList.toggle('dark', shouldUseDark);
-};
-
-const savedTheme = localStorage.getItem(THEME_KEY) || localStorage.getItem('automaya_theme') || 'system';
-
-applyTheme(savedTheme);
-
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    const currentTheme = localStorage.getItem(THEME_KEY) || 'system';
-
-    if (currentTheme === 'system') {
-        applyTheme('system');
-    }
-});
+initAppearance();
 
 const appName = import.meta.env.VITE_APP_NAME || BRAND_EN;
 

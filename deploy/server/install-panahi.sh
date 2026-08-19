@@ -78,8 +78,7 @@ file_put_contents('.env', \$env);
 echo "==> Installing PHP dependencies"
 composer install --no-dev --optimize-autoloader --no-interaction
 
-echo "==> Building frontend for subfolder /${WEB_SUBPATH}"
-export VITE_BASE_PATH="/${WEB_SUBPATH}/"
+echo "==> Building frontend"
 npm ci
 npm run build
 
@@ -94,6 +93,20 @@ sed -i "s|\"start_url\": \"/dashboard\"|\"start_url\": \"/${WEB_SUBPATH}/dashboa
 echo "==> Running migrations"
 php artisan migrate --force
 
+echo "==> Creating super admin (only if no users exist)"
+php artisan tinker --execute="
+if (! \\App\\Models\\User::query()->exists()) {
+    \\App\\Models\\User::factory()->create([
+        'name' => 'Maya',
+        'email' => 'maya@mhfarhadi.com',
+        'role' => \\App\\Support\\UserRoles::SUPER_ADMIN,
+        'is_active' => true,
+        'location_id' => null,
+    ]);
+    echo 'Created maya@mhfarhadi.com (password: password — change after login)';
+}
+" || true
+
 echo "==> Optimizing Laravel"
 php artisan storage:link --force || true
 php artisan config:cache
@@ -103,28 +116,8 @@ php artisan view:cache
 chown -R www-data:www-data storage bootstrap/cache || chown -R apache:apache storage bootstrap/cache || true
 chmod -R ug+rwx storage bootstrap/cache
 
-echo "==> Linking web subfolder (symlink, does not touch existing site files except one link)"
-DOCROOT=""
-for candidate in /var/www/html /var/www/public /usr/share/nginx/html; do
-  if [[ -d "${candidate}" ]]; then
-    DOCROOT="${candidate}"
-    break
-  fi
-done
-
-if [[ -z "${DOCROOT}" ]]; then
-  echo "WARN: Could not detect document root. Add Apache/Nginx config manually (see deploy/server/apache-panahi.conf)."
-else
-  LINK_PATH="${DOCROOT}/${WEB_SUBPATH}"
-  if [[ -e "${LINK_PATH}" && ! -L "${LINK_PATH}" ]]; then
-    echo "ERROR: ${LINK_PATH} exists and is not a symlink. Stop here to avoid overwriting."
-    exit 1
-  fi
-  ln -sfn "${APP_DIR}/public" "${LINK_PATH}"
-  echo "    Symlink: ${LINK_PATH} -> ${APP_DIR}/public"
-fi
-
 echo ""
-echo "Done. Open: ${APP_URL}"
-echo "DB: ${DB_NAME} / user: ${DB_USER}"
-echo "If CSS/JS 404, confirm ${DOCROOT:-docroot}/${WEB_SUBPATH} points to ${APP_DIR}/public"
+echo "==> Nginx fix script (run if you see 404)"
+echo "    bash ${APP_DIR}/deploy/server/fix-nginx-panahi.sh"
+echo "DB: ${DB_NAME} / user: ${DB_USER} (password in ${APP_DIR}/.env)"
+echo "Login: maya@mhfarhadi.com / password (change after first login)"

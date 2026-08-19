@@ -10,6 +10,13 @@
         <meta name="apple-mobile-web-app-title" content="پناهی">
         <link rel="manifest" href="{{ asset('manifest.json') }}">
 
+        @php
+            $basePath = rtrim(parse_url((string) config('app.url'), PHP_URL_PATH) ?: '', '/');
+        @endphp
+        <script>
+            window.__APP_BASE_PATH__ = @json($basePath);
+        </script>
+
         <title inertia>{{ config('app.name', 'Panahi Car') }}</title>
 
         <!-- Fonts -->

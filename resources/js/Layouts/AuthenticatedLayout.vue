@@ -1,19 +1,13 @@
 <script setup>
-import { computed, ref } from 'vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
+import ThemeToggle from '@/Components/ThemeToggle.vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BRAND_EN, BRAND_FA, THEME_KEY } from '@/Utils/brand';
+import { BRAND_EN, BRAND_FA } from '@/Utils/brand';
+import { computed, ref } from 'vue';
 
-const isDark = ref(document.documentElement.classList.contains('dark'));
 const moreMenuOpen = ref(false);
 const page = usePage();
-
-const setTheme = (value) => {
-    localStorage.setItem(THEME_KEY, value);
-    document.documentElement.classList.toggle('dark', value === 'dark');
-    isDark.value = value === 'dark';
-};
 
 const navigation = computed(() => [
     { label: 'خانه', href: route('dashboard'), pattern: 'dashboard', tone: 'home', icon: 'M4 11.5 12 4l8 7.5M7 10v9h10v-9' },
@@ -57,8 +51,7 @@ const firstName = computed(() => {
         <aside class="ph-desktop-rail">
             <Link
                 :href="route('dashboard')"
-                class="mb-6 flex h-12 w-12 items-center justify-center rounded-full text-sm font-black text-white shadow-lg"
-                style="background: linear-gradient(135deg, #86efac, #60a5fa);"
+                class="mb-6 flex h-12 w-12 items-center justify-center rounded-full text-sm font-black text-white shadow-lg ph-brand-mark"
                 :title="BRAND_EN"
             >
                 پ
@@ -81,9 +74,7 @@ const firstName = computed(() => {
                 </Link>
             </nav>
 
-            <button type="button" class="am-icon-btn mb-3" @click="setTheme(isDark ? 'light' : 'dark')">
-                {{ isDark ? '☀' : '☾' }}
-            </button>
+            <ThemeToggle class="mb-3" />
 
             <Dropdown align="left" width="48" placement="top">
                 <template #trigger>
@@ -105,9 +96,7 @@ const firstName = computed(() => {
                     <p class="text-[17px] font-black tracking-tight">{{ BRAND_FA }}</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" class="am-icon-btn" @click="setTheme(isDark ? 'light' : 'dark')">
-                        {{ isDark ? '☀' : '☾' }}
-                    </button>
+                    <ThemeToggle />
                     <Dropdown align="left" width="48">
                         <template #trigger>
                             <button type="button" class="flex h-11 w-11 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">

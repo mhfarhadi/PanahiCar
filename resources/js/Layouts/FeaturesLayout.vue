@@ -1,4 +1,5 @@
 <script setup>
+import ThemeToggle from '@/Components/ThemeToggle.vue';
 import { computed, ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { BRAND_EN, BRAND_FA } from '@/Utils/brand';
@@ -11,7 +12,7 @@ defineProps({
 
 const page = usePage();
 const loggedIn = computed(() => Boolean(page.props.auth?.user));
-const homeHref = computed(() => (loggedIn.value ? route('dashboard') : route('login')));
+const homeHref = computed(() => (loggedIn.value ? route('dashboard') : route('cars.landing')));
 const moreMenuOpen = ref(false);
 
 const primaryTabs = [
@@ -53,11 +54,14 @@ const toggleMoreMenu = () => { moreMenuOpen.value = !moreMenuOpen.value; };
 <template>
     <div dir="rtl" class="ph-features-shell text-slate-900 dark:text-slate-100">
         <header class="ph-header !static lg:sticky">
-            <Link :href="homeHref" class="am-icon-btn !h-10 !w-10 lg:hidden">
+            <div class="flex items-center gap-2 lg:absolute lg:right-4">
+                <ThemeToggle />
+                <Link :href="homeHref" class="am-icon-btn !h-10 !w-10 lg:hidden">
                 <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 12H5M11 6l-6 6 6 6" />
                 </svg>
-            </Link>
+                </Link>
+            </div>
             <div class="text-center">
                 <p class="text-[16px] font-black tracking-tight">{{ title }}</p>
                 <p v-if="subtitle" class="text-[11px] text-slate-400">{{ subtitle }}</p>
@@ -65,8 +69,7 @@ const toggleMoreMenu = () => { moreMenuOpen.value = !moreMenuOpen.value; };
             </div>
             <Link
                 :href="route('features.index')"
-                class="flex h-10 w-10 items-center justify-center rounded-full text-sm font-black text-white lg:hidden"
-                style="background: linear-gradient(135deg, #fdba74, #fb923c);"
+                class="flex h-10 w-10 items-center justify-center rounded-full text-sm font-black text-white ph-brand-mark lg:hidden"
             >
                 پ
             </Link>

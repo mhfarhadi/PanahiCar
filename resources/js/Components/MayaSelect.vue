@@ -120,7 +120,7 @@ onBeforeUnmount(() => {
 .maya-select {
     position: relative;
     width: 100%;
-    font-family: 'Vazirmatn Variable', sans-serif;
+    font-family: var(--ph-font);
 }
 
 .maya-select-trigger {
@@ -177,7 +177,7 @@ onBeforeUnmount(() => {
     background: #fff;
     padding: 5px;
     box-shadow: 0 16px 38px rgba(33, 48, 48, 0.14);
-    font-family: 'Vazirmatn Variable', sans-serif;
+    font-family: var(--ph-font);
 }
 
 .maya-select-option {
