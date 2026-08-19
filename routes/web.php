@@ -10,6 +10,7 @@ use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\DeviceShowController;
 use App\Http\Controllers\EntityNoteController;
 use App\Http\Controllers\InstallmentController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicContractController;
 use App\Http\Controllers\PublicGoldCollateralController;
@@ -105,6 +106,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/contacts/{contact}', [ContactShowController::class, 'show'])->whereNumber('contact')->name('contacts.show');
 
     Route::post('/entity-notes', [EntityNoteController::class, 'store'])->name('entity-notes.store');
+    Route::middleware('org.manage')->group(function () {
+        Route::get('/organization', [OrganizationController::class, 'index'])->name('organization.index');
+        Route::post('/organization/locations', [OrganizationController::class, 'storeLocation'])->name('organization.locations.store');
+        Route::patch('/organization/locations/{location}', [OrganizationController::class, 'updateLocation'])->name('organization.locations.update');
+        Route::post('/organization/users', [OrganizationController::class, 'storeUser'])->name('organization.users.store');
+        Route::patch('/organization/users/{user}', [OrganizationController::class, 'updateUser'])->name('organization.users.update');
+    });
+
     Route::get('/settings', fn () => Inertia::render('Settings/Index'))->name('settings.index');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

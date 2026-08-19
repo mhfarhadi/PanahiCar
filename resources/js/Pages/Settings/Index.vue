@@ -18,6 +18,20 @@ import { Head, Link } from '@inertiajs/vue3';
 
                 <div class="space-y-3">
                     <Link
+                        v-if="$page.props.auth.user?.permissions?.includes('org.manage')"
+                        :href="route('organization.index')"
+                        class="am-row"
+                    >
+                        <div class="am-thumb !h-12 !w-12 text-lg">🏢</div>
+                        <div class="min-w-0 flex-1">
+                            <h2 class="text-sm font-black">سازمان</h2>
+                            <p class="mt-0.5 text-[11px] text-slate-400">
+                                شعب، کاربران و سطح دسترسی
+                            </p>
+                        </div>
+                    </Link>
+
+                    <Link
                         :href="route('features.index')"
                         class="am-row"
                     >

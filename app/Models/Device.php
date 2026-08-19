@@ -29,5 +29,6 @@ class Device extends Model
         'announced_price',
         'announced_at',
         'created_by',
+        'location_id',
     ];
 }

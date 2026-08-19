@@ -15,7 +15,7 @@ const setTheme = (value) => {
     isDark.value = value === 'dark';
 };
 
-const navigation = [
+const navigation = computed(() => [
     { label: 'خانه', href: route('dashboard'), pattern: 'dashboard', tone: 'home', icon: 'M4 11.5 12 4l8 7.5M7 10v9h10v-9' },
     { label: 'موجودی', href: route('devices.index'), pattern: 'devices.*', tone: 'inventory', icon: 'M5 16h14l-1.4-5H6.4L5 16Zm3-8h8M7.5 16.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Zm9 0a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z' },
     { label: 'اعلامی', href: route('announced-devices.index'), pattern: 'announced-devices.*', tone: 'announced', icon: 'M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z' },
@@ -24,7 +24,7 @@ const navigation = [
     { label: 'اقساط', href: route('installments.index'), pattern: 'installments.*', tone: 'installments', icon: 'M5 7h14v11H5V7Zm2 3h10M8 13h5' },
     { label: 'اشخاص', href: route('contacts.index'), pattern: 'contacts.*', tone: 'contacts', icon: 'M12 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm7 9a7 7 0 0 0-14 0' },
     { label: 'تنظیمات', href: route('settings.index'), pattern: 'settings.*', tone: 'settings', icon: 'M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4ZM12 3.5v1.6M12 18.9v1.6M4.7 6.4l1.1 1.1M18.2 16.5l1.1 1.1M3.5 12h1.6M18.9 12h1.6M4.7 17.6l1.1-1.1M18.2 7.5l1.1-1.1' },
-];
+]);
 
 const mobileTabs = [
     { label: 'خانه', href: route('dashboard'), pattern: 'dashboard', tone: 'home', icon: 'M4 11.5 12 4l8 7.5M7 10v9h10v-9' },
@@ -98,8 +98,8 @@ const firstName = computed(() => {
             </Dropdown>
         </aside>
 
-        <div class="lg:pr-[108px]">
-            <header class="ph-header">
+        <div class="md:pr-[108px]">
+            <header class="ph-header md:hidden">
                 <div>
                     <p class="text-[11px] font-medium text-slate-400">سلام، {{ firstName }}</p>
                     <p class="text-[17px] font-black tracking-tight">{{ BRAND_FA }}</p>
@@ -122,12 +122,12 @@ const firstName = computed(() => {
                 </div>
             </header>
 
-            <main class="pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pb-8">
+            <main class="pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:pb-8">
                 <slot />
             </main>
         </div>
 
-        <nav class="ph-mobile-bar lg:hidden" aria-label="ناوبری اصلی">
+        <nav class="ph-mobile-bar md:hidden" aria-label="ناوبری اصلی">
             <div class="flex items-stretch justify-around">
                 <template v-for="tab in mobileTabs" :key="tab.label">
                     <button
@@ -162,11 +162,11 @@ const firstName = computed(() => {
             </div>
         </nav>
 
-        <div v-if="moreMenuOpen" class="fixed inset-0 z-[55] bg-slate-950/20 lg:hidden" @click="closeMoreMenu" />
+        <div v-if="moreMenuOpen" class="fixed inset-0 z-[55] bg-slate-950/20 md:hidden" @click="closeMoreMenu" />
 
         <div
             v-if="moreMenuOpen"
-            class="fixed inset-x-4 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-[60] rounded-[32px] border border-white/90 bg-white/95 p-3 shadow-[0_24px_60px_rgba(15,23,42,0.12)] backdrop-blur dark:border-white/10 dark:bg-slate-900/95 lg:hidden"
+            class="fixed inset-x-4 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-[60] rounded-[32px] border border-white/90 bg-white/95 p-3 shadow-[0_24px_60px_rgba(15,23,42,0.12)] backdrop-blur dark:border-white/10 dark:bg-slate-900/95 md:hidden"
         >
             <Link
                 v-for="item in moreMenuItems"

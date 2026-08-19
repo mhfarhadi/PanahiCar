@@ -2,6 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\AccessControl;
+use App\Support\UserRoles;
+use Closure;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -29,10 +32,22 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user()?->loadMissing('location');
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                    'role_label' => UserRoles::label($user->role),
+                    'is_active' => $user->is_active,
+                    'location_id' => $user->location_id,
+                    'location_name' => $user->location?->name,
+                    'permissions' => AccessControl::permissionsFor($user),
+                ] : null,
             ],
         ];
     }

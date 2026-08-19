@@ -1,6 +1,6 @@
 # Panahi Car — Quick Checkpoint
 
-Date: 2026-08-18
+Date: 2026-08-19
 
 Project: **Panahi Car** — car dealership management software
 
@@ -25,6 +25,7 @@ Dealership operations:
 - **Sales** — cash or installment
 - **Installments** — receivables tracking
 - **Contacts** — sellers, buyers, colleagues
+- **Organization** — branches (locations), users, role-based access (super admin only)
 - **Features** — public tools: installment calculator, sale contract, inventory-based price estimate (no Divar), gold collateral, wanted cars, wanted market, check printer
 
 ### Vehicle fields
@@ -39,7 +40,18 @@ Dealership operations:
 
 Body condition options follow Iranian market norms (بی‌رنگ، یک/دو لکه، صافکاری بدون رنگ، دور رنگ، کامل رنگ, …).
 
-### Catalog seed
+### Organization / access
+
+| Role | Persian label | Scope |
+|------|---------------|-------|
+| `super_admin` | مدیر کل (Maya) | all branches, manage users & locations |
+| `manager` | مدیر شعبه | full ops in assigned branch |
+| `sales` | کارشناس فروش | sales + contacts in branch |
+| `inventory` | مسئول موجودی | inventory in branch |
+| `accountant` | حسابداری | installments + read sales |
+| `viewer` | مشاهده‌گر | read-only in branch |
+
+Page: `/organization` (Settings → سازمان). Inventory is scoped by `location_id` on devices.
 
 Brands (Iranian market): ایران‌خودرو، سایپا، مدیران خودرو، کرمان موتور، بهمن موتور، پارس‌خودرو، زامیاد
 
@@ -60,7 +72,9 @@ Demo data: `AutomayaDemoSeeder` — 20 in-stock, 20 announced, 20 cash sales, 20
 - Main app mobile tab bar includes امکانات directly; اعلامی moved under بیشتر
 - Features numbers use Persian digits in inputs and results; selects inherit Vazirmatn globally
 - USD/AED rates stay tiny next to the date on the dashboard
-- Desktop icon rail + floating mobile tab bar
+- Desktop icon rail + floating mobile tab bar (mobile-only; sidebar from `md`)
+- Post-login blank page fixed (removed global `.am-page` enter animation; faster login splash on repeat visits)
+- Organization link lives under Settings → سازمان (not in main nav)
 - RTL login splash: gradient background, PANAHI CAR letters fade in, then login card appears from blur
 - Public Features hub at `/features` (installments, contract, inventory-based price estimate, gold collateral, wanted cars, wanted market, check printer)
 - PWA-ready: `viewport-fit=cover`, `public/manifest.json`
@@ -71,7 +85,10 @@ Demo data: `AutomayaDemoSeeder` — 20 in-stock, 20 announced, 20 cash sales, 20
 php artisan migrate --seed
 php artisan test
 npm run build
+php artisan serve --port=8001
 ```
+
+Local dev: `APP_URL=http://127.0.0.1:8001`, MySQL database **`panahi_car`** (separate from MayaHamrah `maya_hamrah`). Default super admin after clone/seed: `maya@mhfarhadi.com`.
 
 ## Key files
 
@@ -82,5 +99,6 @@ npm run build
 - Features layout: `resources/js/Layouts/FeaturesLayout.vue`
 - Price estimate: `app/Services/VehiclePriceEstimateService.php` (inventory/sales only, no Divar)
 - Layout: `resources/js/Layouts/AuthenticatedLayout.vue`
+- Organization: `app/Http/Controllers/OrganizationController.php`, `resources/js/Pages/Organization/Index.vue`
 
 See `AGENTS.md` for agent rules.

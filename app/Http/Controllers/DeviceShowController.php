@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
+use App\Support\AccessControl;
 use App\Support\VehicleOptions;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -13,6 +14,7 @@ class DeviceShowController extends Controller
     public function show(Device $device): Response
     {
         abort_unless($device->status === 'in_stock', 404);
+        AccessControl::assertDeviceAccess(request()->user(), $device->location_id);
 
         $purchase = DB::table('purchases as p')
             ->leftJoin('contacts as c', 'c.id', '=', 'p.seller_id')

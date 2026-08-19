@@ -34,16 +34,18 @@ const finishIntro = () => {
 onMounted(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (reduce) {
+    if (reduce || sessionStorage.getItem('panahi_login_seen') === '1') {
         ready.value = true;
         return;
     }
+
+    sessionStorage.setItem('panahi_login_seen', '1');
 
     requestAnimationFrame(() => {
         playing.value = true;
     });
 
-    readyTimer = window.setTimeout(finishIntro, 2800);
+    readyTimer = window.setTimeout(finishIntro, 1800);
 });
 
 onBeforeUnmount(() => {
@@ -52,6 +54,7 @@ onBeforeUnmount(() => {
 
 const submit = () => {
     form.post(route('login'), {
+        preserveScroll: false,
         onFinish: () => form.reset('password'),
     });
 };
@@ -100,7 +103,7 @@ const submit = () => {
                             autocomplete="username"
                             dir="ltr"
                             class="am-input text-left"
-                            placeholder="admin@automaya.test"
+                            placeholder="email@example.com"
                         />
                         <InputError class="mt-2" :message="form.errors.email" />
                     </div>

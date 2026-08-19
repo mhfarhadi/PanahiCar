@@ -45,14 +45,6 @@ const usdTiny = computed(() => {
     return Number(value).toLocaleString('fa-IR');
 });
 
-const quickLinks = [
-    { href: route('devices.create'), icon: 'M12 5v14M5 12h14', label: 'ثبت خودرو' },
-    { href: route('sales.index'), icon: 'M5 12.5 9.5 17 19 7', label: 'فروش' },
-    { href: route('installments.index'), icon: 'M5 7h14v11H5V7Zm2 3h10', label: 'اقساط' },
-    { href: route('contacts.index'), icon: 'M12 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm7 9a7 7 0 0 0-14 0', label: 'اشخاص' },
-    { href: route('features.index'), icon: 'M4 7h7v10H4V7Zm9 0h7v4h-7V7Z', label: 'امکانات' },
-];
-
 const featureCards = [
     { title: 'اقساط', route: 'features.installments.index', photo: illustration('installments') },
     { title: 'برآورد', route: 'features.price-estimates.index', photo: illustration('estimate') },
@@ -129,21 +121,6 @@ const featureCards = [
                             </Link>
                         </div>
                     </div>
-                </div>
-
-                <div class="ph-subnav">
-                    <Link
-                        v-for="(link, index) in quickLinks"
-                        :key="link.label"
-                        :href="link.href"
-                        class="ph-subnav__item"
-                        :class="{ 'is-active': index === 0 }"
-                        :title="link.label"
-                    >
-                        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path :d="link.icon" />
-                        </svg>
-                    </Link>
                 </div>
 
                 <Link

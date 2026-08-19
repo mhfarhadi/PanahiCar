@@ -555,7 +555,7 @@
     }
 
     .ph-desktop-rail {
-        @apply fixed inset-y-4 right-4 z-40 hidden w-[82px] flex-col items-center rounded-[34px] py-5 lg:flex;
+        @apply fixed inset-y-4 right-4 z-40 hidden w-[82px] flex-col items-center rounded-[34px] py-5 md:flex;
         background: rgba(255, 255, 255, 0.92);
         box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.9);
@@ -852,10 +852,6 @@ select.am-input option {
     animation: am-soft-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.am-page {
-    animation: am-soft-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 .am-page-enter-from,
 .am-page-enter-to {
     opacity: 1;
@@ -864,13 +860,11 @@ select.am-input option {
 @keyframes am-soft-enter {
     from {
         opacity: 0;
-        transform: translate3d(0, 18px, 0) scale(0.985);
-        filter: blur(6px);
+        transform: translate3d(0, 12px, 0);
     }
     to {
         opacity: 1;
         transform: none;
-        filter: none;
     }
 }
 

@@ -7,6 +7,7 @@ use App\Models\DeviceImage;
 use App\Models\Purchase;
 use App\Services\CurrencyRateService;
 use App\Services\EntityNoteService;
+use App\Support\AccessControl;
 use App\Support\VehicleOptions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,6 +25,9 @@ class DeviceController extends Controller
             ->leftJoin('purchases as p', 'p.device_id', '=', 'd.id')
             ->leftJoin('contacts as c', 'c.id', '=', 'p.seller_id')
             ->where('d.status', 'in_stock')
+            ->when(! AccessControl::managesAllLocations($request->user()), function ($query) use ($request) {
+                $query->where('d.location_id', $request->user()->location_id);
+            })
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('d.brand', 'like', "%{$search}%")
@@ -92,6 +96,7 @@ class DeviceController extends Controller
     public function edit(Device $device): Response
     {
         abort_unless($device->status === 'in_stock', 404);
+        AccessControl::assertDeviceAccess(request()->user(), $device->location_id);
 
         return Inertia::render('Devices/Edit', [
             'device' => $device->only([
@@ -106,6 +111,8 @@ class DeviceController extends Controller
     public function update(Request $request, Device $device): RedirectResponse
     {
         abort_unless($device->status === 'in_stock', 404);
+        AccessControl::assertDeviceAccess($request->user(), $device->location_id);
+        abort_unless(AccessControl::can($request->user(), AccessControl::DEVICES_MANAGE), 403);
 
         $validated = $this->validateVehicle($request, $device->id);
 
@@ -119,6 +126,8 @@ class DeviceController extends Controller
 
     public function store(Request $request, CurrencyRateService $currencyRateService): RedirectResponse
     {
+        abort_unless(AccessControl::can($request->user(), AccessControl::DEVICES_MANAGE), 403);
+
         $validated = $request->validate([
             ...$this->vehicleRules(),
             'description' => ['nullable', 'string'],
@@ -144,6 +153,7 @@ class DeviceController extends Controller
                 ])->all(),
                 'status' => 'in_stock',
                 'created_by' => $request->user()->id,
+                'location_id' => AccessControl::resolveLocationIdForCreate($request->user()),
             ]);
 
             EntityNoteService::add(
