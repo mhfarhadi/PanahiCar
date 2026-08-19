@@ -20,7 +20,7 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="بازیابی رمز | automaya" />
+        <Head title="بازیابی رمز | Panahi Car" />
 
         <div class="rounded-[32px] bg-white p-6 text-right shadow-[0_18px_50px_rgba(0,0,0,0.06)] dark:bg-[#161618] sm:p-8">
             <h1 class="text-[22px] font-black tracking-tight">بازیابی رمز</h1>

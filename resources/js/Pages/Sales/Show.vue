@@ -209,7 +209,7 @@ const hasCheckDetails = (installment) =>
 </script>
 
 <template>
-    <Head :title="`جزئیات فروش ${sale.brand} ${sale.model} | automaya`" />
+    <Head :title="`جزئیات فروش ${sale.brand} ${sale.model} | Panahi Car`" />
 
     <AuthenticatedLayout>
         <div
@@ -220,7 +220,7 @@ const hasCheckDetails = (installment) =>
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
                         <p class="text-sm font-bold text-[#2563eb]">
-                            automaya
+                            Panahi Car
                         </p>
 
                         <h1 class="mt-1 text-2xl font-black">

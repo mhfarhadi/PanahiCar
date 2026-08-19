@@ -63,7 +63,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="افزودن مخاطب | automaya" />
+    <Head title="افزودن مخاطب | Panahi Car" />
 
     <AuthenticatedLayout>
         <div
@@ -73,7 +73,7 @@ const submit = () => {
             <div class="mx-auto max-w-3xl">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm font-bold text-[#2563eb]">automaya</p>
+                        <p class="text-sm font-bold text-emerald-600">Panahi Car</p>
                         <h1 class="mt-1 text-2xl font-black">افزودن شخص</h1>
                         <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
                             ثبت همکار، فروشنده یا خریدار جدید

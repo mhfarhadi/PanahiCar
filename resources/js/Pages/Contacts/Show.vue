@@ -93,7 +93,7 @@ const paymentHistoryLabel = (stats) => {
 </script>
 
 <template>
-    <Head :title="`${contact.name} | automaya`" />
+    <Head :title="`${contact.name} | Panahi Car`" />
 
     <AuthenticatedLayout>
         <div
@@ -103,7 +103,7 @@ const paymentHistoryLabel = (stats) => {
             <div class="mx-auto max-w-6xl">
                 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-sm font-bold text-[#2563eb]">automaya</p>
+                        <p class="text-sm font-bold text-emerald-600">Panahi Car</p>
                         <h1 class="mt-1 text-2xl font-black">{{ contact.name }}</h1>
 
                         <div class="mt-2 flex flex-wrap items-center gap-2">

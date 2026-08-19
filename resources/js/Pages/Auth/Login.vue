@@ -1,6 +1,7 @@
 <script setup>
 import Checkbox from '@/Components/Checkbox.vue';
 import InputError from '@/Components/InputError.vue';
+import { pageTitle } from '@/Utils/brand';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
@@ -57,7 +58,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="ورود | PANAHI CAR" />
+    <Head :title="pageTitle('ورود')" />
 
     <div
         dir="rtl"

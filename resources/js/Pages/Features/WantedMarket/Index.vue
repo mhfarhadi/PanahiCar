@@ -71,7 +71,7 @@ const revealContact = async (id) => {
 </script>
 
 <template>
-    <Head title="چیا می‌خوان؟ | automaya" />
+    <Head title="چیا می‌خوان؟ | Panahi Car" />
 
     <FeaturesLayout title="چیا می‌خوان؟" subtitle="تقاضای بازار همکاران">
         <div class="relative mb-5 overflow-hidden rounded-[28px]">

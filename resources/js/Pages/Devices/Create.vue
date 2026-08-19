@@ -221,14 +221,14 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="ثبت خودرو | automaya" />
+    <Head title="ثبت خودرو | Panahi Car" />
 
     <AuthenticatedLayout>
         <div dir="rtl" class="am-page">
             <div class="am-page-inner-narrow">
                 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="am-kicker">automaya</p>
+                        <p class="am-kicker">Panahi Car</p>
                         <h1 class="am-title">ثبت خودرو جدید</h1>
                         <p class="am-subtitle">
                             مشخصات خودرو و اطلاعات خرید را ثبت کنید.

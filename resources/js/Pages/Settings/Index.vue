@@ -4,7 +4,7 @@ import { Head, Link } from '@inertiajs/vue3';
 </script>
 
 <template>
-    <Head title="تنظیمات | automaya" />
+    <Head title="تنظیمات | Panahi Car" />
 
     <AuthenticatedLayout>
         <div dir="rtl" class="am-page !pt-3">

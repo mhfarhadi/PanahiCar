@@ -84,7 +84,7 @@ const specRows = [
 </script>
 
 <template>
-    <Head :title="`${device.brand} ${device.model} | automaya`" />
+    <Head :title="`${device.brand} ${device.model} | Panahi Car`" />
 
     <AuthenticatedLayout>
         <div dir="rtl" class="am-page">

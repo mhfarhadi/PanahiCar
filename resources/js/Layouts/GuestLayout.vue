@@ -1,16 +1,21 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
+import { BRAND_EN, BRAND_FA } from '@/Utils/brand';
 </script>
 
 <template>
     <div
         dir="rtl"
-        class="flex min-h-screen flex-col items-center justify-center bg-[#f4f4f5] px-5 py-10 text-neutral-900 dark:bg-[#0b0b0c] dark:text-neutral-100"
+        class="flex min-h-screen flex-col items-center justify-center px-5 py-10 text-slate-900"
+        style="background: linear-gradient(145deg, #dff7ec 0%, #dceefb 48%, #e8f4fd 100%);"
     >
         <Link href="/" class="mb-8 text-center">
-            <span class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-neutral-900 text-lg font-black text-white">آ</span>
-            <p class="text-xl font-black tracking-tight">automaya</p>
-            <p class="mt-1 text-sm text-neutral-400">مدیریت نمایشگاه خودرو</p>
+            <span
+                class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full text-lg font-black text-white shadow-lg"
+                style="background: linear-gradient(135deg, #86efac, #60a5fa);"
+            >پ</span>
+            <p class="text-xl font-black tracking-tight">{{ BRAND_FA }}</p>
+            <p class="mt-1 text-sm text-slate-400">{{ BRAND_EN }} · مدیریت نمایشگاه خودرو</p>
         </Link>
 
         <div class="w-full max-w-[400px]">

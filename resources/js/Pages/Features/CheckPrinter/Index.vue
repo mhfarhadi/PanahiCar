@@ -39,7 +39,7 @@ const printCheck = () => window.print();
 </script>
 
 <template>
-    <Head title="پرینتر چک | automaya" />
+    <Head title="پرینتر چک | Panahi Car" />
 
     <FeaturesLayout title="پرینتر چک" subtitle="پیش‌نمایش چاپ">
         <div class="relative mb-5 overflow-hidden rounded-[28px] print:hidden">

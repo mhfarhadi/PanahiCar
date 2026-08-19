@@ -47,7 +47,7 @@ const printContract = () => window.print();
 </script>
 
 <template>
-    <Head title="قرارداد فروش | automaya" />
+    <Head title="قرارداد فروش | Panahi Car" />
 
     <FeaturesLayout title="قرارداد" subtitle="قرارداد فروش خودرو">
         <div class="relative mb-5 overflow-hidden rounded-[28px] print:hidden">

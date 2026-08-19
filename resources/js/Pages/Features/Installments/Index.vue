@@ -162,7 +162,7 @@ const isCustomResult = computed(() => Array.isArray(result.value?.payments));
 </script>
 
 <template>
-    <Head title="ماشین‌حساب اقساط | automaya" />
+    <Head title="ماشین‌حساب اقساط | Panahi Car" />
 
     <FeaturesLayout title="اقساط" subtitle="برنامه چک خودرو">
         <div class="relative mb-5 overflow-hidden rounded-[28px]">

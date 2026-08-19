@@ -63,7 +63,7 @@ const fieldError = (name) => errors.value[name]?.[0];
 </script>
 
 <template>
-    <Head title="چی می‌خوام؟ | automaya" />
+    <Head title="چی می‌خوام؟ | Panahi Car" />
 
     <FeaturesLayout title="چی می‌خوام؟" subtitle="ثبت نیاز خرید">
         <div class="relative mb-5 overflow-hidden rounded-[28px]">

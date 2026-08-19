@@ -407,7 +407,7 @@ const submitImageAction = () => {
 </script>
 
 <template>
-    <Head title="اقساط و مطالبات | automaya" />
+    <Head title="اقساط و مطالبات | Panahi Car" />
 
     <AuthenticatedLayout>
         <div dir="rtl" class="am-page !pt-3">

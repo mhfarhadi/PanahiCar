@@ -53,7 +53,7 @@ const money = (value) => {
 </script>
 
 <template>
-    <Head title="موجودی خودرو | automaya" />
+    <Head title="موجودی خودرو | Panahi Car" />
 
     <AuthenticatedLayout>
         <div dir="rtl" class="am-page !pt-3">

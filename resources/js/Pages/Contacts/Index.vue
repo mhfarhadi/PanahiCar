@@ -53,7 +53,7 @@ watch(view, () => {
 </script>
 
 <template>
-    <Head title="اشخاص | automaya" />
+    <Head title="اشخاص | Panahi Car" />
 
     <AuthenticatedLayout>
         <div dir="rtl" class="am-page !pt-3">

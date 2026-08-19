@@ -51,7 +51,7 @@ const money = (value) => {
 </script>
 
 <template>
-    <Head title="خودروهای اعلامی | automaya" />
+    <Head title="خودروهای اعلامی | Panahi Car" />
 
     <AuthenticatedLayout>
         <div dir="rtl" class="am-page !pt-3">

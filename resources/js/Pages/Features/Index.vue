@@ -4,6 +4,7 @@ import { computed } from 'vue';
 import FeaturesLayout from '@/Layouts/FeaturesLayout.vue';
 import { illustration } from '@/Utils/carPhotos';
 import { formatCount } from '@/Utils/featuresForm';
+import { BRAND_FA, pageTitle } from '@/Utils/brand';
 
 const page = usePage();
 const loggedIn = computed(() => Boolean(page.props.auth?.user));
@@ -55,31 +56,32 @@ const tools = [
 </script>
 
 <template>
-    <Head title="امکانات | automaya" />
+    <Head :title="pageTitle('امکانات')" />
 
     <FeaturesLayout title="امکانات" subtitle="ابزارهای نمایشگاه" home>
-        <div class="relative mb-5 overflow-hidden rounded-[28px]">
-            <img :src="illustration('showroom')" alt="اتوگالری مایا" class="am-photo h-48 w-full object-cover" />
+        <div class="relative mb-5 overflow-hidden rounded-[32px]">
+            <img :src="illustration('showroom')" :alt="BRAND_FA" class="am-photo h-48 w-full object-cover" />
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
             <div class="absolute bottom-4 right-4 left-4 text-white">
-                <p class="text-[11px] font-medium text-white/70">ابزارهای عمومی automaya</p>
+                <p class="text-[11px] font-medium text-white/70">ابزارهای عمومی پناهی</p>
                 <h1 class="mt-1 text-2xl font-black">امکانات نمایشگاه</h1>
                 <p class="mt-1 text-xs text-white/80">بدون ورود هم قابل استفاده‌اند.</p>
             </div>
         </div>
 
         <div class="mb-5 grid grid-cols-3 gap-2.5">
-            <div class="rounded-[22px] bg-white p-3 shadow-[0_10px_24px_rgba(0,0,0,0.04)] dark:bg-[#161618]">
-                <p class="text-[10px] text-neutral-400">ابزار</p>
+            <div class="ph-metric-card">
+                <p class="text-[10px] text-slate-400">ابزار</p>
                 <p class="mt-1 text-lg font-black">{{ formatCount(tools.length) }}</p>
             </div>
-            <div class="rounded-[22px] bg-white p-3 shadow-[0_10px_24px_rgba(0,0,0,0.04)] dark:bg-[#161618]">
-                <p class="text-[10px] text-neutral-400">دسترسی</p>
+            <div class="ph-metric-card">
+                <p class="text-[10px] text-slate-400">دسترسی</p>
                 <p class="mt-1 text-sm font-black">عمومی</p>
             </div>
             <Link
                 :href="loggedIn ? route('dashboard') : route('login')"
-                class="rounded-[22px] bg-neutral-900 p-3 text-white"
+                class="rounded-[24px] p-3 text-white shadow-lg"
+                style="background: linear-gradient(135deg, #c4b5fd, #60a5fa);"
             >
                 <p class="text-[10px] text-white/60">{{ loggedIn ? 'خانه' : 'ورود' }}</p>
                 <p class="mt-1 text-sm font-black">{{ loggedIn ? 'داشبورد' : 'نمایشگاه' }}</p>
@@ -91,7 +93,7 @@ const tools = [
                 v-for="tool in tools"
                 :key="tool.route"
                 :href="route(tool.route)"
-                class="am-lift relative h-36 overflow-hidden rounded-[24px]"
+                class="am-lift relative h-36 overflow-hidden rounded-[28px]"
                 :class="tool.route === 'features.check-printer.index' ? 'col-span-2 h-40' : ''"
             >
                 <img :src="tool.photo" :alt="tool.title" class="h-full w-full object-cover" />

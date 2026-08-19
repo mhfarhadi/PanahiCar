@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { BRAND_EN, BRAND_FA } from '@/Utils/brand';
 
 defineProps({
     title: { type: String, default: 'امکانات' },
@@ -14,10 +15,10 @@ const homeHref = computed(() => (loggedIn.value ? route('dashboard') : route('lo
 const moreMenuOpen = ref(false);
 
 const primaryTabs = [
-    { label: 'اقساط', href: route('features.installments.index'), pattern: 'features.installments.*', icon: 'M5 7h14v11H5V7Zm2 3h10M8 13h5' },
-    { label: 'برآورد', href: route('features.price-estimates.index'), pattern: 'features.price-estimates.*', icon: 'M4 19V11M10 19V5M16 19v-9' },
-    { label: 'طلا', href: route('features.gold-collateral.index'), pattern: 'features.gold-collateral.*', icon: 'm7 9 2-5h6l2 5 3 9H4l3-9Z' },
-    { label: 'بیشتر', pattern: 'more', icon: 'M6 12h.01M12 12h.01M18 12h.01', isMore: true },
+    { label: 'اقساط', href: route('features.installments.index'), pattern: 'features.installments.*', tone: 'mint', icon: 'M5 7h14v11H5V7Zm2 3h10M8 13h5' },
+    { label: 'برآورد', href: route('features.price-estimates.index'), pattern: 'features.price-estimates.*', tone: 'sky', icon: 'M4 19V11M10 19V5M16 19v-9' },
+    { label: 'طلا', href: route('features.gold-collateral.index'), pattern: 'features.gold-collateral.*', tone: 'sun', icon: 'm7 9 2-5h6l2 5 3 9H4l3-9Z' },
+    { label: 'بیشتر', pattern: 'more', tone: 'more', icon: 'M6 12h.01M12 12h.01M18 12h.01', isMore: true },
 ];
 
 const moreMenuItems = [
@@ -32,6 +33,17 @@ const desktopNav = [
     ...moreMenuItems,
 ];
 
+const tabToneClass = (tone, active) => {
+    if (!active) return '';
+    const map = {
+        mint: 'bg-gradient-to-br from-green-300 to-green-400 text-green-950',
+        sky: 'bg-gradient-to-br from-sky-300 to-blue-400 text-blue-950',
+        sun: 'bg-gradient-to-br from-yellow-300 to-amber-400 text-amber-950',
+        more: 'bg-gradient-to-br from-slate-300 to-slate-400 text-slate-900',
+    };
+    return map[tone] || 'bg-slate-900 text-white';
+};
+
 const isActive = (item) => route().current(item.pattern);
 const isMoreActive = computed(() => moreMenuItems.some((item) => isActive(item)));
 const closeMoreMenu = () => { moreMenuOpen.value = false; };
@@ -39,26 +51,31 @@ const toggleMoreMenu = () => { moreMenuOpen.value = !moreMenuOpen.value; };
 </script>
 
 <template>
-    <div dir="rtl" class="am-features-shell min-h-screen bg-[#f4f4f5] text-neutral-900 dark:bg-[#0b0b0c] dark:text-neutral-100">
-        <header class="sticky top-0 z-30 bg-[#f4f4f5]/90 px-4 pb-3 pt-[max(0.9rem,env(safe-area-inset-top))] backdrop-blur dark:bg-[#0b0b0c]/90">
-            <div class="relative mx-auto flex max-w-3xl items-center justify-center">
-                <Link
-                    :href="homeHref"
-                    class="absolute right-0 hidden rounded-full bg-neutral-900 px-3 py-2 text-[11px] font-black text-white lg:inline-flex"
-                >
-                    سایت اصلی
-                </Link>
-                <div class="text-center">
-                    <p class="text-[16px] font-black tracking-tight">{{ title }}</p>
-                    <p v-if="subtitle" class="text-[11px] text-neutral-400">{{ subtitle }}</p>
-                </div>
-                <Link
-                    :href="route('features.index')"
-                    class="absolute left-0 hidden h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-black shadow-sm dark:bg-[#161618] lg:flex"
-                >
-                    آ
-                </Link>
+    <div dir="rtl" class="ph-features-shell text-slate-900 dark:text-slate-100">
+        <header class="ph-header !static lg:sticky">
+            <Link :href="homeHref" class="am-icon-btn !h-10 !w-10 lg:hidden">
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M11 6l-6 6 6 6" />
+                </svg>
+            </Link>
+            <div class="text-center">
+                <p class="text-[16px] font-black tracking-tight">{{ title }}</p>
+                <p v-if="subtitle" class="text-[11px] text-slate-400">{{ subtitle }}</p>
+                <p v-else class="text-[10px] font-semibold text-slate-400">{{ BRAND_FA }} · {{ BRAND_EN }}</p>
             </div>
+            <Link
+                :href="route('features.index')"
+                class="flex h-10 w-10 items-center justify-center rounded-full text-sm font-black text-white lg:hidden"
+                style="background: linear-gradient(135deg, #fdba74, #fb923c);"
+            >
+                پ
+            </Link>
+            <Link
+                :href="homeHref"
+                class="absolute right-4 hidden rounded-full bg-slate-900 px-3 py-2 text-[11px] font-black text-white lg:inline-flex"
+            >
+                سایت اصلی
+            </Link>
         </header>
 
         <nav class="mx-auto hidden max-w-3xl flex-wrap gap-2 px-4 pb-3 lg:flex">
@@ -66,8 +83,8 @@ const toggleMoreMenu = () => { moreMenuOpen.value = !moreMenuOpen.value; };
                 v-for="tool in desktopNav"
                 :key="tool.label"
                 :href="tool.href"
-                class="rounded-full px-3 py-2 text-[11px] font-bold"
-                :class="isActive(tool) ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-500 dark:bg-[#161618]'"
+                class="rounded-full px-4 py-2 text-[11px] font-bold shadow-sm"
+                :class="isActive(tool) ? 'bg-slate-900 text-white' : 'bg-white/90 text-slate-500'"
             >
                 {{ tool.label }}
             </Link>
@@ -77,17 +94,14 @@ const toggleMoreMenu = () => { moreMenuOpen.value = !moreMenuOpen.value; };
             <slot />
         </main>
 
-        <nav
-            class="fixed inset-x-4 bottom-[max(0.85rem,env(safe-area-inset-bottom))] z-50 mx-auto max-w-md rounded-[28px] bg-white px-2 py-2 shadow-[0_18px_50px_rgba(0,0,0,0.10)] dark:bg-[#161618] lg:hidden"
-            aria-label="امکانات"
-        >
+        <nav class="ph-mobile-bar lg:hidden" aria-label="امکانات">
             <div class="flex items-stretch justify-around">
                 <Link
                     :href="homeHref"
-                    class="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl py-2 text-[10px] font-semibold text-neutral-400"
+                    class="ph-mobile-tab ph-mobile-tab--home"
                     @click="closeMoreMenu"
                 >
-                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 text-white">
+                    <span class="ph-mobile-tab__icon bg-slate-900 text-white">
                         <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 11 12 4l8 7v9H4v-9Z" />
                         </svg>
@@ -99,14 +113,11 @@ const toggleMoreMenu = () => { moreMenuOpen.value = !moreMenuOpen.value; };
                     <button
                         v-if="tab.isMore"
                         type="button"
-                        class="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl py-2 text-[10px] font-semibold"
-                        :class="isMoreActive || moreMenuOpen ? 'text-neutral-900 dark:text-white' : 'text-neutral-400'"
+                        class="ph-mobile-tab"
+                        :class="[`ph-mobile-tab--${tab.tone}`, { 'is-active': isMoreActive || moreMenuOpen }]"
                         @click="toggleMoreMenu"
                     >
-                        <span
-                            class="flex h-8 w-8 items-center justify-center rounded-full"
-                            :class="isMoreActive || moreMenuOpen ? 'bg-neutral-900 text-white' : ''"
-                        >
+                        <span class="ph-mobile-tab__icon" :class="tabToneClass(tab.tone, isMoreActive || moreMenuOpen)">
                             <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                                 <path :d="tab.icon" />
                             </svg>
@@ -116,14 +127,11 @@ const toggleMoreMenu = () => { moreMenuOpen.value = !moreMenuOpen.value; };
                     <Link
                         v-else
                         :href="tab.href"
-                        class="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl py-2 text-[10px] font-semibold"
-                        :class="isActive(tab) ? 'text-neutral-900 dark:text-white' : 'text-neutral-400'"
+                        class="ph-mobile-tab"
+                        :class="[`ph-mobile-tab--${tab.tone}`, { 'is-active': isActive(tab) }]"
                         @click="closeMoreMenu"
                     >
-                        <span
-                            class="flex h-8 w-8 items-center justify-center rounded-full"
-                            :class="isActive(tab) ? 'bg-neutral-900 text-white' : ''"
-                        >
+                        <span class="ph-mobile-tab__icon" :class="tabToneClass(tab.tone, isActive(tab))">
                             <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                                 <path :d="tab.icon" />
                             </svg>
@@ -134,18 +142,18 @@ const toggleMoreMenu = () => { moreMenuOpen.value = !moreMenuOpen.value; };
             </div>
         </nav>
 
-        <div v-if="moreMenuOpen" class="fixed inset-0 z-[55] bg-neutral-950/20 lg:hidden" @click="closeMoreMenu" />
+        <div v-if="moreMenuOpen" class="fixed inset-0 z-[55] bg-slate-950/20 lg:hidden" @click="closeMoreMenu" />
 
         <div
             v-if="moreMenuOpen"
-            class="fixed inset-x-4 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-[60] rounded-[28px] bg-white p-3 shadow-[0_18px_50px_rgba(0,0,0,0.10)] dark:bg-[#161618] lg:hidden"
+            class="fixed inset-x-4 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-[60] rounded-[32px] border border-white/90 bg-white/95 p-3 shadow-[0_24px_60px_rgba(15,23,42,0.12)] backdrop-blur dark:border-white/10 dark:bg-slate-900/95 lg:hidden"
         >
             <Link
                 v-for="item in moreMenuItems"
                 :key="item.label"
                 :href="item.href"
-                class="mb-1 flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold last:mb-0"
-                :class="isActive(item) ? 'bg-neutral-900 text-white' : 'text-neutral-700 dark:text-neutral-200'"
+                class="mb-1 flex items-center gap-3 rounded-[22px] px-3 py-3 text-sm font-semibold last:mb-0"
+                :class="isActive(item) ? 'bg-slate-900 text-white' : 'text-slate-700 dark:text-slate-200'"
                 @click="closeMoreMenu"
             >
                 <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">

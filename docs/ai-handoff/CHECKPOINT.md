@@ -14,7 +14,7 @@ Branch: `main`
 
 - Laravel 13, PHP 8.4, Vue 3, Inertia, Tailwind, MySQL
 - Persian RTL UI (Vazirmatn)
-- Light + dark showroom theme (`automaya_theme`)
+- Light + dark showroom theme (`panahi_theme`, legacy `automaya_theme` still read)
 
 ## Domain
 
@@ -47,10 +47,11 @@ Demo data: `AutomayaDemoSeeder` — 20 in-stock, 20 announced, 20 cash sales, 20
 
 ## UI
 
-- Behance Cortana / Modern Fintech CRM: off-white canvas `#f4f4f5`, white floating cards, black pill CTAs, green for positive numbers
-- Not neumorphism, not lime, not coral-accent UI
+- Soft mint-to-sky gradient canvas, white floating cards (32px radius), colored pill tabs (green / yellow / lavender / coral)
+- Invoice-style dashboard: vertical stat pills + striped balance card + icon sub-nav
+- Brand: **پناهی** (FA) / **Panahi Car** (EN)
 - Compact asset-style list rows; real car photos only on inventory/sale vehicles
-- Dashboard title: اتوگالری مایا — photo hero of in-stock cars + metric cards + Features illustration tiles
+- Dashboard title: پناهی — photo hero of in-stock cars + metric cards + Features illustration tiles
 - Page transitions: soft fade/slide/blur (`am-soft-enter`), card lift on hover
 - Features tiles and empty states use 3D isometric illustrations in `public/images/illustrations/`
 - Sale-day USD is not collected or shown; purchase USD snapshots remain
@@ -60,7 +61,7 @@ Demo data: `AutomayaDemoSeeder` — 20 in-stock, 20 announced, 20 cash sales, 20
 - Features numbers use Persian digits in inputs and results; selects inherit Vazirmatn globally
 - USD/AED rates stay tiny next to the date on the dashboard
 - Desktop icon rail + floating mobile tab bar
-- RTL login splash: a line draws, PANAHI CAR letters fade in, brand rises, then login card appears from blur
+- RTL login splash: gradient background, PANAHI CAR letters fade in, then login card appears from blur
 - Public Features hub at `/features` (installments, contract, inventory-based price estimate, gold collateral, wanted cars, wanted market, check printer)
 - PWA-ready: `viewport-fit=cover`, `public/manifest.json`
 

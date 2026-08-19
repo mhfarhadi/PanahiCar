@@ -91,7 +91,7 @@ const submit = async () => {
 </script>
 
 <template>
-    <Head title="ضمانت طلا | automaya" />
+    <Head title="ضمانت طلا | Panahi Car" />
 
     <FeaturesLayout title="ضمانت طلا" subtitle="پوشش دو ماه سود">
         <div class="relative mb-5 overflow-hidden rounded-[28px]">

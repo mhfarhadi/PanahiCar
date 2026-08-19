@@ -6,7 +6,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 
-const THEME_KEY = 'automaya_theme';
+import { BRAND_EN, THEME_KEY } from '@/Utils/brand';
 
 const applyTheme = (theme) => {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -18,7 +18,7 @@ const applyTheme = (theme) => {
     document.documentElement.classList.toggle('dark', shouldUseDark);
 };
 
-const savedTheme = localStorage.getItem(THEME_KEY) || 'system';
+const savedTheme = localStorage.getItem(THEME_KEY) || localStorage.getItem('automaya_theme') || 'system';
 
 applyTheme(savedTheme);
 
@@ -30,7 +30,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
     }
 });
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || BRAND_EN;
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -47,7 +47,7 @@ createInertiaApp({
     },
     progress: {
         delay: 80,
-        color: '#111111',
+        color: '#86efac',
         includeCSS: true,
     },
 });

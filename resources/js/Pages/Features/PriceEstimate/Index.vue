@@ -41,7 +41,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="برآورد قیمت | automaya" />
+    <Head title="برآورد قیمت | Panahi Car" />
 
     <FeaturesLayout title="برآورد قیمت" subtitle="از موجودی و فروش نمایشگاه">
         <div class="relative mb-5 overflow-hidden rounded-[28px]">

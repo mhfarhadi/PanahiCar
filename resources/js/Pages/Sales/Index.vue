@@ -66,7 +66,7 @@ const saleTypeLabel = (type) =>
 </script>
 
 <template>
-    <Head title="خودرو‌های فروخته‌شده | automaya" />
+    <Head title="خودرو‌های فروخته‌شده | Panahi Car" />
 
     <AuthenticatedLayout>
         <div dir="rtl" class="am-page !pt-3">
