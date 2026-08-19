@@ -1,5 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { publicAsset } from '@/Utils/publicAsset';
 import { Head, Link } from '@inertiajs/vue3';
 </script>
 
@@ -36,7 +37,7 @@ import { Head, Link } from '@inertiajs/vue3';
                         class="am-row"
                     >
                         <div class="am-thumb !h-12 !w-12 overflow-hidden">
-                            <img src="/images/illustrations/illustration-showroom.png" class="h-full w-full object-cover" />
+                            <img :src="publicAsset('/images/illustrations/illustration-showroom.png')" class="h-full w-full object-cover" />
                         </div>
                         <div class="min-w-0 flex-1">
                             <h2 class="text-sm font-black">امکانات</h2>
