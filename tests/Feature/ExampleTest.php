@@ -1,15 +1,14 @@
 <?php
 
-it('shows the division splash on home', function () {
+it('shows the car landing page on home', function () {
     $this->get('/')
         ->assertOk()
-        ->assertInertia(fn ($page) => $page->component('Home/Splash'));
+        ->assertInertia(fn ($page) => $page->component('Home/CarLanding'));
 });
 
-it('shows the car landing page', function () {
+it('redirects legacy cars url to home', function () {
     $this->get('/cars')
-        ->assertOk()
-        ->assertInertia(fn ($page) => $page->component('Home/CarLanding'));
+        ->assertRedirect('/');
 });
 
 it('shows the real estate coming soon page', function () {

@@ -21,7 +21,7 @@ import { Head, Link } from '@inertiajs/vue3';
                 مدیریت ملک، قرارداد اجاره و پرونده‌های سرمایه‌گذاری از همین درگاه در دسترس قرار می‌گیرد.
             </p>
             <Link :href="route('home')" class="am-btn-primary mt-8 inline-flex">
-                بازگشت به انتخاب بخش
+                بازگشت به صفحه اصلی
             </Link>
         </div>
     </PublicShell>

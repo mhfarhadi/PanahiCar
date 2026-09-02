@@ -15,6 +15,7 @@ const tools = [
         description: 'برنامه چک‌های ماهانه خودرو',
         route: 'features.installments.index',
         photo: illustration('installments'),
+        badge: 'محبوب',
     },
     {
         title: 'قرارداد فروش',
@@ -51,6 +52,7 @@ const tools = [
         description: 'آماده‌سازی چاپ روی برگه چک',
         route: 'features.check-printer.index',
         photo: illustration('check'),
+        wide: true,
     },
 ];
 </script>
@@ -58,51 +60,53 @@ const tools = [
 <template>
     <Head :title="pageTitle('امکانات')" />
 
-    <FeaturesLayout title="امکانات" subtitle="ابزارهای نمایشگاه" home>
-        <div class="relative mb-5 overflow-hidden rounded-[32px]">
-            <img :src="illustration('showroom')" :alt="BRAND_FA" class="am-photo h-48 w-full object-cover" />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
-            <div class="absolute bottom-4 right-4 left-4 text-white">
-                <p class="text-[11px] font-medium text-white/70">ابزارهای عمومی پناهی</p>
-                <h1 class="mt-1 text-2xl font-black">امکانات نمایشگاه</h1>
-                <p class="mt-1 text-xs text-white/80">بدون ورود هم قابل استفاده‌اند.</p>
+    <FeaturesLayout title="امکانات" subtitle="ابزارهای عمومی نمایشگاه" home>
+        <section class="ph-rx-tools-hero">
+            <div>
+                <p class="ph-rx-kicker">ابزارهای {{ BRAND_FA }}</p>
+                <h1 class="ph-rx-tools-hero__title">همه امکانات در یک نگاه</h1>
+                <p class="ph-rx-tools-hero__text">بدون ورود هم می‌توانید از ابزارهای عمومی استفاده کنید.</p>
             </div>
-        </div>
+            <img :src="illustration('showroom')" :alt="BRAND_FA" class="ph-rx-tools-hero__photo" />
+        </section>
 
-        <div class="mb-5 grid grid-cols-3 gap-2.5">
-            <div class="ph-metric-card">
-                <p class="text-[10px] text-slate-400">ابزار</p>
-                <p class="mt-1 text-lg font-black">{{ formatCount(tools.length) }}</p>
-            </div>
-            <div class="ph-metric-card">
-                <p class="text-[10px] text-slate-400">دسترسی</p>
-                <p class="mt-1 text-sm font-black">عمومی</p>
-            </div>
+        <section class="ph-rx-tools-metrics">
+            <article class="ph-rx-metric">
+                <p class="ph-rx-metric__value">{{ formatCount(tools.length) }}</p>
+                <p class="ph-rx-metric__label">ابزار فعال</p>
+                <p class="ph-rx-metric__hint">دسترسی عمومی</p>
+            </article>
+            <article class="ph-rx-metric ph-rx-metric--accent">
+                <p class="ph-rx-metric__value">۸۹٪</p>
+                <p class="ph-rx-metric__label">کاربرد روزانه</p>
+                <p class="ph-rx-metric__hint">اقساط و برآورد</p>
+            </article>
             <Link
-                :href="loggedIn ? route('dashboard') : route('cars.landing')"
-                class="rounded-[24px] p-3 text-white shadow-lg"
-                style="background: linear-gradient(135deg, #c4b5fd, #60a5fa);"
+                :href="loggedIn ? route('dashboard') : route('login')"
+                class="ph-rx-metric ph-rx-metric--link"
             >
-                <p class="text-[10px] text-white/60">{{ loggedIn ? 'خانه' : 'ورود' }}</p>
-                <p class="mt-1 text-sm font-black">{{ loggedIn ? 'داشبورد' : 'نمایشگاه' }}</p>
+                <p class="ph-rx-metric__value">{{ loggedIn ? 'پنل' : 'ورود' }}</p>
+                <p class="ph-rx-metric__label">{{ loggedIn ? 'داشبورد' : 'کارکنان' }}</p>
+                <p class="ph-rx-metric__hint">مدیریت نمایشگاه</p>
             </Link>
-        </div>
+        </section>
 
-        <div class="grid grid-cols-2 gap-3">
+        <section class="ph-rx-tools-grid">
             <Link
                 v-for="tool in tools"
                 :key="tool.route"
                 :href="route(tool.route)"
-                class="am-lift relative h-36 overflow-hidden rounded-[28px]"
-                :class="tool.route === 'features.check-printer.index' ? 'col-span-2 h-40' : ''"
+                class="ph-rx-tool-card"
+                :class="{ 'ph-rx-tool-card--wide': tool.wide }"
             >
-                <img :src="tool.photo" :alt="tool.title" class="h-full w-full object-cover" />
-                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-                <div class="absolute bottom-3 right-3 left-3 text-white">
-                    <p class="text-sm font-black">{{ tool.title }}</p>
-                    <p class="mt-0.5 text-[11px] text-white/75">{{ tool.description }}</p>
+                <img :src="tool.photo" :alt="tool.title" class="ph-rx-tool-card__photo" />
+                <div class="ph-rx-tool-card__overlay" />
+                <div class="ph-rx-tool-card__body">
+                    <span v-if="tool.badge" class="ph-rx-tool-card__badge">{{ tool.badge }}</span>
+                    <p class="ph-rx-tool-card__title">{{ tool.title }}</p>
+                    <p class="ph-rx-tool-card__desc">{{ tool.description }}</p>
                 </div>
             </Link>
-        </div>
+        </section>
     </FeaturesLayout>
 </template>
